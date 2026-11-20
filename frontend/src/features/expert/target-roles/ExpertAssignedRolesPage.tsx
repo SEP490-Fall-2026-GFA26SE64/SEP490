@@ -14,6 +14,7 @@ import {
   Edit3,
   Eye,
   FileCheck,
+  FileSpreadsheet,
   History,
   Layers,
   Lock,
@@ -88,12 +89,11 @@ import { RequiredKnowledgePicker } from '../../manager/target-roles/components/R
 import { TargetRoleGraphModal } from '../../manager/target-roles/components/TargetRoleGraphModal'
 import { TargetRoleVersionDiff } from '../../manager/target-roles/components/TargetRoleVersionDiff'
 import { RolePublicationReadinessView } from '../../manager/target-roles/components/RolePublicationReadinessView'
+import { RoleConfigExcelImportTab } from './components/RoleConfigExcelImportTab'
 import { fetchLearningModules, type LearningModuleDto } from '../../../shared/api/learningModuleApi'
 import { bankRequest, type BankView, type BankQuestion } from '../../../shared/api/questionBankApi'
 import {
   checkRoleReadiness,
-  isContentReadinessBypassed,
-  setContentReadinessBypassed,
 } from '../../manager/target-roles/roleReadiness'
 import { formatRequiredKnowledge } from '../../manager/target-roles/roleKnowledgePresentation'
 import { roleRequirements } from '../../manager/target-roles/roleRequirements'
@@ -923,22 +923,9 @@ export function ExpertAssignedRolesPage() {
     string[]
   >(['Senior'])
   const [isMultiLevelMode, setIsMultiLevelMode] = React.useState(false)
+  const [authoringTabMode, setAuthoringTabMode] = React.useState<'manual' | 'readiness' | 'excel'>('manual')
 
   // Skill target form state
-
-  const [isBypassContentCheck, setIsBypassContentCheck] = React.useState(isContentReadinessBypassed)
-
-  React.useEffect(() => {
-    const handleBypassChanged = (e: Event) => {
-      const customEvent = e as CustomEvent<boolean>
-      setIsBypassContentCheck(customEvent.detail ?? isContentReadinessBypassed())
-    }
-    window.addEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
-    return () => {
-      window.removeEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
-    }
-  }, [])
-
   const [newSkillId, setNewSkillId] = React.useState('')
   const [newKnowledgeLevels, setNewKnowledgeLevels] = React.useState<string[]>([])
   const [selectedParentCompId, setSelectedParentCompId] = React.useState<string>('')
@@ -1553,6 +1540,8 @@ export function ExpertAssignedRolesPage() {
 
     setConfiguredCompetencySearch('')
 
+    setAuthoringTabMode('manual')
+
     setIsAuthoringModalOpen(true)
   }
 
@@ -1655,9 +1644,7 @@ export function ExpertAssignedRolesPage() {
     }
 
     try {
-      saveAndSetRoles((prev) =>
-        prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)),
-      )
+      const sanitizedTargets = roleRequirements(updatedRole.skillTargets)
 
       const res = await fetch(
         `/api/v1/organizations/${orgId}/roles/${authoringRole.id}`,
@@ -1684,7 +1671,7 @@ export function ExpertAssignedRolesPage() {
                   : updatedRole.status === 'staged' || updatedRole.isStaffingEnabled
                     ? 'STAGED'
                     : 'DRAFT',
-            skillTargets: roleRequirements(updatedRole.skillTargets),
+            skillTargets: sanitizedTargets,
             levels: updatedRole.levels,
             levelDurations: updatedRole.levelDurations,
             levelCompetencies: updatedRole.levelCompetencies,
@@ -1702,6 +1689,10 @@ export function ExpertAssignedRolesPage() {
         )
       }
 
+      saveAndSetRoles((prev) =>
+        prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)),
+      )
+
       await fetchAssignedRoles()
 
       toast({
@@ -1718,7 +1709,7 @@ export function ExpertAssignedRolesPage() {
 
       toast({
         title: 'Save Draft Failed',
-        description: 'Unable to save draft configuration. Please try again.',
+        description: e instanceof Error ? e.message : 'Unable to save draft configuration. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -1734,22 +1725,6 @@ export function ExpertAssignedRolesPage() {
     const role = roleToSubmit || authoringRole
 
     if (!role) return
-
-    const readiness = checkRoleReadiness(
-      role,
-      validationModules,
-      validationBankQuestions,
-      isBypassContentCheck,
-    )
-    if (!readiness.isOverallReady) {
-      toast({
-        title: 'Validation Requirements Incomplete',
-        description:
-          'Before submitting to the L&D Manager, all career levels must have competencies and micro-skills, and all micro-skills must have learning modules and question bank coverage.',
-        variant: 'destructive',
-      })
-      return
-    }
 
     if (role.skillTargets.length === 0) {
       toast({
@@ -1769,12 +1744,10 @@ export function ExpertAssignedRolesPage() {
       updatedAt: new Date().toISOString(),
     }
 
-    saveAndSetRoles((prev) =>
-      prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)),
-    )
-
     try {
-      await fetch(`/api/v1/organizations/${orgId}/roles/${role.id}`, {
+      const sanitizedTargets = roleRequirements(role.skillTargets)
+
+      const res = await fetch(`/api/v1/organizations/${orgId}/roles/${role.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1790,7 +1763,7 @@ export function ExpertAssignedRolesPage() {
           description: role.description,
           status: 'SUBMITTED',
           version: role.version,
-          skillTargets: roleRequirements(role.skillTargets),
+          skillTargets: sanitizedTargets,
           levels: role.levels,
           levelDurations: role.levelDurations,
           levelCompetencies: role.levelCompetencies,
@@ -1799,42 +1772,39 @@ export function ExpertAssignedRolesPage() {
         }),
       })
 
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to submit role configuration to L&D Manager')
+      }
+
+      saveAndSetRoles((prev) =>
+        prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)),
+      )
+
       await fetchAssignedRoles()
-    } catch {
-      // Offline fallback already updated in local company store via saveAndSetRoles
+
+      if (authoringRole?.id === role.id) {
+        setAuthoringRole(updatedRole)
+        setIsAuthoringModalOpen(false)
+      }
+
+      toast({
+        title: 'Configuration Submitted to L&D Manager',
+        description: `${updatedRole.title} (${updatedRole.code} v${updatedRole.version}) has been submitted to the L&D Manager for approval and publication.`,
+        variant: 'success',
+      })
+    } catch (err: unknown) {
+      console.error('Failed to submit configuration:', err)
+      toast({
+        title: 'Submission Failed',
+        description: err instanceof Error ? err.message : 'Unable to submit configuration to L&D Manager. Please try again.',
+        variant: 'destructive',
+      })
     }
-
-    if (authoringRole?.id === role.id) {
-      setAuthoringRole(updatedRole)
-
-      setIsAuthoringModalOpen(false)
-    }
-
-    toast({
-      title: 'Configuration Submitted to L&D Manager',
-      description: `${updatedRole.title} (${updatedRole.code} v${updatedRole.version}) has been submitted to the L&D Manager for approval and publication.`,
-      variant: 'success',
-    })
   }
 
   const handleInitiateSubmitToManager = () => {
     if (!authoringRole) return
-
-    const readiness = checkRoleReadiness(
-      authoringRole,
-      validationModules,
-      validationBankQuestions,
-      isBypassContentCheck,
-    )
-    if (!readiness.isOverallReady) {
-      toast({
-        title: 'Validation Requirements Incomplete',
-        description:
-          'Before submitting to the L&D Manager, all career levels must have competencies and micro-skills, and all micro-skills must have learning modules and question bank coverage.',
-        variant: 'destructive',
-      })
-      return
-    }
 
     if (authoringRole.skillTargets.length === 0) {
       toast({
@@ -2569,7 +2539,6 @@ export function ExpertAssignedRolesPage() {
             authoringRole,
             validationModules,
             validationBankQuestions,
-            isBypassContentCheck,
           )
 
           return (
@@ -2736,7 +2705,66 @@ export function ExpertAssignedRolesPage() {
                     )}
                 </div>
 
-                {/* Role Level Tier Selector (Configuring competencies and micro-skills per level) */}
+                {/* Configuration Mode Navigation Tabs: Manual | Validation | Import from Excel */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-border shrink-0">
+                  <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setAuthoringTabMode('manual')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        authoringTabMode === 'manual'
+                          ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <Sliders className="h-3.5 w-3.5 text-primary" />
+                      <span>Manual Configuration</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setAuthoringTabMode('readiness')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        authoringTabMode === 'readiness'
+                          ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <FileCheck className="h-3.5 w-3.5 text-primary" />
+                      <span>Publication Readiness &amp; Validation</span>
+                      {!authoringReadiness.isOverallReady && (
+                        <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/20 text-black border border-amber-500/30">
+                          {authoringReadiness.missingSummary.length}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setAuthoringTabMode('excel')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        authoringTabMode === 'excel'
+                          ? 'bg-card text-foreground font-bold shadow-2xs border border-border/80'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <FileSpreadsheet className="h-3.5 w-3.5 text-primary" />
+                      <span>Import from Excel</span>
+                    </button>
+                  </div>
+
+                  <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline-block">
+                    {authoringTabMode === 'excel'
+                      ? 'Configure role requirements via spreadsheet'
+                      : authoringTabMode === 'readiness'
+                        ? 'Automated readiness and coverage audit'
+                        : 'Select level and assign competencies & micro-skills'}
+                  </span>
+                </div>
+
+                {authoringTabMode === 'manual' && (
+                  <>
+                    {/* Role Level Tier Selector (Configuring competencies and micro-skills per level) */}
 
                 <div className="p-3.5 rounded-lg border border-border bg-muted/20 space-y-2.5">
                   <div className="flex items-center justify-between flex-wrap gap-2">
@@ -3522,93 +3550,115 @@ export function ExpertAssignedRolesPage() {
                     })()
                   )}
                 </div>
+              </>
+            )}
+
+            {authoringTabMode === 'readiness' && (
+              <div className="flex-1 flex flex-col overflow-hidden min-h-[420px] pt-1">
+                <RolePublicationReadinessView
+                  role={authoringRole}
+                  modules={validationModules}
+                  bankQuestions={validationBankQuestions}
+                  isLoading={isLoadingValidationContent}
+                  actor="expert"
+                />
               </div>
+            )}
 
-              <DialogFooter className="shrink-0 flex items-center justify-between sm:justify-between w-full pt-3 border-t border-border mt-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setIsAuthoringModalOpen(false)
-                      setAuthoringRole(null)
-                    }}
-                  >
-                    Close
-                  </Button>
+            {authoringTabMode === 'excel' && (
+              <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1 pt-1 min-h-[420px]">
+                <RoleConfigExcelImportTab
+                  role={authoringRole}
+                  roleLevels={currentRoleLevels}
+                  availableCompetencies={realCompetencies}
+                  availableMicroSkills={companyMicroSkills}
+                  onApplyConfig={(newLevelCompetencies, newCompIds, newSkillTargets) => {
+                    setAuthoringRole({
+                      ...authoringRole,
+                      levelCompetencies: newLevelCompetencies,
+                      competencyIds: newCompIds,
+                      skillTargets: newSkillTargets,
+                      updatedAt: new Date().toISOString(),
+                    })
+                    setAuthoringTabMode('manual')
+                  }}
+                  onCancel={() => setAuthoringTabMode('manual')}
+                />
+              </div>
+            )}
+          </div>
 
-                  {!authoringReadiness.isOverallReady ? (
-                    <span
-                      style={{ color: '#000000' }}
-                      className="text-xs text-black bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-bold cursor-help"
-                      title={authoringReadiness.missingSummary.join('; ')}
-                    >
-                      <AlertCircle className="h-3.5 w-3.5 text-black shrink-0" style={{ color: '#000000' }} />
-                      <span style={{ color: '#000000' }} className="text-black font-bold">
-                        Validation required: {authoringReadiness.missingSummary.length} issue{authoringReadiness.missingSummary.length > 1 ? 's' : ''} to resolve
-                      </span>
-                    </span>
-                  ) : (
-                    <span className="text-xs text-emerald-700 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      <span>Validation passed: Ready to submit</span>
-                    </span>
-                  )}
+        <DialogFooter className="shrink-0 flex items-center justify-between sm:justify-between w-full pt-3 border-t border-border mt-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsAuthoringModalOpen(false)
+                setAuthoringRole(null)
+              }}
+            >
+              Close
+            </Button>
 
-                  {/* Temporary Dev/Testing Bypass Toggle */}
-                  <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none bg-muted/60 px-2.5 py-1 rounded-md border border-border">
-                    <input
-                      type="checkbox"
-                      checked={isBypassContentCheck}
-                      onChange={(e) => {
-                        const val = e.target.checked
-                        setIsBypassContentCheck(val)
-                        setContentReadinessBypassed(val)
-                      }}
-                      className="accent-primary rounded h-3.5 w-3.5 cursor-pointer"
-                    />
-                    <span className="font-medium text-[11px]">Bypass Module/Question Check</span>
-                  </label>
-                </div>
+            {!authoringReadiness.isOverallReady ? (
+              <button
+                type="button"
+                onClick={() => setAuthoringTabMode('readiness')}
+                style={{ color: '#000000' }}
+                className="text-xs text-black bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-bold hover:bg-amber-500/25 transition-all cursor-pointer shadow-2xs"
+                title="Click to view publication readiness and validation issues"
+              >
+                <AlertCircle className="h-3.5 w-3.5 text-black shrink-0" style={{ color: '#000000' }} />
+                <span style={{ color: '#000000' }} className="text-black font-bold">
+                  Validation required: {authoringReadiness.missingSummary.length} issue{authoringReadiness.missingSummary.length > 1 ? 's' : ''} to resolve
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAuthoringTabMode('readiness')}
+                className="text-xs text-emerald-700 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-md flex items-center gap-1.5 font-medium hover:bg-emerald-500/20 transition-all cursor-pointer"
+                title="Click to view full publication readiness report"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                <span>Validation passed: Ready to submit</span>
+              </button>
+            )}
+          </div>
 
-                {authoringRole.status !== 'published' && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isSavingDraft}
-                      onClick={() => {
-                        handleSaveAuthoringDraft()
-                      }}
-                      className="font-semibold"
-                    >
-                      {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
-                    </Button>
+          {authoringRole.status !== 'published' && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isSavingDraft}
+                onClick={() => {
+                  handleSaveAuthoringDraft()
+                }}
+                className="font-semibold"
+              >
+                {isSavingDraft ? 'Saving Draft...' : 'Save Draft'}
+              </Button>
 
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      disabled={
-                        !authoringReadiness.isOverallReady ||
-                        authoringRole.skillTargets.length === 0 ||
-                        isSavingDraft
-                      }
-                      onClick={handleInitiateSubmitToManager}
-                      className="font-semibold shadow-2xs"
-                      leftIcon={<Send className="h-4 w-4" />}
-                      title={
-                        !authoringReadiness.isOverallReady
-                          ? `Validation required before submitting: ${authoringReadiness.missingSummary.join('; ')}`
-                          : undefined
-                      }
-                    >
-                      {isAuthoringFeedback || isAuthoringRejected
-                        ? 'Re-submit to L&D Manager'
-                        : 'Submit to L&D Manager'}
-                    </Button>
-                  </div>
-                )}
-              </DialogFooter>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={
+                  authoringRole.skillTargets.length === 0 ||
+                  isSavingDraft
+                }
+                onClick={handleInitiateSubmitToManager}
+                className="font-semibold shadow-2xs"
+                leftIcon={<Send className="h-4 w-4" />}
+              >
+                {isAuthoringFeedback || isAuthoringRejected
+                  ? 'Re-submit to L&D Manager'
+                  : 'Submit to L&D Manager'}
+              </Button>
+            </div>
+          )}
+        </DialogFooter>
             </Dialog>
           )
         })()}

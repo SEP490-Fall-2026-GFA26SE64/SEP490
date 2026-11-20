@@ -3,8 +3,6 @@ import { AlertCircle, CheckCircle2, Loader2, BookOpen } from 'lucide-react'
 import { Badge } from '../../../../shared/components/ui/Badge'
 import {
   checkRoleReadiness,
-  isContentReadinessBypassed,
-  setContentReadinessBypassed,
 } from '../roleReadiness'
 import type { TargetRoleModel } from '../../data/ldManagerMockData'
 import type { LearningModuleDto } from '../../../../shared/api/learningModuleApi'
@@ -25,22 +23,9 @@ export function RolePublicationReadinessView({
   isLoading = false,
   actor = 'manager',
 }: RolePublicationReadinessViewProps) {
-  const [isBypassed, setIsBypassed] = React.useState(isContentReadinessBypassed)
-
-  React.useEffect(() => {
-    const handleBypassChanged = (e: Event) => {
-      const customEvent = e as CustomEvent<boolean>
-      setIsBypassed(customEvent.detail ?? isContentReadinessBypassed())
-    }
-    window.addEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
-    return () => {
-      window.removeEventListener('adapt_learn_graph_bypass_readiness_changed', handleBypassChanged)
-    }
-  }, [])
-
   const readiness = React.useMemo(() => {
-    return checkRoleReadiness(role, modules, bankQuestions, isBypassed)
-  }, [role, modules, bankQuestions, isBypassed])
+    return checkRoleReadiness(role, modules, bankQuestions)
+  }, [role, modules, bankQuestions])
 
   const {
     levelValidation,
@@ -79,31 +64,11 @@ export function RolePublicationReadinessView({
                 <AlertCircle className="h-3 w-3 !text-black dark:!text-white" style={{ color: '#000000' }} /> Action Required
               </Badge>
             )}
-            {isBypassed && (
-              <Badge variant="warning" className="text-[10px] py-0 px-2 font-semibold">
-                Dev Bypass Active
-              </Badge>
-            )}
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             Automated verification of role levels, competencies, learning modules, and question bank coverage.
           </p>
         </div>
-
-        {/* Temporary Dev/Testing Bypass Toggle */}
-        <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none bg-muted/60 px-2.5 py-1 rounded-md border border-border shrink-0 self-start sm:self-auto">
-          <input
-            type="checkbox"
-            checked={isBypassed}
-            onChange={(e) => {
-              const val = e.target.checked
-              setIsBypassed(val)
-              setContentReadinessBypassed(val)
-            }}
-            className="accent-primary rounded h-3.5 w-3.5 cursor-pointer"
-          />
-          <span className="font-medium text-[11.5px]">Bypass Module &amp; Question Bank Check (Dev Testing)</span>
-        </label>
       </div>
 
       {/* 1. Level Architecture Checklist */}

@@ -4,12 +4,14 @@ Tài liệu này chứa dữ liệu để **copy/paste** khi demo và các file 
 
 | File | Dùng ở bước | Nội dung |
 | --- | --- | --- |
-| [01_Org_Structure_Brightpath.xlsx](./01_Org_Structure_Brightpath.xlsx) | 1. Onboarding (Your business → Import structure) | 4 department, 5 job position, 5 target role, 14 level |
+| [01_Org_Structure_Brightpath.xlsx](./01_Org_Structure_Brightpath.xlsx) | 1. Onboarding (Your business → Import structure) | 4 department, 9 job position, 16 target role (4 role/phòng ban), 47 level |
 | [02_Users_Brightpath.xlsx](./02_Users_Brightpath.xlsx) | 2. Admin import users | 1 L&D Manager, 1 Domain Expert, 1 Employee (có Current role + Level) |
-| [03_Competencies_JavaBackend.xlsx](./03_Competencies_JavaBackend.xlsx) | 4. Expert import competency | 5 competency cho role Java Backend |
+| [03_Competencies_JavaBackend.xlsx](./03_Competencies_JavaBackend.xlsx) | 4. Expert import competency | 5 competency cho role Java Backend & liên quan |
 | [04_MicroSkills_JavaBackend.xlsx](./04_MicroSkills_JavaBackend.xlsx) | 5. Expert import micro-skill | 16 micro-skill, 17 liên kết competency, 15 prerequisite |
+| [04a_RoleConfig_ReactFrontend.xlsx](./04a_RoleConfig_ReactFrontend.xlsx) | 7. Expert import config React Frontend | Cấu hình nhanh 3 level qua tab Excel cho role `REACT-FE` |
+| [04b_RoleConfig_NodeBackend.xlsx](./04b_RoleConfig_NodeBackend.xlsx) | 7. Expert import config Node.js Backend | Cấu hình nhanh 3 level qua tab Excel cho role `NODE-BE` |
 
-Luồng: **Reset → Onboarding 7 bước → Import users → L&D giao Expert cho role → Expert import competency → Expert import micro-skill → Expert sửa relationship trong Explore Graph → Expert cấu hình micro-skill cho target role.**
+Luồng: **Reset → Onboarding 7 bước → Import users → L&D giao Expert cho 3 roles → Expert import competency & micro-skill → Expert sửa quan hệ graph → Expert cấu hình 1 role thủ công + 2 roles import Excel → Expert submit cả 3 roles → L&D Manager duyệt và Publish cả 3 roles.**
 
 ---
 
@@ -121,15 +123,18 @@ Thêm user lẻ bằng tay (tuỳ chọn) qua **Create User**:
 
 ---
 
-## 3. L&D Manager giao Expert maintain role
+## 3. L&D Manager giao Expert maintain 3 roles
 
-Đăng nhập `Sarah Mitchell` → **Roles** (`/workspace/brightpath/ld-manager/roles`) → role **JAVA-BE – Java Backend Developer** → **Edit Role & Assigned Expert**:
+Đăng nhập `Sarah Mitchell` → **Roles** (`/workspace/brightpath/ld-manager/roles`):
 
-| Field | Giá trị |
-| --- | --- |
-| Assigned Expert | `David Thompson` |
+1. Role **JAVA-BE – Java Backend Developer** → **Edit Role & Assigned Expert**:
+   - Assigned Expert: `David Thompson` → **Save & Send to Expert**.
+2. Role **REACT-FE – React Frontend Developer** → **Edit Role & Assigned Expert**:
+   - Assigned Expert: `David Thompson` → **Save & Send to Expert**.
+3. Role **NODE-BE – Node.js Backend Developer** → **Edit Role & Assigned Expert**:
+   - Assigned Expert: `David Thompson` → **Save & Send to Expert**.
 
-→ **Save & Send to Expert**.
+*(Sau bước này, David Thompson có 3 target roles trong danh sách cần cấu hình cây năng lực).*
 
 ---
 
@@ -204,55 +209,104 @@ MS-JUNIT       ← MS-SPRING-DI
 MS-OBSERV      ← MS-DOCKER
 ```
 
-## 7. Expert cấu hình micro-skill cho target role
+## 7. Expert cấu hình cây năng lực và L&D Manager công bố 3 target roles
+
+Luồng demo triển khai cấu hình cho 3 roles thuộc khối Engineering:
+- **`JAVA-BE – Java Backend Developer`**: Cấu hình thủ công từng level (minh hoạ trải nghiệm tác nghiệp chi tiết của Domain Expert).
+- **`REACT-FE – React Frontend Developer`**: Cấu hình siêu tốc qua tab **Import from Excel** (minh hoạ tính năng import cấu hình role hàng loạt không cần nhập tay).
+- **`NODE-BE – Node.js Backend Developer`**: Cấu hình siêu tốc qua tab **Import from Excel**.
+- **L&D Manager duyệt và Publish**: Cả 3 roles đều được submit và công bố thành công.
+
+---
+
+### Bước 7.1 – Cấu hình thủ công role JAVA-BE
 
 Mở **Roles** (`/workspace/brightpath/expert/roles`) → role **JAVA-BE – Java Backend Developer** → bấm **Configure Micro-skills** (biểu tượng cây bút).
 
-Cấu hình cây năng lực tinh gọn và chuẩn logic cấp bậc theo yêu cầu:
+> **Giao diện mới trong Edit Role Modal:**
+> Phía trên thanh chọn level có 3 tab chuyển đổi nhanh:
+> 1. **Manual Configuration:** Cấu hình thủ công trực quan qua giao diện.
+> 2. **Publication Readiness & Validation:** Kiểm tra trực tiếp các tiêu chí xuất bản (ma trận module, ngân hàng câu hỏi, prerequisite).
+> 3. **Import from Excel:** Tải file cấu hình mẫu hoặc import cấu hình từ bảng tính Excel.
+
+Cấu hình cây năng lực chuẩn logic cấp bậc:
 - **Junior:** 1 Competency (1 micro-skill).
 - **Middle:** 2 Competencies (1 competency có 2 micro-skills, 1 competency có 1 micro-skill → tổng 3 micro-skills).
 - **Senior:** 2 Competencies (mỗi competency có đúng 2 micro-skills → tổng 4 micro-skills).
 
-### Bước 7.1 – Gán Competency cho từng Role Level
-
-1. **Gán Competency cốt lõi cho cả 3 levels**:
+1. **Gán Competency cho từng Role Level**:
    - Ở thanh chọn **Role Levels**, bấm **All Levels (3)** (hoặc tick **Multi-level edit** để chọn cả `Junior`, `Middle`, `Senior`).
    - Trong ô **Select Competency**, chọn **`COMP-JAVA-CORE`** → bấm **Add Competency**.
-2. **Gán Competency đặc thù cho Middle và Senior**:
    - Chọn riêng **`Middle`** → thêm **`COMP-DATA`** → bấm **Add Competency**. *(Middle có đúng 2 Competencies: `COMP-JAVA-CORE` và `COMP-DATA`).*
    - Chọn riêng **`Senior`** → thêm **`COMP-SPRING`** → bấm **Add Competency**. *(Senior có đúng 2 Competencies: `COMP-JAVA-CORE` và `COMP-SPRING`).*
 
-*(Sau bước này: Junior có đúng 1 Competency, Middle có đúng 2 Competencies, Senior có đúng 2 Competencies).*
-
-### Bước 7.2 – Cấu hình Micro-skill Target cho từng level
-
-Chọn từng level (`Junior`, `Middle`, `Senior`), trong khối **Add Micro-skill Target** chọn **From Competency** → chọn **Micro-skill** → tick **Required levels** (`F` = Foundation, `I` = Intermediate, `A` = Advanced) → bấm **Assign Skill**:
+2. **Cấu hình Micro-skill Target cho từng level**:
+   Chọn từng level (`Junior`, `Middle`, `Senior`), trong khối **Add Micro-skill Target** chọn **From Competency** → chọn **Micro-skill** → tick **Required levels** (`F` = Foundation, `I` = Intermediate, `A` = Advanced) → bấm **Assign Skill**:
 
 | Competency | Micro-skill | Junior (1) | Middle (2) | Senior (3) | Logic cấp bậc & vai trò demo |
 | --- | --- | :---: | :---: | :---: | --- |
 | **`COMP-JAVA-CORE`** | `MS-JAVA-OOP` | **F** | – | – | **Junior (1 skill duy nhất):** Nền tảng lập trình hướng đối tượng |
 | | `MS-JAVA-COLL` | – | **I** | – | **Middle (skill 1 của Core):** Cấu trúc dữ liệu & collections (học module & thi ở Phần 8) |
-| | `MS-JAVA-STREAM` | – | **I** | **A** | **Cùng skill nâng mức:** Middle cần mức Intermediate; Senior nâng lên mức Advanced (Functional streams & reactive) |
+| | `MS-JAVA-STREAM` | – | **I** | **A** | **Cùng skill nâng mức:** Middle cần mức Intermediate; Senior nâng lên mức Advanced |
 | | `MS-JAVA-CONC` | – | – | **A** | **Senior (skill 2 của Core):** Xử lý đa luồng & lập trình đồng thời chuyên sâu |
-| **`COMP-DATA`** | `MS-SQL-INDEX` | – | **I** | – | **Middle (1 skill duy nhất của Data):** Đánh chỉ mục & tối ưu query (thi sai nền tảng sinh học bổ sung ở Phần 8) |
+| **`COMP-DATA`** | `MS-SQL-INDEX` | – | **I** | – | **Middle (1 skill duy nhất của Data):** Đánh chỉ mục & tối ưu query |
 | **`COMP-SPRING`** | `MS-SPRING-DATA` | – | – | **A** | **Senior (skill 1 của Spring):** Tối ưu truy xuất dữ liệu & ORM nâng cao |
 | | `MS-SPRING-TX` | – | – | **A** | **Senior (skill 2 của Spring):** Quản trị transaction phân tán & isolation |
 
 > **Kiểm tra chuẩn xác số lượng:**
+>
 > - **Junior (1 Competency, 1 Micro-skill):**
->   - `COMP-JAVA-CORE`: 1 skill (`MS-JAVA-OOP` [F]).
+>   - `COMP-JAVA-CORE` : 1 skill ( `MS-JAVA-OOP` [F]).
 > - **Middle (2 Competencies, 3 Micro-skills):**
->   - `COMP-JAVA-CORE`: 2 skills (`MS-JAVA-COLL` [I], `MS-JAVA-STREAM` [I]).
->   - `COMP-DATA`: 1 skill (`MS-SQL-INDEX` [I]).
+>   - `COMP-JAVA-CORE` : 2 skills ( `MS-JAVA-COLL` [I], `MS-JAVA-STREAM` [I]).
+>   - `COMP-DATA` : 1 skill ( `MS-SQL-INDEX` [I]).
 > - **Senior (2 Competencies, 4 Micro-skills):**
->   - `COMP-JAVA-CORE`: 2 skills (`MS-JAVA-STREAM` [A], `MS-JAVA-CONC` [A]).
->   - `COMP-SPRING`: 2 skills (`MS-SPRING-DATA` [A], `MS-SPRING-TX` [A]).
+>   - `COMP-JAVA-CORE` : 2 skills ( `MS-JAVA-STREAM` [A], `MS-JAVA-CONC` [A]).
+>   - `COMP-SPRING` : 2 skills ( `MS-SPRING-DATA` [A], `MS-SPRING-TX` [A]).
 >
 > *(Lưu ý: Nếu demo tiếp Phần 8 với đủ 4 tình huống bao gồm Expert Bypass và Certificate, ở level Middle gán thêm `MS-API-SEC` [F] và `MS-DOCKER` [F]).*
 
-### Bước 7.3 – Gửi cấu hình cho L&D Manager
+### Bước 7.2 – Kiểm tra Validation trong Modal và Submit JAVA-BE
 
-Khi cả 3 level đã hoàn tất cấu hình, bấm **Submit to L&D Manager** (hoặc **Save Draft** nếu muốn lưu nháp giữa chừng). Hệ thống gửi thẳng sang L&D Manager mà không bắt buộc kiểm tra hay cảnh báo thiếu prerequisite.
+1. Ở góc trái thanh footer modal, bấm vào nút **Validation required: X issues to resolve** (hoặc tab **Publication Readiness & Validation** ở trên).
+   - Hệ thống chuyển ngay sang tab kiểm tra chi tiết tính sẵn sàng của role mà **không cần đóng modal**.
+2. Domain Expert vẫn có thể bấm **Submit to L&D Manager** mà không bị khoá chặn bởi validation.
+3. Bấm **Submit to L&D Manager** → xác nhận gửi cấu hình `JAVA-BE`.
+
+---
+
+### Bước 7.3 – Cấu hình nhanh role REACT-FE qua file Excel
+
+1. Tại danh sách **Roles** (`/workspace/brightpath/expert/roles`), chọn role **REACT-FE – React Frontend Developer** → bấm biểu tượng **Configure Micro-skills**.
+2. Trong modal, bấm vào tab **Import from Excel** (cạnh tab Validation).
+3. Kéo thả hoặc duyệt chọn file **`04a_RoleConfig_ReactFrontend.xlsx`**.
+4. Xem bảng **Configuration Preview**: kiểm tra các dòng của 3 cấp bậc `Junior`, `Middle`, `Senior` đều báo trạng thái **Valid** với icon tích xanh.
+5. Bấm **Apply Configuration**: hệ thống tự động gán toàn bộ competencies và micro-skills vào role và chuyển về tab **Manual Configuration** để kiểm tra lại trực quan.
+6. Bấm **Submit to L&D Manager** → xác nhận gửi.
+
+---
+
+### Bước 7.4 – Cấu hình nhanh role NODE-BE qua file Excel
+
+1. Chọn role **NODE-BE – Node.js Backend Developer** → bấm biểu tượng **Configure Micro-skills**.
+2. Chọn tab **Import from Excel**.
+3. Tải lên file **`04b_RoleConfig_NodeBackend.xlsx`**.
+4. Kiểm tra preview 9 dòng cấu hình đầy đủ cho 3 level (Junior, Middle, Senior).
+5. Bấm **Apply Configuration** → giao diện tự chuyển về tab Manual.
+6. Bấm **Submit to L&D Manager** → xác nhận gửi.
+
+---
+
+### Bước 7.5 – L&D Manager duyệt và Publish cả 3 Target Roles
+
+1. Đăng xuất `David Thompson` và đăng nhập lại bằng `Sarah Mitchell` (L&D Manager).
+2. Vào **Roles** (`/workspace/brightpath/ld-manager/roles`).
+3. Cả 3 roles `JAVA-BE`, `REACT-FE`, `NODE-BE` đều đang ở trạng thái **SUBMITTED** (hoặc Staged for Review).
+4. Mở từng role để xem chi tiết:
+   - Bấm **View Details** trên `JAVA-BE`: kiểm tra tab **Architecture Specifications** và **Publication Readiness & Validation** → bấm **Publish Target Role** (hoặc Approve & Publish).
+   - Bấm **View Details** trên `REACT-FE` → bấm **Publish Target Role**.
+   - Bấm **View Details** trên `NODE-BE` → bấm **Publish Target Role**.
+5. Cả 3 roles chuyển sang trạng thái **PUBLISHED / ACTIVE** sẵn sàng cho nhân viên đăng ký lộ trình học tập!
 
 ---
 
