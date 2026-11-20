@@ -39,4 +39,14 @@ public final class PlatformAdministratorSeeds {
                 null, null, "SUCCEEDED", UUID.randomUUID()));
         return id;
     }
+
+    public void updatePassword(UUID accountId, String passwordHash) {
+        accounts.updatePasswordHash(accountId, passwordHash);
+    }
+
+    public void ensureAdministrator(UUID accountId) {
+        if (!administrators.existsByAccountId(accountId)) {
+            administrators.insert(new PlatformAdministratorEntity(accountId, administrators.databaseNow(), null, "OPERATOR"));
+        }
+    }
 }

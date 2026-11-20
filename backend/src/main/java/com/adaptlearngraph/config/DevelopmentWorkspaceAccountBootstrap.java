@@ -3,6 +3,7 @@ package com.adaptlearngraph.config;
 import com.adaptlearngraph.constants.TransactionManagers;
 import com.adaptlearngraph.repository.DevelopmentSeedJpaRepository;
 import com.adaptlearngraph.repository.Neo4jCypher;
+import com.adaptlearngraph.repository.PlatformAdministratorSeeds;
 import com.adaptlearngraph.repository.RegistrationSecrets;
 import com.adaptlearngraph.repository.WorkspaceBaselineResourceJpaRepository;
 import java.time.Instant;
@@ -68,13 +69,18 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
     public static final UUID EXPERT_LINH_NGUYEN_ID = UUID.fromString("a0000000-0000-0000-0000-000000000007");
 
     public static final String DEFAULT_PASSWORD = "Password123!";
+    public static final String DEFAULT_PLATFORM_ADMIN_EMAIL = "platform.admin@adaptlearngraph.com";
+    public static final String DEFAULT_PLATFORM_ADMIN_PASSWORD = "Platform-Admin-490!";
 
     private final DevelopmentSeedJpaRepository seeds;
     private final WorkspaceBaselineResourceJpaRepository resources;
     private final TransactionTemplate transactions;
     private final RegistrationSecrets secrets;
     private final ObjectProvider<Neo4jCypher> graphProvider;
+    private final PlatformAdministratorSeeds platformSeeds;
     private final boolean enabled;
+    private final String platformAdminEmail;
+    private final String platformAdminPassword;
 
     public DevelopmentWorkspaceAccountBootstrap(
             DevelopmentSeedJpaRepository seeds,
@@ -82,13 +88,19 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
             @Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager,
             RegistrationSecrets secrets,
             ObjectProvider<Neo4jCypher> graphProvider,
-            @Value("${workspace.dev-seed.enabled:true}") boolean enabled) {
+            PlatformAdministratorSeeds platformSeeds,
+            @Value("${workspace.dev-seed.enabled:true}") boolean enabled,
+            @Value("${PLATFORM_ADMIN_SEED_EMAIL:}") String platformAdminEmail,
+            @Value("${PLATFORM_ADMIN_SEED_PASSWORD:}") String platformAdminPassword) {
         this.seeds = seeds;
         this.resources = resources;
         this.transactions = new TransactionTemplate(manager);
         this.secrets = secrets;
         this.graphProvider = graphProvider;
+        this.platformSeeds = platformSeeds;
         this.enabled = enabled;
+        this.platformAdminEmail = platformAdminEmail;
+        this.platformAdminPassword = platformAdminPassword;
     }
 
     @Override
@@ -97,7 +109,10 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
         try {
             transactions.executeWithoutResult(status -> seedPostgres());
             seedNeo4j();
-            log.info("Development workspace seeded successfully: TechNova (expert@technova.com, manager@technova.com / Password123!)");
+            String pAdmin = (platformAdminEmail != null && !platformAdminEmail.isBlank())
+                    ? platformAdminEmail
+                    : DEFAULT_PLATFORM_ADMIN_EMAIL;
+            log.info("Development workspace seeded successfully: TechNova (expert@technova.com, manager@technova.com / Password123!) and Platform Admin ({})", pAdmin);
         } catch (Exception ex) {
             log.warn("Development workspace seed notice: {}", ex.getMessage());
         }
@@ -155,6 +170,32 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
 
         // 7. Workspace Baseline Resource
         resources.seedJobPositionIfAbsent(TECHNOVA_ORG_ID, TECHNOVA_OCC_REF_ID, "OCC-15-1252.00");
+
+        // 8. Platform Administrator
+        seedPlatformAdministrator();
+    }
+
+    private void seedPlatformAdministrator() {
+        String email = (platformAdminEmail != null && !platformAdminEmail.isBlank())
+                ? platformAdminEmail
+                : DEFAULT_PLATFORM_ADMIN_EMAIL;
+        String password = (platformAdminPassword != null && !platformAdminPassword.isBlank())
+                ? platformAdminPassword
+                : DEFAULT_PLATFORM_ADMIN_PASSWORD;
+
+        String normalized = email.toLowerCase().trim();
+        platformSeeds.lock(normalized);
+        var existing = platformSeeds.lockExisting(normalized);
+        String passwordHash = secrets.hashPassword(password);
+        if (existing.isEmpty()) {
+            platformSeeds.create(normalized, passwordHash);
+            log.info("Platform administrator seeded: {}", normalized);
+        } else {
+            UUID accountId = existing.get().accountId();
+            platformSeeds.updatePassword(accountId, passwordHash);
+            platformSeeds.ensureAdministrator(accountId);
+            log.info("Platform administrator verified: {}", normalized);
+        }
     }
 
     private void seedMember(UUID accountId, String email, String fullName, String role, String passwordHash,

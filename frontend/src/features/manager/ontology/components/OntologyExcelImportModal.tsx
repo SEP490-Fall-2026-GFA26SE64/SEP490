@@ -49,6 +49,10 @@ export interface OntologyExcelImportModalProps {
   existingCompetencies: CompetencyDto[]
   existingMicroSkills: MicroSkillDto[]
   existingPrerequisites?: PrerequisiteEdge[]
+  defaultDepartmentId?: string
+  defaultDepartmentName?: string
+  defaultJobPositionCode?: string
+  defaultJobPositionTitle?: string
   onImportSuccess: () => Promise<void> | void
 }
 
@@ -56,6 +60,8 @@ interface ParsedCompetencyRow {
   code: string
   name: string
   description: string
+  departmentName?: string
+  jobPositionTitle?: string
   isValid: boolean
   isConflicted: boolean
   conflictReason?: string
@@ -101,6 +107,10 @@ export function OntologyExcelImportModal({
   existingCompetencies,
   existingMicroSkills,
   existingPrerequisites,
+  defaultDepartmentId,
+  defaultDepartmentName,
+  defaultJobPositionCode,
+  defaultJobPositionTitle,
   onImportSuccess,
 }: OntologyExcelImportModalProps) {
   const { toast } = useToast()
@@ -208,6 +218,10 @@ export function OntologyExcelImportModal({
           const code = String(row['Code'] || row['code'] || row['Competency Code'] || '').trim().toUpperCase()
           const name = String(row['Name'] || row['name'] || row['Competency Name'] || '').trim()
           const description = String(row['Description'] || row['description'] || '').trim()
+          const deptFromRow = String(row['Department'] || row['department'] || '').trim()
+          const jpFromRow = String(row['Job Position'] || row['Job_Position'] || row['jobPosition'] || '').trim()
+          const departmentName = deptFromRow || defaultDepartmentName || undefined
+          const jobPositionTitle = jpFromRow || defaultJobPositionTitle || undefined
 
           const errors: string[] = []
           if (!code) errors.push('Code is required')
@@ -234,6 +248,8 @@ export function OntologyExcelImportModal({
             code,
             name,
             description,
+            departmentName,
+            jobPositionTitle,
             isValid: errors.length === 0,
             isConflicted,
             conflictReason,
@@ -533,6 +549,10 @@ export function OntologyExcelImportModal({
             code: comp.code,
             name: comp.name,
             description: comp.description || '',
+            departmentId: defaultDepartmentId || undefined,
+            departmentName: comp.departmentName || defaultDepartmentName || undefined,
+            jobPositionCode: defaultJobPositionCode || undefined,
+            jobPositionTitle: comp.jobPositionTitle || defaultJobPositionTitle || undefined,
           })
           compMap.set(comp.code, created)
         }
@@ -560,9 +580,14 @@ export function OntologyExcelImportModal({
             if (comp) {
               const mergedSkills = Array.from(new Set([...(comp.skillIds || []), ...skillIds]))
               await updateCompetency(orgId, comp.id, {
+                code: comp.code,
                 name: comp.name,
                 description: comp.description,
                 skillIds: mergedSkills,
+                departmentId: comp.departmentId || defaultDepartmentId || undefined,
+                departmentName: comp.departmentName || defaultDepartmentName || undefined,
+                jobPositionCode: comp.jobPositionCode || defaultJobPositionCode || undefined,
+                jobPositionTitle: comp.jobPositionTitle || defaultJobPositionTitle || undefined,
               }).catch(() => {})
             }
           }

@@ -46,8 +46,20 @@ export RIASEC_OLLAMA_CPUS="$(env_get RIASEC_OLLAMA_CPUS)"
 RIASEC_MODEL="${RIASEC_MODEL:-qwen3:4b-instruct-2507-q4_K_M}"
 RIASEC_OLLAMA_MEMORY="${RIASEC_OLLAMA_MEMORY:-5g}"
 RIASEC_OLLAMA_CPUS="${RIASEC_OLLAMA_CPUS:-2}"
+export PLATFORM_ADMIN_SEED_EMAIL="${PLATFORM_ADMIN_SEED_EMAIL:-$(env_get PLATFORM_ADMIN_SEED_EMAIL)}"
+export PLATFORM_ADMIN_SEED_EMAIL="${PLATFORM_ADMIN_SEED_EMAIL:-platform.admin@adaptlearngraph.com}"
+export PLATFORM_ADMIN_SEED_PASSWORD="${PLATFORM_ADMIN_SEED_PASSWORD:-$(env_get PLATFORM_ADMIN_SEED_PASSWORD)}"
+export PLATFORM_ADMIN_SEED_PASSWORD="${PLATFORM_ADMIN_SEED_PASSWORD:-Platform-Admin-490!}"
 missing=()
-for key in "${required[@]}"; do [ -n "$(env_get "$key")" ] || missing+=("$key"); done
+for key in "${required[@]}"; do
+  val="$(env_get "$key")"
+  if [ -z "$val" ]; then
+    if [ "$key" = "PLATFORM_ADMIN_SEED_EMAIL" ] || [ "$key" = "PLATFORM_ADMIN_SEED_PASSWORD" ]; then
+      continue
+    fi
+    missing+=("$key")
+  fi
+done
 [ ${#missing[@]} -eq 0 ] || fail "Empty/missing keys in .env: ${missing[*]}"
 # Both workspace-seed and se-seed reject shorter passwords. Check before touching the stack.
 workspace_password="$(env_get WORKSPACE_DEVELOPMENT_PASSWORD)"

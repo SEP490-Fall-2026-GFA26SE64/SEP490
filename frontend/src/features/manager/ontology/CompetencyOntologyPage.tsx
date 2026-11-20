@@ -410,6 +410,24 @@ function OwnedCompetencyOntologyPage() {
                 })
               )
             )
+            const effectiveDeptId = c.departmentId || (isExpert ? effectiveExpertDeptId : undefined)
+            const effectiveDeptName = c.departmentName || (isExpert ? effectiveExpertDeptName : undefined)
+            const effectiveJpCode = c.jobPositionCode || (isExpert ? effectiveExpertJobPosCode : undefined)
+            const effectiveJpTitle = c.jobPositionTitle || (isExpert ? effectiveExpertJobPosTitle : undefined)
+
+            if (isExpert && (!c.departmentName || !c.jobPositionTitle) && (effectiveExpertDeptName || effectiveExpertJobPosTitle)) {
+              updateCompetency(orgId, c.id, {
+                code: c.code,
+                name: c.name,
+                description: c.description,
+                skillIds: canonicalSkillIds,
+                departmentId: effectiveDeptId,
+                departmentName: effectiveDeptName,
+                jobPositionCode: effectiveJpCode,
+                jobPositionTitle: effectiveJpTitle,
+              }).catch(() => {})
+            }
+
             return {
               id: c.id,
               code: c.code || c.id,
@@ -418,10 +436,10 @@ function OwnedCompetencyOntologyPage() {
               status: (c.status as CompetencyModel['status']) || 'ACTIVE',
               skillIds: canonicalSkillIds,
               levelCodes: c.levelCodes || [],
-              departmentId: c.departmentId ?? undefined,
-              departmentName: c.departmentName ?? undefined,
-              jobPositionCode: c.jobPositionCode ?? undefined,
-              jobPositionTitle: c.jobPositionTitle ?? undefined,
+              departmentId: effectiveDeptId,
+              departmentName: effectiveDeptName,
+              jobPositionCode: effectiveJpCode,
+              jobPositionTitle: effectiveJpTitle,
               createdAt: c.createdAt ? String(c.createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
               updatedAt: c.updatedAt ? String(c.updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
             }
@@ -3664,6 +3682,10 @@ function OwnedCompetencyOntologyPage() {
         existingCompetencies={competencies}
         existingMicroSkills={microSkills}
         existingPrerequisites={prerequisites}
+        defaultDepartmentId={effectiveExpertDeptId}
+        defaultDepartmentName={effectiveExpertDeptName}
+        defaultJobPositionCode={effectiveExpertJobPosCode}
+        defaultJobPositionTitle={effectiveExpertJobPosTitle}
         onImportSuccess={handleSync}
       />
     </WorkspaceLayout>

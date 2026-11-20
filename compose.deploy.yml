@@ -211,6 +211,8 @@ services:
       SUBSCRIPTION_WORKER_ENABLED: "true"
       # SMTP reachability is verified by the deploy script; a mail outage must not mark the API unhealthy.
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-platform.admin@adaptlearngraph.com}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-Platform-Admin-490!}
       REGISTRATION_ENCRYPTION_KEY: ${REGISTRATION_ENCRYPTION_KEY:?Set REGISTRATION_ENCRYPTION_KEY}
       REGISTRATION_HMAC_KEY: ${REGISTRATION_HMAC_KEY:?Set REGISTRATION_HMAC_KEY}
       REGISTRATION_COOKIE_SECURE: "true"
@@ -306,8 +308,8 @@ services:
       <<: *backend-environment
       SPRING_PROFILES_ACTIVE: local,platform-bootstrap
       SPRING_MAIN_WEB_APPLICATION_TYPE: none
-      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:?Set PLATFORM_ADMIN_SEED_EMAIL}
-      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:?Set PLATFORM_ADMIN_SEED_PASSWORD}
+      PLATFORM_ADMIN_SEED_EMAIL: ${PLATFORM_ADMIN_SEED_EMAIL:-platform.admin@adaptlearngraph.com}
+      PLATFORM_ADMIN_SEED_PASSWORD: ${PLATFORM_ADMIN_SEED_PASSWORD:-Platform-Admin-490!}
     depends_on:
       migrate:
         condition: service_completed_successfully

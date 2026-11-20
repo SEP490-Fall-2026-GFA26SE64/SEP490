@@ -5228,7 +5228,7 @@ export function TargetRolesPage() {
                         )
                       )
                       return (
-                        viewEffStatus !== 'published' && viewEffStatus !== 'unpublished' && !hasAnyPublished && isRoleStaffing && (
+                        viewEffStatus !== 'staged' && viewEffStatus !== 'published' && viewEffStatus !== 'unpublished' && !hasAnyPublished && isRoleStaffing && (
                           <Badge
                             variant="outline"
                             className="bg-indigo-500/10 text-indigo-700 border-indigo-500/30 font-bold dark:text-indigo-400 text-xs"
