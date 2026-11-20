@@ -46,11 +46,7 @@ The public **development-only** default password is `Workspace-Development-490!`
 
 ## Demo reset (`/reset`)
 
-Opening **http://127.0.0.1:8088/reset** (no sign-in) calls `POST /api/v1/demo/reset`. It deletes every organization except the seeded TechNova organization and the 20 seeded demo organizations (codes `SEED-*`), together with its accounts, pending invitations, registrations, org-scoped rows, Neo4j nodes and MinIO objects, then shows the removed counts. Seed/platform accounts are kept. Use it to recycle the scripted demo in [Demo/Demo.md](Demo/Demo.md). It is destructive and unauthenticated: never expose it on an environment with real customer data.
-
-## Seeded demo organizations
-
-The API (profiles `local` + `workspace-baseline`; disable with `workspace.dev-seed.enabled=false`) idempotently seeds 20 demo organizations at startup. One of them, **Lotus Digital Solutions**, has rich data for the Organization Administrator and L&D Manager dashboards. Sign-in accounts and scenarios are listed in [documents/testing/demo-organizations-accounts.md](documents/testing/demo-organizations-accounts.md).
+Opening **http://127.0.0.1:8088/reset** (no sign-in) calls `POST /api/v1/demo/reset`. It deletes every organization except the seeded TechNova organization, together with its accounts, pending invitations, registrations, org-scoped rows, Neo4j nodes and MinIO objects, then shows the removed counts. Seed/platform accounts are kept. Use it to recycle the scripted demo in [Demo/Demo.md](Demo/Demo.md). It is destructive and unauthenticated: never expose it on an environment with real customer data.
 
 ## Actual journey to verify
 

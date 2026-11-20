@@ -574,12 +574,21 @@ export function targetRolesForEmployee(
       jobPositions.find(
         (jp) =>
           jp.code === jobPosition ||
-          jp.name.toLowerCase() === jobPosition.toLowerCase(),
+          jp.name.toLowerCase() === jobPosition.toLowerCase() ||
+          ('id' in jp && (jp as any).id === jobPosition) ||
+          ('jobPositionReferenceId' in jp && (jp as any).jobPositionReferenceId === jobPosition),
       ) ||
-      references.find((ref) => ref.jobPositionReferenceId === jobPosition)
-    targetOccNorm = normalizeOccCode(
-      (matchedJpObj && 'code' in matchedJpObj ? matchedJpObj.code : '') || jobPosition,
-    )
+      references.find((ref) => ref.jobPositionReferenceId === jobPosition || (ref as any).id === jobPosition)
+
+    let rawCode = (matchedJpObj && 'code' in matchedJpObj ? matchedJpObj.code : '') || ''
+    if (!rawCode && matchedJpObj) {
+      const name = (matchedJpObj as any).name || (matchedJpObj as any).jobPositionName || ''
+      const match = name.match(/^([A-Z0-9_-]+(?:\.[0-9]{2})?)/i)
+      if (match) rawCode = match[1]
+    }
+    if (!rawCode) rawCode = jobPosition
+
+    targetOccNorm = normalizeOccCode(rawCode)
   }
 
   // 2. Resolve department's linked job positions + domain fallback

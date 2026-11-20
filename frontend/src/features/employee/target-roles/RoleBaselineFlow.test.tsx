@@ -20,7 +20,7 @@ function show(node = <CurrentRolePanel />, path = '/') {
 beforeEach(() => { vi.mocked(api.currentRoles).mockReset(); vi.mocked(api.readRoleFlow).mockReset(); vi.mocked(api.chooseCurrentRole).mockReset(); vi.mocked(api.currentRoles).mockResolvedValue([role]); vi.mocked(api.readRoleFlow).mockResolvedValue(empty); vi.mocked(api.chooseCurrentRole).mockResolvedValue(selected.selection!) })
 afterEach(cleanup)
 it('RB02/03 renders string Role details with separate Level and current requirements', async () => {
- show(); await screen.findByText('Role A'); fireEvent.click(screen.getByRole('button', { name: 'roleFlow.details' }))
+ show(); await screen.findByText('Role A'); fireEvent.click(screen.getByRole('button', { name: /roleFlow\.details/ }))
  const dialog = screen.getByRole('dialog'); expect(within(dialog).getByText('Junior')).toBeTruthy(); expect(within(dialog).getByText(/Skill 1/)).toBeTruthy()
  expect(api.chooseCurrentRole).not.toHaveBeenCalled()
 })

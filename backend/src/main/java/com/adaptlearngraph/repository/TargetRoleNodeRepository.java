@@ -123,9 +123,9 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
             WHERE old.organizationId = $organizationId
               AND old.id <> $id
               AND ((old.baseCode IS NOT NULL AND old.baseCode = $rawCode) OR old.code = $rawCode OR old.code = $graphCode)
-              AND coalesce(old.status, 'ACTIVE') IN ['ACTIVE', 'PUBLISHED', 'UNPUBLISHED']
-              AND ($name IS NULL OR true)
-            SET old.status = 'SUPERSEDED', old.updatedAt = datetime($updatedAt)
+            SET old.isStaffingEnabled = false,
+                old.status = CASE WHEN coalesce(old.status, 'ACTIVE') IN ['ACTIVE', 'PUBLISHED', 'UNPUBLISHED'] THEN 'SUPERSEDED' ELSE old.status END,
+                old.updatedAt = datetime($updatedAt)
             """)
     void supersedeOtherVersions(@Param("organizationId") String organizationId, @Param("id") String id,
             @Param("name") String name, @Param("rawCode") String rawCode, @Param("graphCode") String graphCode,

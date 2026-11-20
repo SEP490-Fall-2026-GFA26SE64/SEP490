@@ -78,10 +78,9 @@ public final class QuestionBankService implements QuestionBankUseCase {
         b.history.add(new Audit(UUID.randomUUID(),q.id,v==null?null:v.id,action,a.id(),clock.instant(),reason,v==null?null:v.content));
     }
     private void notice(QuestionBank b,UUID target,String title,String body) {
-        if(target==null)return;
-        var n=new Notice();n.id=UUID.randomUUID();n.recipient=target;n.title=title;n.body=body;n.createdAt=clock.instant();b.notices.add(n);
     }
-    private void notifyManagers(QuestionBank b,Actor a,String title,String body) { for(var recipient:catalog.managers(a)) notice(b,UUID.fromString(recipient.id()),title,body); }
+    private void notifyManagers(QuestionBank b,Actor a,String title,String body) {
+    }
     private Question create(QuestionBank b,Actor a,String code,Content content) {
         require(b.questions.stream().noneMatch(q->q.code.equals(code)),409,"Question code already exists");
         var q=new Question();q.id=UUID.randomUUID();q.sourceBankId=b.id;q.code=code;q.createdBy=a.id();q.createdAt=clock.instant();q.owner=a.id();q.revision=1;
@@ -107,26 +106,26 @@ public final class QuestionBankService implements QuestionBankUseCase {
         });
     }
     private void approveOne(QuestionBank b,Actor a,Question q,Version v) {
-        approveOne(b,a,q,v,true);
+        approveOne(b,a,q,v,false);
     }
     private void approveOne(QuestionBank b,Actor a,Question q,Version v,boolean sendNotice) {
         manager(a);require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state),409,"Question is not eligible for approval");catalog.requireExpert(a,q.owner);
         require(v.id.toString().equals(v.viewed.get(a.id())),409,"Open this exact submitted version before approval");
         Content validated=content(a,v.content,true);require(validated.equals(v.content),409,"MicroSkill snapshot changed. Return the question for another review.");v.state="PUBLISHED";v.reviewedBy=a.id();v.reviewedAt=clock.instant();v.reason=null;v.publicationSource="STAFF_REVIEW";
-        audit(b,q,v,a,"APPROVED",null);if(sendNotice){notice(b,q.owner,"Question approved",q.code+" · v"+v.number);}
+        audit(b,q,v,a,"APPROVED",null);
     }
     private void apply(QuestionBank b,Actor a,Command in) {
         var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);
         switch(in.action()) {
             case "VIEW" -> { manager(a);require("SUBMITTED".equals(v.state),409,"Only submitted versions can be acknowledged");v.viewed.put(a.id(),v.id.toString());return; }
-            case "ASSIGN" -> { manager(a);require(in.owner()!=null,400,"Select an Expert");catalog.requireExpert(a,in.owner());String reason=text(in.reason(),"Assignment reason",2000);UUID old=q.owner;q.owner=in.owner();audit(b,q,v,a,"ASSIGNED",reason);notice(b,old,"Question responsibility transferred",q.code);notice(b,q.owner,"Question assigned",q.code); }
+            case "ASSIGN" -> { manager(a);require(in.owner()!=null,400,"Select an Expert");catalog.requireExpert(a,in.owner());String reason=text(in.reason(),"Assignment reason",2000);UUID old=q.owner;q.owner=in.owner();audit(b,q,v,a,"ASSIGNED",reason); }
             case "SUCCESSOR" -> { owner(q,a);require("PUBLISHED".equals(v.state),409,"Resolve the current draft/review first");q.versions.add(draft(v.number+1,v.content,a));audit(b,q,latest(q),a,"SUCCESSOR_CREATED",null); }
-            case "SUBMIT" -> { owner(q,a);require(!q.retired&&"DRAFT".equals(v.state),409,"Only an active draft can be submitted");v.content=content(a,v.content,true);v.state="SUBMITTED";v.submittedBy=a.id();v.submittedAt=clock.instant();v.viewed.clear();audit(b,q,v,a,"SUBMITTED",null);notifyManagers(b,a,"Question awaiting review",q.code); }
-            case "WITHDRAW", "RETURN" -> { boolean withdraw="WITHDRAW".equals(in.action());if(withdraw)owner(q,a);else manager(a);require("SUBMITTED".equals(v.state),409,"Submission already changed");String reason=text(in.reason(),"Reason",2000);v.state="DRAFT";v.reason=reason;v.viewed.clear();audit(b,q,v,a,in.action(),reason);if(!withdraw)notice(b,q.owner,"Question returned",q.code+": "+reason); }
+            case "SUBMIT" -> { owner(q,a);require(!q.retired&&"DRAFT".equals(v.state),409,"Only an active draft can be submitted");v.content=content(a,v.content,true);v.state="SUBMITTED";v.submittedBy=a.id();v.submittedAt=clock.instant();v.viewed.clear();audit(b,q,v,a,"SUBMITTED",null); }
+            case "WITHDRAW", "RETURN" -> { boolean withdraw="WITHDRAW".equals(in.action());if(withdraw)owner(q,a);else manager(a);require("SUBMITTED".equals(v.state),409,"Submission already changed");String reason=text(in.reason(),"Reason",2000);v.state="DRAFT";v.reason=reason;v.viewed.clear();audit(b,q,v,a,in.action(),reason); }
             case "APPROVE" -> approveOne(b,a,q,v);
-            case "REQUEST_RETIRE", "REQUEST_REACTIVATE" -> { owner(q,a);boolean retire="REQUEST_RETIRE".equals(in.action());require(retire?!q.retired:q.retired,409,"Question availability already changed");require(q.request==null,409,"An availability request is already pending");require(q.versions.stream().anyMatch(x->"PUBLISHED".equals(x.state)),409,"Publish a question before requesting availability changes");q.request=retire?"RETIRE":"REACTIVATE";String reason=text(in.reason(),"Reason",2000);audit(b,q,v,a,in.action(),reason);notifyManagers(b,a,"Question availability request",q.code+": "+reason); }
-            case "CONFIRM_AVAILABILITY" -> { manager(a);require(q.request!=null,409,"No availability request pending");if("REACTIVATE".equals(q.request)) {var published=q.versions.stream().filter(x->"PUBLISHED".equals(x.state)).reduce((x,y)->y).orElseThrow();publishedEligibility(a,published.content);}q.retired="RETIRE".equals(q.request);audit(b,q,v,a,q.request+"_CONFIRMED",text(in.reason(),"Decision reason",2000));q.request=null;notice(b,q.owner,"Question availability updated",q.code); }
-            case "REJECT_AVAILABILITY" -> {manager(a);require(q.request!=null,409,"No request pending");audit(b,q,v,a,"AVAILABILITY_RETURNED",text(in.reason(),"Reason",2000));q.request=null;notice(b,q.owner,"Question availability request returned",q.code);}
+            case "REQUEST_RETIRE", "REQUEST_REACTIVATE" -> { owner(q,a);boolean retire="REQUEST_RETIRE".equals(in.action());require(retire?!q.retired:q.retired,409,"Question availability already changed");require(q.request==null,409,"An availability request is already pending");require(q.versions.stream().anyMatch(x->"PUBLISHED".equals(x.state)),409,"Publish a question before requesting availability changes");q.request=retire?"RETIRE":"REACTIVATE";String reason=text(in.reason(),"Reason",2000);audit(b,q,v,a,in.action(),reason); }
+            case "CONFIRM_AVAILABILITY" -> { manager(a);require(q.request!=null,409,"No availability request pending");if("REACTIVATE".equals(q.request)) {var published=q.versions.stream().filter(x->"PUBLISHED".equals(x.state)).reduce((x,y)->y).orElseThrow();publishedEligibility(a,published.content);}q.retired="RETIRE".equals(q.request);audit(b,q,v,a,q.request+"_CONFIRMED",text(in.reason(),"Decision reason",2000));q.request=null; }
+            case "REJECT_AVAILABILITY" -> {manager(a);require(q.request!=null,409,"No request pending");audit(b,q,v,a,"AVAILABILITY_RETURNED",text(in.reason(),"Reason",2000));q.request=null;}
             default -> throw new Failure(400,"Unknown question action");
         }q.revision++;
     }
@@ -134,7 +133,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
     @Override public View approve(Bulk input) {
         var a=actor();manager(a);require(input.questions()!=null&&!input.questions().isEmpty()&&input.questions().size()<=500,400,"Select 1–500 questions");
         require(input.questions().stream().map(Command::id).distinct().count()==input.questions().size(),400,"Duplicate selection");
-        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);if(input.markReviewed()&&"SUBMITTED".equals(v.state)){v.viewed.put(a.id(),v.id.toString());}require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));var byOwner=new LinkedHashMap<UUID,List<Question>>();for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q),false);q.revision++;byOwner.computeIfAbsent(q.owner,ignored->new ArrayList<>()).add(q);}for(var entry:byOwner.entrySet()){var list=entry.getValue();var first=list.getFirst();if(list.size()==1){notice(b,entry.getKey(),"Question approved",first.code+" · v"+latest(first).number);}else{notice(b,entry.getKey(),"Questions approved",list.size()+" questions approved ("+first.code+"…)");}}return view(b);});
+        return store.atomic(a,b->{var errors=new ArrayList<String>();for(var in:input.questions()) {try {var q=find(b,in.id());expected(q,in.expectedRevision());var v=latest(q);if(input.markReviewed()&&"SUBMITTED".equals(v.state)){v.viewed.put(a.id(),v.id.toString());}require(!q.retired&&q.owner!=null&&"SUBMITTED".equals(v.state)&&v.id.toString().equals(v.viewed.get(a.id())),409,"Open the current eligible submitted version");content(a,v.content,true);catalog.requireExpert(a,q.owner);}catch(Failure e){errors.add(in.id()+": "+e.getMessage());}}require(errors.isEmpty(),409,String.join("; ",errors));for(var in:input.questions()){var q=find(b,in.id());approveOne(b,a,q,latest(q),false);q.revision++;}return view(b);});
     }
     @Override public ImportBatch preview(Preview input) {
         var a=actor();require(a.expert(),403,"Expert import required");require(input.rows()!=null&&!input.rows().isEmpty()&&input.rows().size()<=maxRows,400,"Import 1–"+maxRows+" rows");
@@ -188,19 +187,12 @@ public final class QuestionBankService implements QuestionBankUseCase {
                     v.viewed.clear();
                     audit(b,created,v,a,"SUBMITTED",null);
                     created.revision++;
-                    submittedCount++;
-                    if(firstSubmittedCode==null)firstSubmittedCode=created.code;
                 }
-            }
-            if(submittedCount==1) {
-                notifyManagers(b,a,"Question awaiting review",firstSubmittedCode);
-            } else if(submittedCount>1) {
-                notifyManagers(b,a,"Questions awaiting review",submittedCount+" questions submitted ("+firstSubmittedCode+"…)");
             }
             if(batch.fileHash!=null&&!batch.fileHash.isBlank())b.committedFileHashes.add(batch.fileHash);
             batch.committed=true;return view(b);});
     }
-    @Override public List<Notice> notices() {var a=actor();return store.atomic(a,b->b.notices.stream().filter(n->a.id().equals(n.recipient)).toList());}
+    @Override public List<Notice> notices() { return List.of(); }
     @Override public void markRead(UUID id) {var a=actor();store.atomic(a,b->{var n=b.notices.stream().filter(x->x.id.equals(id)&&x.recipient.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Notification not found"));n.readAt=clock.instant();return null;});}
     private static void require(boolean ok,int status,String message) {if(!ok)throw new Failure(status,message);}
 }

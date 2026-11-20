@@ -9,9 +9,7 @@ import { LearningLessonList } from '../../../shared/components/learning/Learning
 import type { LearningLesson } from '../../../shared/api/moduleAuthoringApi'
 import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
-
 import { BookOpen, CheckCheck, CheckCircle2, ChevronDown, ChevronRight, ClipboardCheck, Clock, CornerDownRight, Layers, Plus, Search, Upload, Zap } from 'lucide-react'
-
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../../../shared/components/ui/PageHeader'
 import { StatCard } from '../../../shared/components/ui/StatCard'
@@ -49,9 +47,7 @@ const statusVariant = (state: string | null | undefined): BadgeProps['variant'] 
   if (['APPROVED', 'ACTIVE', 'RELEASED'].includes(state ?? '')) return 'success'
   if (['SUBMITTED', 'NEEDS_EXPERT_REVIEW', 'PUBLISH_PENDING', 'ARCHIVE_PENDING', 'ARCHIVE_REQUESTED'].includes(state ?? '')) return 'primary'
   if (['REJECTED', 'RETURNED'].includes(state ?? '')) return 'destructive'
-
   return state === 'DRAFT' ? 'warning' : 'outline'
-
 }
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Unable to complete the request.'
 
@@ -170,9 +166,6 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const manager = actor?.roles.includes('LD_MANAGER') ?? false
   const expert = actor?.roles.includes('EXPERT') ?? false
   const managerLearning = (manager || managerShell) && ['modules', 'approvals'].includes(mode)
-
-  const publishedOnly = manager && mode === 'modules' && !filters.status && !filters.review
-
   const canManage = (doc: ModuleDocument) => expert && (doc.responsibleExpertId ?? doc.createdBy) === actor?.id
   const formatTime = (value: string | null | undefined) => value && Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
   const person = (id: string | null | undefined) => id ? staff.find(p => p.id === id)?.name ?? (id === 'DEVELOPMENT_SEED' ? copy('System Curriculum', 'Hệ thống đào tạo') : copy('Person unavailable', 'Chưa có thông tin người dùng')) : '—'
@@ -207,8 +200,9 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       if (mode === 'learning') {
         setLearning(await moduleRequest<ModuleRevision>(`/learning/${encodeURIComponent(moduleId ?? '')}`, 'GET', undefined, signal))
       } else {
-        const query = new URLSearchParams({ search, status: filters.status, review: filters.review, type: filters.type, skill: filters.skill, page: String(pageNumber) })
-        if (publishedOnly) { query.set('status', 'ACTIVE'); query.set('review', 'APPROVED') }
+        const query = new URLSearchParams({ search, type: filters.type, skill: filters.skill, page: String(pageNumber) })
+        if (filters.status && filters.status !== 'ALL') query.set('status', filters.status)
+        if (filters.review) query.set('review', filters.review)
         if (mode === 'approvals') { query.set('pendingOnly', 'true'); query.set('status', ''); query.set('review', '') }
         const listRequest = mode === 'modules'
           ? moduleRequest<ModuleCatalogPage>(`/module-list?${query}`, 'GET', undefined, signal).then(setCatalogPage)
@@ -236,7 +230,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       }
     } catch (failure) { if (!signal?.aborted) setError(errorText(failure)) }
     finally { if (!signal?.aborted) setLoading(false) }
-  }, [actor, mode, moduleId, search, filters.status, filters.review, filters.type, filters.skill, pageNumber, publishedOnly])
+  }, [actor, mode, moduleId, search, filters.status, filters.review, filters.type, filters.skill, pageNumber])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -354,15 +348,17 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
 
   const displayedPage = mode === 'modules' ? catalogPage : page
   const listItems: ModuleCatalogItem[] = loading && managerLearning ? [] : mode === 'modules' ? catalogPage.items : page.items.map(doc => ({ module: latest(doc).payload, authoring: doc }))
-  const statusFilterValue = filters.status === 'ACTIVE' && filters.review === 'APPROVED'
+  const statusFilterValue = filters.status === 'ALL' || (!filters.status && !filters.review)
+    ? 'ALL'
+    : filters.status === 'ACTIVE' && filters.review === 'APPROVED'
     ? 'RELEASED'
-    : filters.status || filters.review || ''
+    : filters.status || filters.review || 'ALL'
   const applyStatusFilter = (value: string) => {
     setPageNumber(1)
     if (value === 'RELEASED') setFilters(old => ({ ...old, status: 'ACTIVE', review: 'APPROVED' }))
     else if (value === 'ACTIVE' || value === 'DRAFT' || value === 'ARCHIVED') setFilters(old => ({ ...old, status: value, review: '' }))
     else if (value === 'NEEDS_EXPERT_REVIEW' || value === 'REJECTED') setFilters(old => ({ ...old, status: '', review: value }))
-    else setFilters(old => ({ ...old, status: '', review: '' }))
+    else setFilters(old => ({ ...old, status: 'ALL', review: '' }))
   }
   const resolveItemStatus = (item: ModuleCatalogItem) => {
     const needsContent = Boolean(
@@ -372,7 +368,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
           l => !l.title.trim() || !l.durationSeconds || (l.type === 'TEXT' && !l.body?.replace(/<[^>]*>/g, '').trim()) || (l.type === 'VIDEO' && !(l.assetId || l.videoUrl))
         ))
     )
-    if (publishedOnly) {
+    if (statusFilterValue === 'RELEASED') {
       const workingState = item.authoring && latest(item.authoring).state !== 'RELEASED'
         ? `${copy('Working workflow', 'Trạng thái soạn thảo')}: ${stateLabels[latest(item.authoring).state] ?? latest(item.authoring).state}`
         : null
@@ -541,13 +537,11 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
             <Card>
               <CardHeader className="border-b border-border p-4">
                 <div className="flex flex-col gap-3">
-
                   <div>
                     <CardTitle className="flex items-center gap-2"><BookOpen className="size-4 text-primary" aria-hidden="true" />{copy('Module Directory', 'Danh sách module')}</CardTitle>
                     <CardDescription>
                       {copy('Browse learning modules by MicroSkill, track revisions, and manage review status.', 'Tra cứu module theo MicroSkill, theo dõi phiên bản và trạng thái phê duyệt.')}
                     </CardDescription>
-
                   </div>
                   <div className="flex flex-wrap items-end gap-2.5 pt-1">
                     <div className="min-w-[180px] flex-1 max-w-xs">
@@ -569,7 +563,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                           value={statusFilterValue}
                           onChange={applyStatusFilter}
                           options={[
-                            { value: '', label: copy('All', 'Tất cả') },
+                            { value: 'ALL', label: copy('All', 'Tất cả') },
                             { value: 'RELEASED', label: copy('Published', 'Đã xuất bản') },
                             { value: 'NEEDS_EXPERT_REVIEW', label: copy('Pending review', 'Chờ duyệt') },
                             { value: 'REJECTED', label: copy('Changes requested', 'Cần chỉnh sửa') },
@@ -640,27 +634,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                       </div>
                     )}
                   </div>
-                  {Object.values(filters).some(Boolean) && (
-                    <div className="flex flex-wrap gap-1.5 pt-1" aria-label={copy('Active filters', 'Bộ lọc đang áp dụng')}>
-                      {[
-                        { label: filters.search ? `${copy('Search', 'Tìm')}: ${filters.search}` : '', clear: () => setFilters(old => ({ ...old, search: '' })) },
-                        { label: statusFilterValue ? (stateLabels[statusFilterValue] ?? statusFilterValue) : '', clear: () => applyStatusFilter('') },
-                        { label: filters.type ? (filters.type === 'LESSON_AND_PRACTICE' ? copy('Lesson and practice', 'Bài học và thực hành') : filters.type === 'RESOURCE_GUIDED_PRACTICE' ? copy('Resource-guided practice', 'Thực hành theo tài liệu') : filters.type) : '', clear: () => setFilters(old => ({ ...old, type: '' })) },
-                        { label: filters.skill ? (skills.find(s => s.id === filters.skill)?.name ?? filters.skill) : '', clear: () => setFilters(old => ({ ...old, skill: '' })) },
-                      ].filter(item => item.label).map((item, idx) => (
-                        <Button
-                          key={idx}
-                          size="sm"
-                          variant="outline"
-                          className="h-6 bg-muted/60 px-2 text-[11px] font-medium text-foreground hover:bg-muted"
-                          onClick={() => { item.clear(); setPageNumber(1) }}
-                        >
-                          <span className="truncate max-w-[180px]">{item.label}</span>
-                          <span aria-hidden="true" className="ml-1 text-muted-foreground">×</span>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
               </CardHeader>
               <CardContent className={listItems.length > 0 ? "p-0" : "space-y-3 pt-6"}>
@@ -706,7 +680,6 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                                   "grid grid-cols-2 items-start gap-3 p-3 transition-colors hover:bg-muted/20 md:table-row md:p-0",
                                   isExpanded && hasSuccessor && "bg-muted/5"
                                 )}
-
                               >
                                 <td className="col-span-2 min-w-0 md:px-2.5 md:py-3">
                                   <Heading level={2} size="card" style={{ fontSize: 'var(--text-sm)' }} className="line-clamp-2 break-words text-left">
@@ -731,7 +704,6 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                                   </div>
                                   {item.authoring && latestRev && latestRev.payload.title !== item.module.title && (
                                     <p className="mt-1 text-xs text-muted-foreground">{copy('Working revision', 'Bản đang soạn')}: {latestRev.payload.title}</p>
-
                                   )}
                                 </td>
                                 <td className="col-span-2 min-w-0 break-words text-left md:px-2.5 md:py-3">
@@ -858,7 +830,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                 ) : (
                   <p>
                     {manager
-                      ? publishedOnly && !Object.values(filters).some(Boolean)
+                      ? statusFilterValue === 'RELEASED' && !Object.values(filters).some(Boolean)
                         ? copy('No published modules yet. Approved publication requests will appear here after release.', 'Chưa có module đã phát hành. Yêu cầu được duyệt sẽ xuất hiện ở đây sau khi phát hành thành công.')
                         : copy('No modules match your filters. Try another search.', 'Không có module phù hợp. Hãy thử tìm kiếm hoặc bộ lọc khác.')
                       : copy('No modules match this view. Try changing your filters, or prepare content for a new module.', 'Chưa có module phù hợp. Hãy thử bộ lọc khác hoặc chuẩn bị nội dung cho module mới.')}
@@ -872,7 +844,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       </>}
     </>}
 
-    <CatalogModuleDetails history={catalogSelection?.authoring ? historyView(catalogSelection.authoring) : undefined} content={catalogSelection ? publishedModuleRevision(catalogSelection)?.payload.content ?? catalogSelection.authoring?.revisions.find(revision => revision.payload.contentUri === catalogSelection.module.contentUri && revision.payload.contentVersion === catalogSelection.module.contentVersion)?.payload.content : undefined} authoringLabel={publishedOnly ? copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử') : undefined} module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} staff={staff} onOpenAuthoring={catalogSelection?.authoring ? () => { const doc = catalogSelection.authoring!; setCatalogSelection(null); void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) }) } : undefined} onClose={() => setCatalogSelection(null)} />
+    <CatalogModuleDetails history={catalogSelection?.authoring ? historyView(catalogSelection.authoring) : undefined} content={catalogSelection ? publishedModuleRevision(catalogSelection)?.payload.content ?? catalogSelection.authoring?.revisions.find(revision => revision.payload.contentUri === catalogSelection.module.contentUri && revision.payload.contentVersion === catalogSelection.module.contentVersion)?.payload.content : undefined} authoringLabel={statusFilterValue === 'RELEASED' ? copy('View working revisions & history', 'Xem bản soạn thảo và lịch sử') : undefined} module={catalogSelection?.module ?? null} hasHistory={catalogSelection?.authoring !== null && catalogSelection !== null} staff={staff} onOpenAuthoring={catalogSelection?.authoring ? () => { const doc = catalogSelection.authoring!; setCatalogSelection(null); void run(async () => { setSelected(await moduleRequest<ModuleDocument>(`/modules/${doc.id}`)); setEditing(false) }) } : undefined} onClose={() => setCatalogSelection(null)} />
     <Dialog open={editing} onOpenChange={open => { if (!busy && !contentBusy) { setEditing(open); if (!open) setSelected(null) } }} size="wide" className="module-authoring-dialog w-[96vw] max-w-3xl max-h-[88vh] h-auto p-4 sm:p-5" ariaLabel={copy('Module editor', 'Chỉnh sửa module')}>
       <DialogHeader>
         <DialogTitle>{selected ? copy('Create a revised package', 'Chỉnh sửa gói học') : copy('Create module', 'Tạo module')}</DialogTitle>

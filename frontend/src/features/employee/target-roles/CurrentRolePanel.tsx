@@ -33,7 +33,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
   const roles = useQuery({ queryKey: ['currentRoleCatalog', scope, jobPosition], queryFn: ({ signal }) => currentRoles(signal, jobPosition), retry: false })
   const view = useQuery({ queryKey: ['currentRoleFlow', scope], queryFn: ({ signal }) => readRoleFlow(signal), retry: false, staleTime: 0, refetchOnWindowFocus: true,
     // An administrator may activate the configuration while this selected target stays open.
-    refetchInterval: query => !query.state.error && query.state.data?.selection?.available && (query.state.data.targetLocked || query.state.data.progress.state === 'BASELINE_UNAVAILABLE') ? 15_000 : false,
+    refetchInterval: query => !query.state.error && query.state.data?.selection?.available && (query.state.data.targetLocked || query.state.data.progress.state === 'BASELINE_UNAVAILABLE') ? 5000 : false,
   })
   const [selected, setSelected] = useState<CurrentRole | null>(null)
   const [levelId, setLevelId] = useState('')

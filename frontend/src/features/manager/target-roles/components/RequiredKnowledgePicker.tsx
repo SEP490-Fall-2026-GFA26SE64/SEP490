@@ -20,10 +20,10 @@ export function RequiredKnowledgePicker({
   const { t } = useTranslation()
 
   const toggleLevel = (level: string) => {
-    if (value.includes(level)) {
-      onChange(value.filter((item) => item !== level))
+    if (value.length === 1 && value[0] === level) {
+      onChange([])
     } else {
-      onChange([...value, level])
+      onChange([level])
     }
   }
 

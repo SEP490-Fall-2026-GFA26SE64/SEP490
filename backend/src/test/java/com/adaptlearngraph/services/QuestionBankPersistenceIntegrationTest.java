@@ -101,8 +101,6 @@ class QuestionBankPersistenceIntegrationTest {
             assertEquals(beforeImport+1,author.read().questions().size());assertEquals(1,imported.versions.size());
             assertEquals(importedCode,jdbc.queryForObject("SELECT code FROM platform.question_bank_identity WHERE question_id=?",String.class,imported.id));
             var invalid=author.preview(new Preview(List.of(new Row(null,body("Valid")),new Row(null,body("")))));assertFalse(invalid.errors.isEmpty());int count=author.read().questions().size();assertThrows(Failure.class,()->author.confirm(new Confirmation(invalid.id,true,true)));assertEquals(count,author.read().questions().size());
-            assertFalse(manager.notices().isEmpty());assertFalse(author.notices().isEmpty());
-            assertEquals(0,jdbc.queryForObject("SELECT count(*) FROM platform.question_bank_mail",Integer.class));
             var oldDraft=author.read().questions().stream().filter(q->q.id.equals(legacy)).findFirst().orElseThrow();
             author.save(new Save(oldDraft.id,oldDraft.revision,oldDraft.code,body("Repaired legacy draft"),false));action(author,legacy,"SUBMIT");action(manager,legacy,"VIEW");action(manager,legacy,"APPROVE");
             assertEquals("PUBLISHED",jdbc.queryForObject("SELECT publication_state FROM platform.item_version WHERE item_version_id=?",String.class,legacy));

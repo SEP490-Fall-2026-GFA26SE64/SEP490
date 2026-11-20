@@ -779,7 +779,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
 
         RoleStatus parsedStatus = RoleStatus.fromString(statusStr);
-        boolean isStaffingEnabled = RoleStatus.STAGED.equals(parsedStatus) || (Boolean.TRUE.equals(node.isStaffingEnabled()) && !RoleStatus.ACTIVE.equals(parsedStatus) && !RoleStatus.PUBLISHED.equals(parsedStatus) && !RoleStatus.REJECTED.equals(parsedStatus));
+        boolean isStaffingEnabled = RoleStatus.STAGED.equals(parsedStatus) || (Boolean.TRUE.equals(node.isStaffingEnabled()) && !RoleStatus.ACTIVE.equals(parsedStatus) && !RoleStatus.PUBLISHED.equals(parsedStatus));
 
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
