@@ -134,9 +134,19 @@ public final class SharedSkillAssessmentService {
         var config=new Policy(Math.multiplyExact(count,setting.secondsPerQuestion()),setting.retakeWaitSeconds(),setting.maxAttempts(),groups);String body=write(config);
         String hash=RoleBaselineFlow.hash(AssessmentRulePolicyEntity.HASH_DOMAIN+"\n"+PURPOSE+"\n"+body);
         UUID id=UUID.nameUUIDFromBytes((org+":"+scope.key()+":"+active.get().getId()+":"+scope.catalogHash()+":"+hash).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        var existing=policies.owned(org,PURPOSE,id);if(existing.isPresent())return existing;
-        var derived=new AssessmentRulePolicyEntity(id,org,PURPOSE,scopes.maxVersion(org,PURPOSE,scope.key())+1,body,hash,active.get().getCreatedBy(),Instant.now(),scope.key(),scope.catalogHash());
-        if(persist)policies.insert(derived);return Optional.of(derived);
+        var existing=policies.owned(org,PURPOSE,id);
+        var derived=existing.orElseGet(()->new AssessmentRulePolicyEntity(id,org,PURPOSE,scopes.maxVersion(org,PURPOSE,scope.key())+1,body,hash,active.get().getCreatedBy(),Instant.now(),scope.key(),scope.catalogHash()));
+        if(persist) {
+            if(existing.isEmpty())policies.insert(derived);
+            // Attempt admission requires this exact scoped policy, not the workspace template.
+            // Publish its pointer in the caller's transaction under the same policy lock.
+            // Read-only history must not activate policies or increment activation revisions.
+            var current=scopes.active(org,PURPOSE,scope.key());
+            if(current.isEmpty() || !current.get().getId().equals(derived.getId()))
+                if(scopes.activate(org,PURPOSE,scope.key(),derived.getId(),active.get().getCreatedBy())!=1)
+                    throw new Failure(503,"DEPENDENCY_UNAVAILABLE");
+        }
+        return Optional.of(derived);
     }
     private String write(Object value){try{return json.writeValueAsString(value);}catch(Exception failure){throw new Failure(503,"DEPENDENCY_UNAVAILABLE");}}
     private <T>T decode(String value,Class<T> type){try{return json.readValue(value,type);}catch(Exception failure){throw new Failure(503,"DEPENDENCY_UNAVAILABLE");}}
