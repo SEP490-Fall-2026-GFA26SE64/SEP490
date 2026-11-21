@@ -1,3 +1,4 @@
+import { useToast } from '../../../shared/hooks/useToast'
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { RefreshCw, Target } from 'lucide-react'
@@ -23,7 +24,8 @@ export function RequirementEmployeePathway({ scope }: { scope: string }) {
   return <OwnedRequirementEmployeePathway key={scope + ':' + (params.get('archive') ?? 'current')} scope={scope} />
 }
 function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
-  const { t } = useTranslation(), [params] = useSearchParams(), archive = params.get('archive')
+  const { toast } = useToast(), previousReview = useRef<{ id: string; state: string } | null>(null)
+  const { t, language } = useTranslation(), [params] = useSearchParams(), archive = params.get('archive')
   const [pending, setPending] = useState<PendingPathwayCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), lock = useRef(false)
   const [certificateStep, setCertificateStep] = useState<RuleStep | null>(null)
@@ -41,6 +43,12 @@ function OwnedRequirementEmployeePathway({ scope }: { scope: string }) {
   const targetError = targetEnabled ? target.error : null
   const denied = [query.error, targetError].some(failure => failure && 'status' in failure && [401, 403].includes(Number(failure.status)))
   const data = denied ? undefined : query.data, state = data?.reviewStatus === 'APPROVED' ? 'APPROVED' : data?.reviewStatus === 'REJECTED' ? 'REJECTED' : data?.reviewStatus === 'AWAITING_EXPERT_REVIEW' ? 'AWAITING_EXPERT_REVIEW' : data?.generationStatus
+  useEffect(() => {
+    if (!data || data.archived) return
+    const previous = previousReview.current
+    if (previous?.id === data.requestId && previous.state !== 'APPROVED' && data.reviewStatus === 'APPROVED') toast({ variant: 'success', duration: 1000, description: language === 'vi' ? 'Lộ trình của bạn đã được duyệt.' : 'Your pathway has been approved.' })
+    previousReview.current = { id: data.requestId, state: data.reviewStatus }
+  }, [data, language, toast])
   const scrollReady=Boolean(data&&!data.archived&&state==='APPROVED'&&data.steps.length>0&&!query.error&&!params.has('assessmentModule'))
   useEffect(()=>{
     if(!scrollReady||autoScrolled.current)return

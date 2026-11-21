@@ -1,3 +1,0 @@
-ARG BASE_IMAGE=adapt-learn-graph-backend:dev
-FROM ${BASE_IMAGE}
-COPY backend/target/adapt-learn-graph.jar /app/app.jar

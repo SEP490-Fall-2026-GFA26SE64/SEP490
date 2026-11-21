@@ -23,7 +23,7 @@ public final class RequirementPathwayValidationService {
         for(var step:plan.steps())if(!step.resolved()) {
             needs.add(step.requirement());if(step.kind()==Kind.REQUIRED)strict.add(step.requirement().key());
         }
-        return catalog.providers(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId()),input.roleSnapshot(),input.binding().levelId(),needs,strict);
+        return catalog.retainCertificates(row.getOrganizationId(),catalog.providers(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId()),input.roleSnapshot(),input.binding().levelId(),needs,strict),input.catalog(),plan);
     }
     public Checked check(RequirementPathwayJpaRepository.Row row) {
         if(row.getCurrentRevision()==null)return new Checked(0,null,false,List.of(new Issue(null,"GENERATION_NOT_FINISHED",true)));

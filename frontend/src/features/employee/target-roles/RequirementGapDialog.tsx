@@ -1,3 +1,4 @@
+import { useToast } from '../../../shared/hooks/useToast'
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
@@ -16,7 +17,8 @@ import { Badge } from '../../../shared/components/ui/Badge'
 import { Heading } from '../../../shared/components/typography/Heading'
 
 export function RequirementGapDialog({ role, initialLevelId, scope, authorized, onClose, onBaseline, fixedLevel = false, minAllowedRank }: { role: CurrentRole; initialLevelId?: string | null; scope: string; authorized: boolean; onClose: () => void; onBaseline: (levelId: string) => void; fixedLevel?: boolean; minAllowedRank?: number }) {
-  const { t } = useTranslation(), navigate = useNavigate(), client = useQueryClient()
+  const { toast } = useToast()
+  const { t, language } = useTranslation(), navigate = useNavigate(), client = useQueryClient()
   const [levelId, setLevelId] = useState(initialLevelId ?? ''), [pending, setPending] = useState<PendingPathwayCommand | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), lock = useRef(false), committed = useRef(false)
   const selected = Boolean(initialLevelId && levelId === initialLevelId)
@@ -28,7 +30,7 @@ export function RequirementGapDialog({ role, initialLevelId, scope, authorized, 
     try {
       if (!committed.current) { await sendPathwayCommand(command); committed.current = true }
       await client.invalidateQueries({ queryKey: ['initialPathway', scope] }); await client.invalidateQueries({ queryKey: ['currentRoleFlow'] })
-      setPending(null); onClose(); navigate('/employee/pathway?view=role')
+      setPending(null); toast({ variant: 'success', duration: 1000, description: language === 'vi' ? 'Đã gửi yêu cầu lộ trình.' : 'Pathway request submitted.' }); onClose(); navigate('/employee/pathway?view=role')
     } catch (cause) { const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure); if (!failure.ambiguous && !committed.current) { setPending(null); void query.refetch() } }
     finally { lock.current = false; setBusy(false) }
   }

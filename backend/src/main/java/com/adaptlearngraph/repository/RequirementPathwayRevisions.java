@@ -76,7 +76,7 @@ public final class RequirementPathwayRevisions {
         var now=clock.clock();
         data.outbox().insert(new OutboxEventEntity(UUID.randomUUID(),type,aggregate,revision,payload,row.getRequestId(),now));
         data.audit().insert(new AuditEventEntity(UUID.randomUUID(),actor,"pathway",type,aggregate,Long.toString(revision),now,"ACCEPTED",row.getRequestId()));
-        notifications.event(row,revision,type,detail);
+        notifications.event(row,revision,type,detail,actor);
     }
     public String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception invalid){throw new Failure(503,"PATHWAY_SNAPSHOT_INVALID");}}
     public com.adaptlearngraph.entities.domain.RequirementPathway.Requirement requirement(String value) {

@@ -10,7 +10,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const toast = React.useCallback(
-    ({ title, description, variant = 'default', duration = 4000 }: Omit<ToastItem, 'id'>) => {
+    ({ title, description, variant = 'default', duration = 3000 }: Omit<ToastItem, 'id'>) => {
+      duration = 3000
       const id = Math.random().toString(36).slice(2, 9)
       const newToast: ToastItem = { id, title, description, variant, duration }
       setToasts((prev) => [...prev, newToast])

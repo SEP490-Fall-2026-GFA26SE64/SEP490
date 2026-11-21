@@ -16,6 +16,27 @@ import org.springframework.transaction.annotation.Transactional;
 public interface OrganizationMembershipJpaRepository
         extends Repository<OrganizationMembershipEntity, UUID>, InsertOnlyRepository<OrganizationMembershipEntity> {
 
+    /** Trusted Admin assignment; browser storage is never configuration authority. */
+    @Query("""
+            select m.departmentId from OrganizationMembershipEntity m
+            join AccountEntity a on a.accountId=m.accountId and a.organizationId=m.organizationId
+            join OrganizationMembershipRoleEntity r on r.membershipId=m.membershipId
+            join DepartmentReferenceEntity d on d.departmentId=m.departmentId and d.organizationId=m.organizationId
+            where m.organizationId=:organization and m.accountId=:account
+              and m.active=true and a.active=true and d.active=true and r.roleCode='LD_MANAGER'
+            """)
+    Optional<UUID> managedDepartment(@Param("organization") UUID organization, @Param("account") UUID account);
+
+    @Query(value="""
+            SELECT count(*)>0 FROM platform.account a
+            JOIN platform.organization o ON o.organization_id=a.organization_id
+            JOIN platform.organization_membership m ON m.account_id=a.account_id AND m.organization_id=o.organization_id
+            JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
+            WHERE a.account_id=:account AND o.organization_id=:organization AND a.active=true AND m.active=true
+              AND lower(o.code)='brightpath' AND lower(a.normalized_identifier)='proteccmee@gmail.com' AND r.role_code='EMPLOYEE'
+            """,nativeQuery=true)
+    boolean autoFillEmployee(@Param("organization") UUID organization,@Param("account") UUID account);
+
     record ActorAccount(Boolean accountActive, UUID organizationId, Boolean membershipActive, UUID membershipId) {}
 
     record Listed(UUID membershipId, UUID accountId, String fullName, String email, Boolean active, UUID departmentId,

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, RefreshCw, SlidersHorizontal, History, Eye, Pencil } from 'lucide-react'
+import { Search, RefreshCw, SlidersHorizontal, History, Eye, Pencil, Briefcase, CheckCircle2, Edit3 } from 'lucide-react'
 import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { Heading } from '../../../shared/components/typography/Heading'
@@ -8,6 +8,7 @@ import { Text } from '../../../shared/components/typography/Text'
 import { Button } from '../../../shared/components/ui/Button'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Card'
+import { StatCard } from '../../../shared/components/ui/StatCard'
 import { Input } from '../../../shared/components/ui/Input'
 import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -87,6 +88,8 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
     Object.entries({ ...patch, page: '0' }).forEach(([name, value]) => value ? next.set(name, value) : next.delete(name))
     setParams(next, { replace: true })
   }
+  const readyLabel = language === 'vi' ? 'Có thể cấu hình' : 'Ready to configure'
+  const waitingLabel = language === 'vi' ? 'Chờ thiết lập vị trí' : 'Waiting for Role setup'
   const choices = loaded.value?.choices ?? [], owners = [...new Map(choices.map(c => [c.ownerId, { value: c.ownerId, label: c.ownerName }])).values()]
     .sort((a, b) => a.label.localeCompare(b.label, language) || a.value.localeCompare(b.value))
   const levels = choices.filter(c => c.ownerId === owner).sort((a, b) => a.rank - b.rank || a.levelId.localeCompare(b.levelId))
@@ -110,23 +113,28 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
       setSelectedScope(null); setReload(v => v + 1)
       const next = new URLSearchParams(params); next.delete('scope'); next.delete('versionsPage'); setParams(next, { replace: true })
     }} />}
+    {purpose === 'BASELINE' && <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <StatCard variant="gradient" icon={<Briefcase className="size-4 text-primary" />} title={language === 'vi' ? 'Tổng vị trí quản lý' : 'Managed Roles'} value={current?.value?.statistics?.total ?? '\u2014'} valueClassName="text-primary" description={language === 'vi' ? 'Trong phòng ban được Admin phân công' : 'Within your Admin-assigned department'} />
+      <StatCard variant="gradient" icon={<CheckCircle2 className="size-4 text-success" />} title={language === 'vi' ? 'Cấu hình đang áp dụng' : 'Active configurations'} value={current?.value?.statistics?.active ?? '\u2014'} valueClassName="text-success" description={language === 'vi' ? 'Vị trí có phiên bản Baseline đang hoạt động' : 'Roles with an active Baseline policy'} />
+      <StatCard variant="gradient" icon={<Edit3 className="size-4 text-warning" />} title={language === 'vi' ? 'Cần cấu hình' : 'Needs configuration'} value={current?.value?.statistics?.needsConfiguration ?? '\u2014'} valueClassName="text-warning" description={language === 'vi' ? 'Chưa kích hoạt hoặc có bản nháp cần hoàn tất' : 'Ready Roles not activated or with a draft to complete'} />
+    </div>}
     <div ref={listRef} tabIndex={-1} className="scroll-mt-24 focus-visible:outline-none">{<Tabs value={archived ? 'archive' : activeTab ? 'active' : 'worklist'} onValueChange={value => filter({ status: value === 'archive' ? 'HISTORY' : value === 'active' ? 'ACTIVE' : '', level: '' })}>
-      <TabsList className="h-auto flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger>{purpose === 'BASELINE' && <TabsTrigger value="active">{t('baselineUX.active')}</TabsTrigger>}<TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
+      <TabsList className="h-auto w-full justify-start flex-wrap gap-1 border border-border p-1"><TabsTrigger value="worklist">{t('baselineUX.worklist')}</TabsTrigger>{purpose === 'BASELINE' && <TabsTrigger value="active">{t('baselineUX.active')}</TabsTrigger>}<TabsTrigger value="archive">{t('baselineUX.archive')}</TabsTrigger></TabsList>
     </Tabs>}</div>
     <Card className="overflow-hidden"><CardHeader>
-      <div className="flex flex-wrap items-center justify-between gap-4"><div className="min-w-0 space-y-1">
-        <Heading level={2} size="card" className="flex items-center gap-2"><SlidersHorizontal className="size-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
-        <Text variant="caption">{t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4"><div className="min-w-0 space-y-1 pr-2">
+        <Heading level={2} size="card" className="flex items-center gap-2"><Briefcase className="size-4 shrink-0 text-primary" aria-hidden="true" />{t('baselineUX.title')}</Heading>
+        <Text variant="caption">{purpose === 'BASELINE' && !archived && !activeTab ? language === 'vi' ? 'Mặc định chỉ hiện vị trí có thể cấu hình. Chọn Tất cả để xem vị trí đang chờ thiết lập.' : 'Ready Roles are shown by default. Select All to include Roles waiting for catalog setup.' : t(archived ? 'baselineUX.archiveHelp' : activeTab ? 'baselineUX.activeHelp' : 'baselineUX.worklistHelp')}</Text>
       </div><div className="flex flex-wrap items-center justify-end gap-2">
-      <label className="w-full min-w-0 sm:w-48"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
+      <label className="w-full min-w-0 sm:w-60"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.searchRole' : 'scopedPolicy.searchSkill')}</span>
         <Input type="search" maxLength={200} className="h-8 bg-background text-caption" leftIcon={<Search size={15} aria-hidden="true" />} value={searchInput} placeholder={t(purpose === 'BASELINE' ? 'baselineUX.searchRole' : 'baselineUX.searchSkill')} onChange={e => setSearchDraft({ query: search, value: e.target.value })} /></label>
       <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}</span>
         <Combobox size="sm" value={owner} options={owners} className="bg-background" customTriggerLabel={`${t(purpose === 'BASELINE' ? 'scopedPolicy.role' : 'scopedPolicy.skill')}: ${owners.find(o => o.value === owner)?.label ?? t('scopedPolicy.allOwners')}`} placeholder={t('scopedPolicy.allOwners')} onChange={value => filter({ owner: value, level: '' })} /></label>
       {(purpose === 'SKILL_ASSESSMENT' || archived) && <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t(purpose === 'BASELINE' ? 'scopedPolicy.memberLevel' : 'scopedPolicy.knowledgeLevel')}</span>
         <Combobox size="sm" value={level} disabled={!owner} options={levels.map(c => ({ value: c.levelId, label: levelLabel(c.levelId, c.levelName) }))} className="bg-background" customTriggerLabel={`${t('baselineUX.levelFilter')}: ${levels.some(c => c.levelId === level) ? levelLabel(level, levels.find(c => c.levelId === level)!.levelName) : t('scopedPolicy.allLevels')}`} placeholder={t('scopedPolicy.allLevels')} onChange={value => filter({ level: value })} /></label>}
       {!archived && !activeTab && <label className="w-full min-w-0 sm:w-40"><span className="sr-only">{t('scopedPolicy.status')}</span><Combobox size="sm" value={status} className="bg-background"
-        customTriggerLabel={`${t('scopedPolicy.status')}: ${status ? t(`scopedPolicy.${status}`) : t('scopedPolicy.allStatuses')}`}
-        options={(purpose === 'BASELINE' ? ['UNCONFIGURED', 'DRAFT'] : ['UNCONFIGURED', 'DRAFT', 'ACTIVE']).map(value => ({ value, label: t(`scopedPolicy.${value}`) }))} placeholder={t('scopedPolicy.allStatuses')} onChange={value => filter({ status: value })} /></label>}
+        customTriggerLabel={purpose === 'BASELINE' ? status === 'ALL' ? t('scopedPolicy.allStatuses') : status ? t(`scopedPolicy.${status}`) : readyLabel : `${t('scopedPolicy.status')}: ${status ? t(`scopedPolicy.${status}`) : t('scopedPolicy.allStatuses')}`}
+        options={(purpose === 'BASELINE' ? ['', 'ALL', 'UNCONFIGURED', 'DRAFT'] : ['UNCONFIGURED', 'DRAFT', 'ACTIVE']).map(value => ({ value, label: purpose === 'BASELINE' && !value ? readyLabel : value === 'ALL' ? t('scopedPolicy.allStatuses') : t(`scopedPolicy.${value}`) }))} placeholder={purpose === 'BASELINE' ? readyLabel : t('scopedPolicy.allStatuses')} onChange={value => filter({ status: value })} /></label>}
       {(search || owner || level || status && !archived && !activeTab) && <Button variant="outline" size="sm" className="w-fit border-primary/30 text-primary hover:bg-secondary" onClick={() => { setSearchDraft({ query: '', value: '' }); setParams(archived ? { status: 'HISTORY' } : activeTab ? { status: 'ACTIVE' } : {}, { replace: true }) }}>{t('scopedPolicy.clear')}</Button>}
 
       <Button size="icon" variant="outline" className="size-8" disabled={!current} title={t('scopedPolicy.refresh')} aria-label={t('scopedPolicy.refresh')} onClick={() => setReload(v => v + 1)}><RefreshCw size={14} /></Button>
@@ -142,11 +150,11 @@ function ScopeDirectory({ purpose }: { purpose: AssessmentPurpose }) {
         {[purpose === 'BASELINE' ? 'role' : 'skill', ...(showLevel ? [purpose === 'BASELINE' ? 'memberLevel' : 'knowledgeLevel'] : []), 'status', 'versions', 'actions'].map(label => <th key={label} scope="col" className="px-3 py-3 font-semibold last:text-right">{t(`scopedPolicy.${label}`)}</th>)}
       </tr></thead><tbody className="divide-y divide-border">{data.rows.map(row => <tr key={row.scope.key} className="transition-colors even:bg-background/60 hover:bg-muted/40">
         <td className="max-w-xs break-words px-3 py-3"><span className="font-semibold">{row.scope.ownerName}</span>{purpose === 'SKILL_ASSESSMENT' && <Text variant="caption" className="mt-0.5">{row.scope.ownerId}</Text>}</td>{showLevel && <td className="px-3 py-3">{levelLabel(row.scope.levelId, row.scope.levelName)}</td>}
-        <td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={row.status === 'ACTIVE' ? 'success' : row.status === 'DRAFT' || purpose === 'SKILL_ASSESSMENT' && row.status === 'UNCONFIGURED' ? 'secondary' : 'outline'}>{t(archived ? 'baselineUX.archivedStatus' : `scopedPolicy.${row.status}`)}</Badge>
+        <td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge className={row.status === 'WAITING' ? 'border-warning bg-warning/15 text-foreground' : undefined} variant={row.status === 'ACTIVE' ? 'success' : row.status === 'DRAFT' || purpose === 'SKILL_ASSESSMENT' && row.status === 'UNCONFIGURED' ? 'secondary' : 'outline'}>{row.status === 'WAITING' ? waitingLabel : t(archived ? 'baselineUX.archivedStatus' : `scopedPolicy.${row.status}`)}</Badge>
           {!archived && row.hasDraft && row.status === 'ACTIVE' && <Badge variant="secondary">{t('scopedPolicy.DRAFT')}</Badge>}</div>
-          {!archived && !row.scope.ready && <Text variant="caption" className="mt-1">{t('scopedPolicy.notReady')}</Text>}</td>
+          {!archived && !row.scope.ready && <Text variant="caption" className="mt-1">{purpose === 'BASELINE' ? language === 'vi' ? 'Catalog vị trí chưa hoàn chỉnh. Cần cấu hình kỹ năng yêu cầu.' : 'Role catalog setup is incomplete. Required Skills must be configured.' : t('scopedPolicy.notReady')}</Text>}</td>
         <td className="px-3 py-3"><Text variant="caption">{archived ? `${row.archivedCount} ${t('baselineUX.archivedItems')}` : row.activeVersion !== null ? `${t('scopedPolicy.ACTIVE')} · v${row.activeVersion}` : t(row.hasDraft ? 'baselineUX.draftVersion' : 'baselineUX.noVersion')}</Text></td>
-        <td className="px-3 py-3"><div className="flex justify-end gap-1.5"><Button size="icon" variant="outline" className="size-8" title={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} aria-label={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} disabled={!current} onClick={() => {
+        <td className="px-3 py-3"><div className="flex justify-end gap-1.5"><Button size="icon" variant="outline" className="size-8" title={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} aria-label={t(archived ? 'baselineUX.viewHistory' : row.status === 'UNCONFIGURED' ? 'scopedPolicy.configure' : 'baselineWizard.edit')} disabled={!current || purpose === 'BASELINE' && !archived && !row.scope.ready} onClick={() => {
           if (archived) { setNotice(false); setInitialAction('view'); setSelectedScope(row.scope.key); return }
           setNotice(false); setInitialAction(row.status === 'UNCONFIGURED' || row.draftIncomplete ? 'configure' : 'edit'); setSelectedScope(row.scope.key)
         }}>{archived ? <History size={14} /> : <Pencil size={14} />}</Button>

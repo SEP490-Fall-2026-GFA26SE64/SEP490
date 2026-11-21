@@ -20,8 +20,9 @@ import org.springframework.web.bind.annotation.*;
 public final class RuleAssessmentController {
     private final RuleAssessmentAttemptService attempts;
     private final ObjectMapper json;
-    public RuleAssessmentController(RuleAssessmentAttemptService attempts,ObjectMapper json) {
-        this.attempts=attempts;this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
+    private final com.adaptlearngraph.repository.OrganizationMembershipJpaRepository members;
+    public RuleAssessmentController(RuleAssessmentAttemptService attempts,ObjectMapper json,com.adaptlearngraph.repository.OrganizationMembershipJpaRepository members) {
+        this.members=members;this.attempts=attempts;this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
     @PostMapping(consumes="application/json") public ResponseEntity<View> start(@RequestHeader("Idempotency-Key") UUID key,@RequestBody String body) {
@@ -53,6 +54,9 @@ public final class RuleAssessmentController {
     }
     @PostMapping(value="/{id}/answers",consumes="application/json") public ResponseEntity<View> answer(@PathVariable UUID id,
             @RequestHeader("Idempotency-Key") UUID key,@RequestBody String body){return ok(attempts.answer(id,decode(body,Answer.class),key));}
+    private boolean allowed(com.adaptlearngraph.services.RoleBaselineFlow.Actor actor){return members.autoFillEmployee(actor.organizationId(),actor.learnerId());}
+    @GetMapping("/auto-fill-access") public ResponseEntity<Boolean> autoFillAccess(){return ok(attempts.autoFillAllowed(this::allowed));}
+    @PostMapping(value="/{id}/auto-fill",consumes="application/json") public ResponseEntity<View> autoFill(@PathVariable UUID id,@RequestHeader("Idempotency-Key") UUID key,@RequestBody String body){return ok(attempts.autoFill(id,decode(body,Submit.class).expectedRevision(),key,this::allowed));}
     public record Submit(long expectedRevision) {}
     @PostMapping(value="/{id}/submit",consumes="application/json") public ResponseEntity<View> submit(@PathVariable UUID id,
             @RequestHeader("Idempotency-Key") UUID key,@RequestBody String body){return ok(attempts.submit(id,decode(body,Submit.class).expectedRevision(),key));}

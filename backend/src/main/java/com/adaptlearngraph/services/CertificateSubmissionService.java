@@ -44,7 +44,7 @@ public final class CertificateSubmissionService {
                 .findFirst().orElseThrow(()->new Failure(404,"CERTIFICATE_REQUIREMENT_NOT_FOUND"));
         access.requireReady(row,step);
         if(step.state()==State.FULFILLED || !rules.official(actor.organizationId(),actor.accountId(),revisions.encode(List.of(step.requirement()))).isEmpty())throw new Failure(409,"REQUIREMENT_ALREADY_ACHIEVED");
-        var input=admission.decode(row).input();var current=catalog.providers(owner(actor),input.roleSnapshot(),input.binding().levelId(),List.of(step.requirement()),Set.of(step.requirement().key()));
+        var input=admission.decode(row).input();var current=catalog.retainCertificates(row.getOrganizationId(),catalog.providers(owner(actor),input.roleSnapshot(),input.binding().levelId(),List.of(step.requirement()),Set.of(step.requirement().key())),input.catalog(),revisions.read(row));
         var certificate=current.certificates().get(step.requirement().key());
         if(certificate==null || step.certificate()==null || !step.certificate().sameDefinition(new CertificateReference(certificate.id(),certificate.version(),certificate.name(),certificate.referenceUrl(),certificate.description())))
             throw new Failure(409,"CERTIFICATE_PROVISION_CHANGED");

@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.*;
 public final class BaselineQuestionRequestController {
     private final BaselineQuestionRequestService requests;
     public BaselineQuestionRequestController(BaselineQuestionRequestService requests){this.requests=requests;}
-    @GetMapping public ResponseEntity<?> list(){return response(requests.list());}
-    @PostMapping public ResponseEntity<?> create(@RequestBody BaselineQuestionRequestService.Create body){return response(requests.create(body));}
-    public record Link(UUID questionId) {}
-    @PostMapping("/{id}/questions") public ResponseEntity<?> link(@PathVariable UUID id,@RequestBody Link body){requests.link(id,body.questionId());return response(Map.of("linked",true));}
     @GetMapping("/bulk-template") public ResponseEntity<?> template(){return response(requests.template().orElse(null));}
     @PutMapping("/bulk-template") public ResponseEntity<?> template(@RequestBody ScopedAssessmentPolicyService.BulkTemplate body){requests.template(body);return response(Map.of("saved",true));}
     private ResponseEntity<?> response(Object body){return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(body);}

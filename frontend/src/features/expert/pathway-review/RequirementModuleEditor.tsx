@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen, CheckCircle2, CircleHelp, Eye, GripVertical, ListChecks, Plus, RefreshCw, Save, Search, X } from 'lucide-react'
+import { BookOpen, CheckCircle2, Eye, GripVertical, ListChecks, Plus, RefreshCw, Search, X } from 'lucide-react'
 import { checkModuleSelection, moduleSelectionCommand, ruleReviewCommand, type RuleModuleOption, type RuleReviewDetail, type RuleStep, type RuleValidation } from '../../../shared/api/requirementPathway'
 import { moduleRequest, type ModuleDocument } from '../../../shared/api/moduleAuthoringApi'
 import type { PendingPathwayCommand } from '../../../shared/api/initialPathway'
@@ -25,17 +25,18 @@ const editableStep = (step: RuleStep) => step.requirement.provision === 'MODULE_
 type DragModule = { stepId: string; key: string; from: 'graph' | 'catalog'; hash: string | null }
 type PointerDrag = DragModule & { pointerId: number; startX: number; startY: number; moved: boolean; element: HTMLElement }
 
-export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand, onApprove, onReject, onBypass, onDirtyChange }: {
-  id: string; scope: string; detail: RuleReviewDetail; disabled: boolean; onCommand: (command: PendingPathwayCommand) => void;
-  onApprove: () => void; onReject?: () => void; onBypass: (step: RuleStep) => void; onDirtyChange: (dirty: boolean) => void;
+export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand, onApprove, onReject, onDirtyChange }: {
+  id: string; scope: string; detail: RuleReviewDetail; disabled: boolean; onCommand: (command: PendingPathwayCommand) => void | Promise<boolean | void>;
+  onApprove: () => void; onReject?: () => void; onBypass?: (step: RuleStep) => void; onDirtyChange: (dirty: boolean) => void;
 }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('moduleReview.' + key)
   const { toast } = useToast()
-  const summaryRef = useRef<HTMLDivElement>(null)
+  const [validationOpen, setValidationOpen] = useState(false)
   const reorderableIds = detail.reorderableStepIds ?? []
+  const attemptedSave = useRef(''), [saveFailed, setSaveFailed] = useState(false), [retrySave, setRetrySave] = useState(0)
   const initial = Object.fromEntries(detail.plan.steps.map(step => [step.id, step.options.map(optionKey).sort()]))
   const [stepOrder, setStepOrder] = useState(detail.plan.steps.map(step => step.id))
-  const [bypassHelp, setBypassHelp] = useState(false), dragContext = useRef<PointerDrag | null>(null)
+  const dragContext = useRef<PointerDrag | null>(null)
   const [chosen, setChosen] = useState<Record<string, string[]>>(initial), [focus, setFocus] = useState(''), [search, setSearch] = useState('')
   const [dragged, setDragged] = useState<DragModule | null>(null), [checking, setChecking] = useState(false), [checked, setChecked] = useState<RuleValidation | null>(null)
   const [error, setError] = useState<unknown>(null), [selected, setSelected] = useState<{ stepId: string | null; module: RuleModuleOption; exclusion?: string | null } | null>(null)
@@ -53,7 +54,6 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
   const backendValidation = checked ?? detail.validation
   const issues = [...(dirty && !checked ? [] : backendValidation.issues), ...steps.filter(step => editableStep(step) && step.options.length === 0).map(step => ({ stepId: step.id, reason: 'MODULE_OPTIONS_CHANGED', blocking: step.kind === 'REQUIRED' }))]
   const validation: RuleValidation = { ...backendValidation, valid: backendValidation.valid && !issues.some(issue => issue.blocking), issues }
-  const stepIssues = (stepId: string) => issues.filter(issue => issue.stepId === stepId)
   const focusedStep = steps.find(step => step.id === focus)
   const related = detail.related.length ? detail.related : detail.candidates.map(candidate => ({ skillId: detail.plan.steps.find(step => step.id === candidate.stepId)!.requirement.skillId, knowledgeLevel: detail.plan.steps.find(step => step.id === candidate.stepId)!.requirement.knowledgeLevel, module: candidate.module }))
   const candidates = related.map(item => {
@@ -66,7 +66,7 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
       : requirement?.requirement.provision === 'UNCONFIGURED' ? tr('unconfiguredRequirement')
       : requirement && !editableStep(requirement) ? tr('lockedRequirement') : !match ? tr('notEligible') : null
     return { ...item, stepId: match?.stepId ?? null, exclusion, skillName: detail.plan.steps.find(step => step.requirement.skillId === item.skillId)?.requirement.skillName ?? item.skillId }
-  }).filter(candidate => !steps.some(step => step.options.some(module => optionKey(module) === optionKey(candidate.module)))).filter(candidate => (!focusedStep || candidate.skillId === focusedStep.requirement.skillId) && `${candidate.module.title} ${candidate.module.moduleId} ${candidate.skillName}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+  }).filter(candidate => !steps.some(step => step.options.some(module => optionKey(module) === optionKey(candidate.module)))).filter(candidate => (!focusedStep || (candidate.skillId === focusedStep.requirement.skillId && candidate.knowledgeLevel === focusedStep.requirement.knowledgeLevel)) && `${candidate.module.title} ${candidate.module.moduleId} ${candidate.skillName}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
 
   useEffect(() => {
     if (!dirty) return
@@ -75,6 +75,25 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
     return () => window.removeEventListener('beforeunload', warn)
   }, [dirty])
   useEffect(() => { onDirtyChange(dirty) }, [dirty, onDirtyChange])
+  useEffect(() => {
+    setChosen(previous => { const next = Object.fromEntries(detail.plan.steps.map(step => [step.id, step.options.map(optionKey).sort()])); return JSON.stringify(previous) === JSON.stringify(next) ? previous : next })
+    setStepOrder(previous => { const next = detail.plan.steps.map(step => step.id); return JSON.stringify(previous) === JSON.stringify(next) ? previous : next }); setChecked(null); setSaveFailed(false)
+    // The server revision acknowledges an immutable save; keep focus/search/dialog state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail.status.revision, detail.status.contentHash])
+  const selectionFingerprint = JSON.stringify([chosen, stepOrder])
+  useEffect(() => {
+    if (!dirty || blocked) return
+    const fingerprint = `${detail.status.revision}:${selectionFingerprint}:${retrySave}`
+    if (attemptedSave.current === fingerprint) return
+    const timer = window.setTimeout(() => {
+      attemptedSave.current = fingerprint; setSaveFailed(false)
+      void Promise.resolve(onCommand(moduleSelectionCommand(id, detail, selections, stepOrder))).then(ok => { if (ok === false) setSaveFailed(true) }).catch(() => setSaveFailed(true))
+    }, 500)
+    return () => window.clearTimeout(timer)
+    // Coalesce edits and wait for validation/any in-flight command; never retry an uncertain write automatically.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirty, blocked, selectionFingerprint, detail.status.revision, retrySave])
   function change(stepId: string, module: RuleModuleOption, include: boolean) {
     const step = detail.plan.steps.find(item => item.id === stepId)
     if (blocked || !step || !editableStep(step)) return
@@ -129,26 +148,30 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
     window.addEventListener('keydown', cancel)
     return () => window.removeEventListener('keydown', cancel)
   }, [dragged])
-  async function check() {
+  async function check(openModal = true) {
     if (blocked || checkFlight.current) return
     const revision = changeRevision.current; checkFlight.current = true; setChecking(true); setError(null)
-    try { const result = await checkModuleSelection(id, detail, selections, stepOrder); if (revision === changeRevision.current) { setChecked(result); requestAnimationFrame(() => { summaryRef.current?.focus(); summaryRef.current?.scrollIntoView({ block: 'nearest' }) }) } }
+    try { const result = await checkModuleSelection(id, detail, selections, stepOrder); if (revision === changeRevision.current) { setChecked(result); if (openModal) setValidationOpen(!result.valid); if (result.valid) toast({ variant: 'success', description: tr('checkPassed'), duration: 1000 }) } }
     catch (cause) { setError(cause) } finally { setChecking(false); checkFlight.current = false }
   }
+  useEffect(() => {
+    if (dirty && steps.some(step => editableStep(step) && step.options.length === 0)) { setValidationOpen(true); void check(false) }
+    // Check the newly edited selection, not every validation response.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chosen])
+  const modalIssues = validation.issues.filter((issue, index, all) => {
+    const step = steps.find(item => item.id === issue.stepId)
+    if (step && editableStep(step) && step.options.length === 0 && issue.reason !== 'MODULE_OPTIONS_CHANGED') return false
+    return all.findIndex(item => item.stepId === issue.stepId && item.reason === issue.reason) === index
+  })
   return <div className="space-y-3">
     <Card className="relative z-10 border-primary/20 bg-card p-3 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2"><Badge variant={dirty ? 'warning' : 'outline'}>{tr(dirty ? 'unsaved' : 'saved')}</Badge><Badge variant={validation.valid ? 'success' : 'warning'}>{t('initialPathway.state.' + (validation.valid ? 'VALID' : 'UNRESOLVED'))}</Badge></div>
-        <div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" className="border-border font-semibold shadow-xs" disabled={disabled || checking || dirty || !canRefresh} leftIcon={<RefreshCw size={14} />} onClick={() => onCommand(ruleReviewCommand(id, detail, 'refresh'))}>{t('rulePathway.refreshProviders')}</Button><Button size="sm" variant="secondary" className="border border-primary/30 font-semibold" disabled={blocked} leftIcon={<ListChecks size={14} />} onClick={() => void check()} isLoading={checking}>{tr('check')}</Button><Button size="sm" variant="primary" className="font-semibold" disabled={blocked || !dirty} leftIcon={<Save size={14} />} onClick={() => onCommand(moduleSelectionCommand(id, detail, selections, stepOrder))}>{tr('save')}</Button>{onReject && <Button size="sm" variant="destructive" disabled={blocked || dirty} onClick={onReject}>{tr('reject')}</Button>}<Button size="sm" disabled={blocked || dirty || !validation.valid} leftIcon={<CheckCircle2 size={14} />} onClick={onApprove}>{tr('approve')}</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex flex-wrap items-center gap-2"><Badge variant={dirty ? 'warning' : 'outline'}>{dirty ? language === 'vi' ? disabled ? 'Đang lưu…' : 'Chờ tự lưu' : disabled ? 'Saving…' : 'Pending autosave' : tr('saved')}</Badge><Badge variant={validation.valid ? 'success' : 'warning'}>{t('initialPathway.state.' + (validation.valid ? 'VALID' : 'UNRESOLVED'))}</Badge></div>
+        <div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" className="border-border font-semibold shadow-xs" disabled={disabled || checking || dirty || !canRefresh} leftIcon={<RefreshCw size={14} />} onClick={() => onCommand(ruleReviewCommand(id, detail, 'refresh'))}>{t('rulePathway.refreshProviders')}</Button><Button size="sm" variant="secondary" className="border border-primary/30 font-semibold" disabled={blocked} leftIcon={<ListChecks size={14} />} onClick={() => void check()} isLoading={checking}>{language === 'vi' ? 'Kiểm tra' : 'Check'}</Button>{onReject && <Button size="sm" variant="destructive" disabled={blocked || dirty} onClick={onReject}>{tr('reject')}</Button>}<Button size="sm" disabled={blocked || dirty || !validation.valid} leftIcon={<CheckCircle2 size={14} />} onClick={onApprove}>{tr('approve')}</Button></div>
       </div>
-      {dirty && <Text variant="caption" className="mt-2">{tr('saveBeforeApproval')}</Text>}
+      <Text variant="caption" className="mt-2 min-h-5">{language === 'vi' ? 'Thay đổi tự lưu. Chỉ duyệt khi trạng thái đã lưu.' : 'Changes save automatically. Approve once the status is saved.'}</Text>{saveFailed && <div className="mt-2 flex items-center gap-3"><Text tone="destructive">{language === 'vi' ? 'Chưa lưu được thay đổi.' : 'Changes could not be saved.'}</Text><Button size="sm" variant="outline" disabled={blocked} onClick={() => setRetrySave(v => v + 1)}>{language === 'vi' ? 'Thử lưu lại' : 'Retry save'}</Button></div>}
       {!editable && <Text variant="caption" className="mt-2">{tr('readOnly')}</Text>}
-      {(checked || validation.issues.length > 0) && <div ref={summaryRef} tabIndex={-1} aria-label={tr('check')} className="mt-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-background p-3 text-body-sm">
-        {checked && <Text role="status" className="font-semibold">{validation.valid ? tr('checkPassed') : `${tr('issues')} (${validation.issues.length})`}</Text>}
-        {validation.issues.length > 0 && <ol className="mt-2 space-y-2">{validation.issues.filter((issue, index, all) => all.findIndex(item => item.stepId === issue.stepId && item.reason === issue.reason && item.blocking === issue.blocking && item.moduleId === issue.moduleId && item.moduleRevision === issue.moduleRevision) === index).map(issue => {
-          const step = steps.find(item => item.id === issue.stepId)
-          return <li key={`${issue.stepId}:${issue.reason}:${issue.blocking}:${issue.moduleId}:${issue.moduleRevision}`} className="rounded-md bg-muted/30 p-2"><div className="flex items-start justify-between gap-2"><div><Text variant="body-sm" className="font-semibold">{step ? `${step.requirement.skillName} · ${t('knowledgeLevel.' + step.requirement.knowledgeLevel)}` : t('initialPathway.targetRole')}</Text><Text variant="caption">{validationIssueText(issue.reason, step, language === 'vi')}</Text>{step && issue.reason === 'MODULE_OPTIONS_CHANGED' && step.options.length > 0 && <Text variant="caption">{step.options.filter(module => !issue.moduleId || module.moduleId === issue.moduleId && module.moduleRevision === issue.moduleRevision).map(module => `${module.title} (${module.moduleId} · v${module.moduleRevision})`).join(', ')}</Text>}</div>{step && <Button size="sm" variant="outline" onClick={() => { setFocus(step.id); requestAnimationFrame(() => { const branch = [...document.querySelectorAll<HTMLElement>('[data-step-id]')].find(element => element.dataset.stepId === step.id); branch?.querySelector<HTMLButtonElement>('button')?.focus() }) }}>{tr('details')}</Button>}</div></li>
-        })}</ol>}
-      </div>}
+
     </Card>
     {Boolean(error) && <InitialPathwayFeedback error={error} busy={checking} onRetry={() => void check()} />}
     <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -159,10 +182,10 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
         <div className="space-y-3 border-b border-primary/20 bg-secondary/40 p-4"><div className="flex items-center justify-between gap-2"><Heading level={2} size="card">{tr('catalog')}</Heading><Badge variant="outline">{candidates.length}</Badge></div><Text variant="caption" className="text-foreground">{tr(dragged?.from === 'graph' ? 'excludeHint' : 'includeHint')}</Text>
           <Input leftIcon={<Search size={14} />} value={search} onChange={event => setSearch(event.target.value)} placeholder={tr('search')} aria-label={tr('search')} className="h-9" />
           <select value={focus} onChange={event => setFocus(event.target.value)} aria-label={tr('skillFilter')} className="h-9 w-full rounded-md border border-input bg-background px-3 text-body-sm"><option value="">{tr('allSkills')}</option>{detail.plan.steps.map(step => <option key={step.id} value={step.id}>{step.requirement.skillName} · {t('knowledgeLevel.' + step.requirement.knowledgeLevel)}</option>)}</select>
-          {focusedStep && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card p-2"><div><Text variant="body-sm" className="font-semibold">{focusedStep.requirement.skillName}</Text><Text variant="caption">{tr('requiredLevel')}: {t('knowledgeLevel.' + focusedStep.requirement.knowledgeLevel)}</Text></div><div className="flex items-center gap-2">{detail.bypassableStepIds?.includes(focusedStep.id) && <Button size="sm" variant="secondary" className="border border-primary/40 font-semibold shadow-xs" disabled={blocked || dirty} onClick={() => onBypass(focusedStep)}>{t('rulePathway.bypass')}</Button>}<Button size="icon" variant="outline" className="size-8 border-primary/40 text-primary" aria-label={tr('bypassHelpTitle')} onClick={() => setBypassHelp(true)}><CircleHelp size={17} /></Button></div></div>}
+          {focusedStep && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-card p-2"><div><Text variant="body-sm" className="font-semibold">{focusedStep.requirement.skillName}</Text><Text variant="caption">{tr('requiredLevel')}: {t('knowledgeLevel.' + focusedStep.requirement.knowledgeLevel)}</Text></div></div>}
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-background/40 p-4">
-          {focusedStep && stepIssues(focusedStep.id).length > 0 && <div role="alert" className="space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3"><Text className="font-semibold" tone="destructive">{focusedStep.requirement.skillName}</Text>{stepIssues(focusedStep.id).map((issue, index) => <Text key={index} variant="body-sm">{validationIssueText(issue.reason, focusedStep, language === 'vi')}</Text>)}</div>}
+
           {candidates.length === 0 && <Text variant="body-sm" className="rounded-lg border border-dashed border-border p-4">{tr('emptyAvailable')}</Text>}
           {candidates.map(candidate => { const module = candidate.module, included = candidate.stepId !== null && (chosen[candidate.stepId] ?? []).includes(optionKey(module)), step = detail.plan.steps.find(item => item.id === candidate.stepId), allowed = Boolean(step && editableStep(step))
             return <article key={candidate.skillId + ':' + optionKey(module)} data-module-drag-source draggable={false} {...dragEvents} onDragStart={event => event.preventDefault()} onPointerDown={event => { if (candidate.stepId && allowed) startDrag(event, candidate.stepId, module, 'catalog') }} className={`space-y-3 rounded-lg border p-3 ${allowed ? 'border-primary/40 bg-card shadow-sm' : 'border-border bg-muted/30'}`}>
@@ -175,7 +198,12 @@ export function RequirementModuleEditor({ id, scope, detail, disabled, onCommand
       </Card>
     </div>
     {dragged && pointer && <div aria-hidden="true" className="pointer-events-none fixed z-50 max-w-64 rounded-lg bg-primary px-4 py-3 text-primary-foreground shadow-lg" style={{ left: pointer.x + 16, top: pointer.y + 16 }}><span className="block text-body-sm font-semibold">{tr(dragged.from === 'catalog' ? 'include' : 'exclude')}</span><span className="mt-1 block text-body-sm">{modules.get(dragged.stepId + '\n' + dragged.key)?.title}</span></div>}
-    {bypassHelp && <Dialog open onOpenChange={setBypassHelp} className="border-border" ariaLabel={tr('bypassHelpTitle')}><DialogHeader className="mb-5"><DialogTitle><CircleHelp className="size-5 shrink-0 text-primary" />{tr('bypassHelpTitle')}</DialogTitle></DialogHeader><DialogBody className="space-y-5"><Text variant="body" tone="foreground">{tr('bypassEffect')}</Text><Text variant="body" tone="foreground">{tr('bypassHistory')}</Text><div className="rounded-lg bg-muted/50 p-4"><Text variant="body" tone="foreground">{tr('bypassNotAchievement')}</Text></div></DialogBody><DialogFooter><Button size="sm" onClick={() => setBypassHelp(false)}>{t('common.close')}</Button></DialogFooter></Dialog>}
+
+    {validationOpen && <Dialog open className="max-w-md min-h-80" onOpenChange={setValidationOpen} ariaLabel={language === 'vi' ? 'Cần bổ sung module' : 'Pathway needs attention'}><DialogHeader><DialogTitle>{language === 'vi' ? 'Kiểm tra lộ trình' : 'Pathway check'}</DialogTitle></DialogHeader><DialogBody className="space-y-3">{modalIssues.map(issue => {
+      const step = steps.find(item => item.id === issue.stepId)
+      const empty = step && editableStep(step) && step.options.length === 0
+      return <div key={`${issue.stepId}:${issue.reason}`} className="rounded-lg border border-warning/40 bg-warning/5 p-4 space-y-2">{step && <button type="button" className="block w-full min-w-0 whitespace-normal rounded text-left font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => { setValidationOpen(false); setFocus(step.id); setSearch(''); requestAnimationFrame(() => { const node = [...document.querySelectorAll<HTMLElement>('[data-step-id]')].find(el => el.dataset.stepId === step.id); node?.scrollIntoView({ block: 'center', behavior: 'smooth' }); node?.querySelector<HTMLButtonElement>('button')?.focus() }) }}><span className="block break-words underline underline-offset-4">{language === 'vi' ? 'Kỹ năng: ' : 'Skill: '}{step.requirement.skillName}</span><span className="mt-1 block break-words text-caption font-medium text-foreground">{language === 'vi' ? 'Mức kiến thức: ' : 'Knowledge level: '}{t('knowledgeLevel.' + step.requirement.knowledgeLevel)}</span></button>}<Text variant="body-sm" tone="foreground">{empty ? language === 'vi' ? 'Chưa thêm module cho kỹ năng ở mức này. Chọn kỹ năng phía trên để tới danh sách module phù hợp và thêm ít nhất 1 module.' : 'This Skill has no included module at the required knowledge level. Select the Skill above to find suitable modules and include at least one.' : validationIssueText(issue.reason, step, language === 'vi')}</Text></div>
+    })}</DialogBody><DialogFooter><Button onClick={() => setValidationOpen(false)}>{language === 'vi' ? 'Tôi đã hiểu' : 'I understand'}</Button></DialogFooter></Dialog>}
     {selected && <ReviewModuleDetail exclusion={selected.exclusion} outsideScope={selected.stepId === null} scope={scope} module={selected.module} included={selected.stepId !== null && (chosen[selected.stepId] ?? []).includes(optionKey(selected.module))} disabled={blocked || !selected.stepId || !editableStep(detail.plan.steps.find(step => step.id === selected.stepId)!)} onClose={() => setSelected(null)} onChange={include => { if (selected.stepId) change(selected.stepId, selected.module, include) }} />}
   </div>
 }

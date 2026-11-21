@@ -26,7 +26,6 @@ export function RequirementModuleGraph({ issues, steps, disabled, active, reorde
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
-  const orderKey = steps.map(step => step.id).join(',')
   useEffect(() => {
     if (!active) return
     const frame = requestAnimationFrame(() => {
@@ -36,7 +35,7 @@ export function RequirementModuleGraph({ issues, steps, disabled, active, reorde
     return () => cancelAnimationFrame(frame)
     // Selecting a skill scrolls to its root; zoom changes preserve the viewport.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, orderKey])
+  }, [active])
   useEffect(() => {
     const element = viewport.current
     if (!element) return

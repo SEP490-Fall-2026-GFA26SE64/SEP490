@@ -54,7 +54,7 @@ public class QuestionBankConfiguration {
             QuestionBankUseCase bank, org.modelmapper.ModelMapper modelMapper) {
         return new com.adaptlearngraph.services.QuestionBankApplicationService(bank, modelMapper);
     }
-    @Bean QuestionBankUseCase questionBankUseCase(Actors actors,Catalog catalog,Store store,@Value("${question-bank.import.max-rows:500}") int rows,@Value("${question-bank.import.max-bytes:10485760}") long bytes){return new QuestionBankService(actors,catalog,store,Clock.systemUTC(),rows,bytes);}
+    @Bean QuestionBankUseCase questionBankUseCase(Actors actors,Catalog catalog,Store store,@Value("${question-bank.import.max-rows:500}") int rows,@Value("${question-bank.import.max-bytes:10485760}") long bytes,com.adaptlearngraph.repository.ReviewSubmissionNotifications notices){return new QuestionBankService(actors,catalog,store,Clock.systemUTC(),rows,bytes,notices);}
     @Bean com.adaptlearngraph.services.BaselineQuestionRequestService baselineQuestionRequests(Actors actors,Catalog people,
             com.adaptlearngraph.repository.AssessmentPolicyCatalog scopes,com.adaptlearngraph.repository.Neo4jCypher graph,
             com.adaptlearngraph.repository.AssessmentItemKnowledgeMappingJpaRepository bank,org.springframework.jdbc.core.JdbcTemplate jdbc,
