@@ -23,13 +23,13 @@ async function loginAs(page: Page, email: string, password = 'Password123!') {
  * REQ-WF02 State Transition Test Suite
  *
  * TC-WF02-ST01: Comprehensive Target Role Lifecycle State Transitions
- * Validates the full target role lifecycle through all 6 state transitions:
- *   Phase 1: [Initial] -> DRAFT / SENT (L&D Manager creates role & dispatches to Domain Expert)
- *   Phase 2: DRAFT -> SUBMITTED (Domain Expert authors & submits requirements)
+ * Validates the full target role lifecycle through all state transitions:
+ *   Phase 1: DRAFT/STAGED -> SENT (L&D Manager creates/stages role & dispatches to Domain Expert)
+ *   Phase 2: SENT -> SUBMITTED (Domain Expert authors requirements & submits)
  *   Phase 3: SUBMITTED -> REJECTED (L&D Manager returns for revision with actionable feedback)
  *   Phase 4: REJECTED -> SUBMITTED (Domain Expert reviews feedback and resubmits)
  *   Phase 5: SUBMITTED -> PUBLISHED (L&D Manager approves and publishes to graph)
- *   Phase 6: PUBLISHED -> UNPUBLISHED (L&D Manager unpublishes; employee isolation verified)
+ *   Phase 6: PUBLISHED -> UNPUBLISHED / SUCCESSOR DRAFT (L&D Manager unpublishes; employee isolation verified)
  */
 
 test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', () => {
@@ -37,7 +37,7 @@ test.describe('Report 5: WF02 State Transition Test (Target Role Lifecycle)', ()
     await page.addInitScript(() => localStorage.setItem('app_language', 'en'))
   })
 
-  test('Target Role Lifecycle State Transitions: DRAFT -> SUBMITTED -> REJECTED -> SUBMITTED -> PUBLISHED -> UNPUBLISHED', async ({ page }) => {
+  test('Target Role Lifecycle State Transitions: DRAFT/STAGED -> SENT -> REJECTED -> SUBMITTED -> PUBLISHED -> UNPUBLISHED / SUCCESSOR DRAFT', async ({ page }) => {
     test.setTimeout(240_000)
     const roleSuffix = Date.now().toString().slice(-4)
     const roleCode = `ROLE-ST-${roleSuffix}`
