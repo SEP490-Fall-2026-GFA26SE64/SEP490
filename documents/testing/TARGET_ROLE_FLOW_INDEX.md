@@ -1,6 +1,6 @@
 # Target Role Flow Index & Detailed Test Case Specifications (Report 5)
 
-This document is the authoritative test specification and cross-reference index for all **22 committed automated test cases** (20 feature tests across 10 core functions, 1 end-to-end workflow test, and 1 state transition test) tracked in [`Report5_Test Report(1).xlsx`](../../Report5_Test%20Report(1).xlsx) for the Target Role Authoring, Competency Ontology, and Knowledge Graph workflows.
+This document is the authoritative test specification and cross-reference index for all **22 committed automated test cases** (20 feature tests across 10 core functions, 1 end-to-end workflow test, and 1 state transition test) tracked in [`Report5_Test Report(2).xlsx`](../../Report5_Test%20Report(2).xlsx) for the Target Role Authoring, Competency Ontology, and Knowledge Graph workflows.
 
 ---
 
@@ -30,6 +30,8 @@ This document is the authoritative test specification and cross-reference index 
 | **8** | **Browse Published Roles** | `Target roles management` | `TC-WF02-F17` | • Employee browses published roles; unapproved roles stay hidden | Employee<br>`/workspace/{slug}/employee/target-roles` |
 | **9** | **Interactive Knowledge Graph** | `Ontology Graph` | `TC-WF02-F18` | • Graph canvas initialization, entity palette & hierarchical expansion | Expert / L&D Manager<br>`/workspace/{slug}/expert/ontology` |
 | **10** | **Interactive Edge Linking & Canvas Operations** | `Ontology Graph` | `TC-WF02-F19`<br>`TC-WF02-F20` | • Connect nodes with `[:HAS_SKILL_PREREQUISITE]` synced to Neo4j<br>• Entity search highlight, Node Inspector & clean canvas reset | Expert / L&D Manager<br>`/workspace/{slug}/expert/ontology` |
+| **11** | **End-to-End Target Role Lifecycle** | `Target roles management` / BM04 Table 11 (`DS-02a`) | `TC-WF02-E2E01` | • DS-02a Main Flow: Role onboarding/assignment, Excel ontology import, graph prerequisite DAG modifications, multi-level micro-skill configuration, approval & publication | L&D Manager, Expert, Employee<br>`/ld-manager/target-roles`, `/expert/roles`, `/employee/target-roles` |
+| **12** | **Target Role Lifecycle State Transitions** | `Target roles management` / BM04 Table 11 (`DS-02b`, `DS-02c`) | `TC-WF02-ST01` | • 6 lifecycle states: `DRAFT -> SUBMITTED -> REJECTED -> SUBMITTED -> PUBLISHED -> UNPUBLISHED`<br>• Enforces alternative revision loop (`DS-02b`), immutability & referential integrity (`DS-02c`) | L&D Manager, Expert, Employee<br>`/ld-manager/target-roles`, `/expert/roles`, `/employee/target-roles` |
 
 ---
 
@@ -47,605 +49,602 @@ Tests execute against the running Docker Compose environment (`compose.dev.yml`)
 
 ## 3. Detailed Test Case Specifications
 
-```
+`
 ================================================================================
 FUNCTION 1: COMPETENCIES MANAGEMENT
 Sheet Name: Competencies management
-Target Portal: /workspace/workspace-development/manager/ontology (Competencies Tab)
+Target Portal: /workspace/{slug}/manager/ontology (Competencies Tab)
 ================================================================================
-```
+`
 
 ### TC-WF02-F01: Verify creating, viewing, and updating a competency successfully with valid required fields
-- **Test Case ID:** `TC-WF02-F01`
+- **Test Case ID:** TC-WF02-F01
 - **Feature / Function:** Competencies Management
-- **Excel Sheet:** `Competencies management`
+- **Excel Sheet:** Competencies management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. User is authenticated as Domain Expert (`expert@technova.com`) or L&D Manager (`manager@technova.com`).
-  2. Workspace `TechNova Cognitive Labs` is active.
-- **Test Data:**
-  - Code: `COMP-AI-01`
-  - Name: `Deep Learning Architecture`
-  - Description: `Competency covering convolutional neural networks, transformer pipelines, and model evaluation.`
-  - Domain Classification: `Artificial Intelligence`
-  - Updated Name: `Advanced Deep Learning & Transformers`
+  1. User is authenticated as Expert or L&D Manager.
+  2. Organization workspace is active.
 - **Step-by-Step Procedure:**
-  1. Log in as L&D Manager or Domain Expert and navigate to `/workspace/workspace-development/manager/ontology`.
-  2. Click the **Competencies** tab in the ontology sub-navigation.
-  3. Click the `+ Create Competency` button located in the top-right toolbar.
-  4. In the Create Competency modal, enter `COMP-AI-01` in the **Competency Code** field.
-  5. Enter `Deep Learning Architecture` in the **Competency Name** field.
-  6. Enter the description and select `Artificial Intelligence` from the Domain dropdown.
-  7. Click the `Create Competency` submit button.
-  8. In the Competencies Directory table, locate the row for `COMP-AI-01` and verify the name and domain.
-  9. Click the `Edit` button (pencil icon) in the Actions column.
-  10. Update the Name to `Advanced Deep Learning & Transformers` and click `Save Changes`.
+  1. Log in as Domain Expert or L&D Manager.
+  2. Navigate to "Competencies" tab on Ontology page.
+  3. Click "+ Create Competency", enter Code (e.g. COMP-AI-01), Name (e.g. Deep Learning), Description, and Domain classification.
+  4. Click "Create Competency" submit button.
+  5. In the competency table, verify the new competency appears, then click "Edit".
+  6. Update Name/Description and save changes.
 - **Expected Results:**
-  - Modal closes immediately upon submit without UI freezing.
-  - Toast notification displays: `Competency Created Successfully`.
-  - The newly created row displays in the table with `COMP-AI-01`, domain badge `Artificial Intelligence`, and `ACTIVE` status.
-  - The Edit modal successfully saves changes; table reflects `Advanced Deep Learning & Transformers`.
-- **Source References:**
-  - UI: [`CompetencyOntologyPage.tsx`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/src/features/manager/ontology/CompetencyOntologyPage.tsx) (`isCreateCompModalOpen`, `editingCompetency`)
-  - Test Spec: [`frontend/system-tests/REQ-018-target-role-authoring-and-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-018-target-role-authoring-and-graph.spec.ts)
+  1. Modal closes and success toast "Competency Created" appears.
+  2. The new competency appears in the catalog with code, name, and domain.
+  3. Edit modal saves updates successfully without errors.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (isCreateCompModalOpen, editingCompetency)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F02: Verify validation when creating competency with duplicate Code or empty required fields
-- **Test Case ID:** `TC-WF02-F02`
+- **Test Case ID:** TC-WF02-F02
 - **Feature / Function:** Competencies Management
-- **Excel Sheet:** `Competencies management`
+- **Excel Sheet:** Competencies management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Competency creation modal is open.
-  2. At least one competency exists in the database (e.g., `COMP-AI-01`).
-- **Test Data:**
-  - Duplicate Code: `COMP-AI-01`
-  - Alternative Name: `Robotics Perception`
+  1. Create Competency modal is open.
+  2. At least one competency already exists in database.
 - **Step-by-Step Procedure:**
-  1. In the Competencies tab, click `+ Create Competency`.
-  2. Leave all fields empty and immediately click the `Create Competency` button.
-  3. Verify inline validation messages under Code and Name inputs.
-  4. In the Code field, enter existing code `COMP-AI-01`.
-  5. In the Name field, enter `Robotics Perception`.
-  6. Click `Create Competency`.
+  1. Click "+ Create Competency" button.
+  2. Leave Name or Code field blank and click "Create Competency".
+  3. Enter an existing Code (e.g. COMP-AI-01) with a new Name.
+  4. Click "Create Competency".
 - **Expected Results:**
-  - Step 2: Form submission is blocked; inline field errors state `Competency code is required` and `Competency title is required`.
-  - Step 6: Backend/client validation triggers; error banner or toast displays: `Competency code COMP-AI-01 already exists`.
-  - The duplicate record is not created and the modal remains open for correction.
-- **Source References:**
-  - UI: `CompetencyOntologyPage.tsx` (`handleSaveCompetency`)
+  1. Blank required fields display inline validation errors ("Code is required", "Name is required").
+  2. Duplicate code triggers error: "Competency code already exists."
+  3. Submission is blocked and no duplicate record is created.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (handleSaveCompetency)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F03: Verify searching competencies by keyword and viewing member micro-skills
-- **Test Case ID:** `TC-WF02-F03`
+- **Test Case ID:** TC-WF02-F03
 - **Feature / Function:** Competencies Management
-- **Excel Sheet:** `Competencies management`
+- **Excel Sheet:** Competencies management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Multiple competencies exist in the catalog (e.g., `COMP-ARCH-J01`, `COMP-SEC01`).
-- **Test Data:**
-  - Search Keyword: `Solution Architecture` or `COMP-ARCH`
+  1. Multiple competencies exist in the catalog.
 - **Step-by-Step Procedure:**
-  1. In the Competencies tab, locate the search toolbar.
-  2. Type `Solution Architecture` in the `Search competencies...` input.
-  3. Verify the rows in the table dynamically update to only matching entries.
-  4. Click the `View Details` (eye icon) button on the matching competency row.
-  5. Inspect the View Details modal layout, domain classification, and Member Micro-skills list.
-  6. Click `Close` to dismiss the modal.
+  1. Navigate to Competencies catalog.
+  2. In the search input, type a keyword (e.g. "Architecture" or "COMP-ARCH").
+  3. Inspect filtered results list.
+  4. Click on a competency row or "View Details" to open competency overview.
 - **Expected Results:**
-  - Search input filters the table with no border clipping or UI lag.
-  - Non-matching competencies are hidden; only matching competencies render.
-  - The View Details modal renders with human-centric semantics (Code badge, Scope & Description, Member Micro-skills chips).
-  - Modal closes cleanly without leaving an active backdrop overlay.
-- **Source References:**
-  - UI: `CompetencyOntologyPage.tsx` (`compSearchQuery`, `viewingCompetency`)
+  1. Table dynamically filters and displays only matching competencies.
+  2. Details modal opens displaying full description, domain classification, and list of associated micro-skills.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (compSearchQuery, viewingCompetency)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F04: Verify deletion integrity rules when deleting a competency
-- **Test Case ID:** `TC-WF02-F04`
+- **Test Case ID:** TC-WF02-F04
 - **Feature / Function:** Competencies Management
-- **Excel Sheet:** `Competencies management`
+- **Excel Sheet:** Competencies management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
   1. User is authenticated as L&D Manager.
-  2. An isolated, unused competency exists (0 assigned micro-skills).
-  3. A linked competency exists having at least 1 member micro-skill attached.
+  2. Test competencies (isolated and linked) exist.
 - **Step-by-Step Procedure:**
-  1. Locate the unused competency in the table and click the `Delete` button (trash icon).
-  2. Confirm deletion in the confirmation modal.
-  3. Locate the linked competency with member micro-skills and click `Delete`.
-  4. Confirm deletion in the prompt.
+  1. Select an unused/isolated competency and click "Delete".
+  2. Confirm deletion in prompt -> competency is removed.
+  3. Select a competency that has active child micro-skills assigned and attempt to delete.
 - **Expected Results:**
-  - Unused competency is deleted successfully; table row is removed immediately.
-  - Deletion of the linked competency is rejected; destructive alert or toast notifies: `Cannot delete competency: Competency has active member micro-skills assigned`.
-- **Source References:**
-  - UI: `CompetencyOntologyPage.tsx` (`handleDeleteCompetency`)
+  1. Isolated unused competency is deleted cleanly from catalog and Neo4j graph.
+  2. Competency with active micro-skills triggers rejection: cannot delete while child micro-skills are referenced.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (handleDeleteCompetency)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 2: MANAGE MICRO-SKILLS & TAXONOMY
 Sheet Name: Micro-skills management
-Target Portal: /workspace/workspace-development/manager/ontology (Micro-skills Tab)
+Target Portal: /workspace/{slug}/manager/ontology (Micro-skills Tab)
 ================================================================================
-```
+`
 
 ### TC-WF02-F05: Verify creating, filtering, and updating a micro-skill with parent competency
-- **Test Case ID:** `TC-WF02-F05`
+- **Test Case ID:** TC-WF02-F05
 - **Feature / Function:** Manage Micro-Skills & Taxonomy
-- **Excel Sheet:** `Micro-skills management`
+- **Excel Sheet:** Micro-skills management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Authenticated as Domain Expert or L&D Manager.
-  2. At least one Competency exists (e.g. `COMP-ARCH-J01`).
-- **Test Data:**
-  - Code: `MS-PY-001`
-  - Name: `Python AsyncIO Concurrency`
-  - Parent Competency: `COMP-ARCH-J01`
-  - Description: `Mastery of event loops, coroutines, and concurrent task orchestration.`
+  1. User is authenticated as Expert/Manager.
+  2. At least one Competency exists.
 - **Step-by-Step Procedure:**
-  1. Navigate to `/workspace/workspace-development/manager/ontology` and open the **Micro-skills** tab.
-  2. Click the `+ Create Micro-skill` button.
-  3. In the modal, fill Code `MS-PY-001`, Title `Python AsyncIO Concurrency`, Description, and select Parent Competency `COMP-ARCH-J01`.
-  4. Click `Create Micro-skill`.
-  5. Use the **Parent Competency** filter dropdown to filter the catalog by `COMP-ARCH-J01`.
-  6. Click `Edit` on the newly created micro-skill, edit description, and click `Save Changes`.
+  1. Log in as Domain Expert or L&D Manager and open Micro-skills tab.
+  2. Click "+ Create Micro-skill", enter Code (e.g. MS-PY-001), Name (e.g. Python Core), Description, and select Parent Competency and select ways to verify passing condition for each knowledge level.
+  3. Click "Create Micro-skill".
+  4. Filter table by Parent Competency dropdown.
+  5. Click "Edit", modify description, and save.
 - **Expected Results:**
-  - Micro-skill is created; success toast `Micro-skill Created` appears.
-  - The table displays the skill with `ACTIVE` badge and parent competency tag.
-  - The Parent Competency dropdown filter correctly isolates all skills belonging to `COMP-ARCH-J01`.
-  - Edits save and persist accurately.
-- **Source References:**
-  - UI: `CompetencyOntologyPage.tsx` (`handleSaveMicroSkill`, `selectedCompFilter`)
-  - Test Spec: [`frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts#L199-L212)
+  1. Modal closes and success toast appears.
+  2. The new skill appears with ACTIVE badge under selected competency.
+  3. Competency filter correctly filters down to this skill.
+  4. Updates persist successfully.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (handleSaveMicroSkill, selectedCompFilter)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F06: Verify validation on duplicate code and blank required fields for micro-skills
-- **Test Case ID:** `TC-WF02-F06`
+- **Test Case ID:** TC-WF02-F06
 - **Feature / Function:** Manage Micro-Skills & Taxonomy
-- **Excel Sheet:** `Micro-skills management`
+- **Excel Sheet:** Micro-skills management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
   1. Create Micro-skill modal is open.
-  2. Micro-skill `MS-PY-001` exists in the system.
+  2. Code MS-PY-001 already exists in catalog.
 - **Step-by-Step Procedure:**
-  1. Leave Title, Code, and Parent Competency blank; click `Create Micro-skill`.
-  2. Verify inline error indicators under required inputs.
-  3. Enter existing Code `MS-PY-001` with a different Title.
-  4. Select a Parent Competency and click `Create Micro-skill`.
+  1. Click "+ Create Micro-skill" button.
+  2. Leave required fields blank and click submit.
+  3. Enter existing Code (e.g. MS-PY-001) with different title and click submit.
 - **Expected Results:**
-  - Blank submission blocked with validation messages (`Skill code is required`, `Skill name is required`).
-  - Duplicate code triggers error: `Micro-skill code MS-PY-001 already exists`.
-- **Source References:**
-  - UI: `CompetencyOntologyPage.tsx` (`handleSaveMicroSkill`)
+  1. Inline validation errors highlight missing fields.
+  2. Duplicate code triggers error: "Micro-skill code already exists."
+  3. Submission is rejected.
+- **Source / UI Implementation:** CompetencyOntologyPage.tsx (handleSaveMicroSkill)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F07: Verify micro-skill deletion protection when skill is referenced by Target Roles
-- **Test Case ID:** `TC-WF02-F07`
+- **Test Case ID:** TC-WF02-F07
 - **Feature / Function:** Manage Micro-Skills & Taxonomy
-- **Excel Sheet:** `Micro-skills management`
+- **Excel Sheet:** Micro-skills management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. An unreferenced micro-skill exists (not part of any Target Role).
-  2. An in-use micro-skill exists (mapped to an active Target Role level).
+  1. One unassigned skill and one assigned skill exist in organization.
 - **Step-by-Step Procedure:**
-  1. Click `Delete` on the unreferenced skill and confirm prompt -> deletion succeeds.
-  2. Click `Delete` on the in-use skill and confirm prompt.
+  1. Identify an unassigned micro-skill and confirm deletion -> deletion succeeds.
+  2. Identify a micro-skill actively mapped to a Target Role level and attempt deletion.
 - **Expected Results:**
-  - Unreferenced skill is deleted cleanly from catalog and Neo4j store.
-  - In-use skill deletion is aborted; system displays warning toast: `Cannot delete micro-skill: Skill is currently required by active Target Role(s)`.
-- **Backend Test:** `backend/src/test/java/com/adaptlearngraph/services/TargetRoleAndMicroSkillNeo4jIntegrationTest.java`
+  1. Unassigned skill is deleted and removed from ontology catalog.
+  2. In-use skill deletion is blocked with error: "Cannot delete micro-skill: Skill is currently required by active Target Role(s)."
+- **Source / UI Implementation:** TargetRoleAndMicroSkillNeo4jIntegrationTest.java
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 3: DIRECTED SKILL PREREQUISITES
 Sheet Name: Micro-skills management
-Target Portal: /workspace/workspace-development/manager/ontology (Prerequisites Tab)
+Target Portal: /workspace/{slug}/manager/ontology (Prerequisites Tab)
 ================================================================================
-```
+`
 
 ### TC-WF02-F08: Verify creating directed skill prerequisite edge with required knowledge levels
-- **Test Case ID:** `TC-WF02-F08`
+- **Test Case ID:** TC-WF02-F08
 - **Feature / Function:** Directed Skill Prerequisites
-- **Excel Sheet:** `Micro-skills management`
+- **Excel Sheet:** Micro-skills management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Two distinct micro-skills exist in the system (e.g. `MS-CORE01` and `MS-ARC01`).
-- **Test Data:**
-  - Source Skill: `MS-CORE01`
-  - Target Skill: `MS-ARC01`
-  - Required Knowledge Level: `Intermediate`
-  - Minimum Benchmark Mastery: `75%`
+  1. Both source and target skills exist and are distinct.
 - **Step-by-Step Procedure:**
-  1. Open `/workspace/workspace-development/manager/ontology` and click the **Skill Prerequisites** tab.
-  2. Click `+ Create Prerequisite`.
-  3. In the modal, select Source Skill `MS-CORE01` and Target Skill `MS-ARC01`.
-  4. Select Knowledge Level `Intermediate` and set Minimum Mastery to `75`.
-  5. Click `Create Prerequisite Edge`.
-  6. Inspect the Prerequisites directory table.
+  1. Navigate to "Prerequisites" tab/section.
+  2. Click "+ Add Prerequisite".
+  3. Select Source Skill (e.g. MS-PY-001).
+  4. Select Target Skill (e.g. MS-FAST-01).
+  5. Click "Save Prerequisite".
 - **Expected Results:**
-  - Directed edge is saved and rendered in the table as `MS-CORE01 -> MS-ARC01`.
-  - The mastery pill displays `75% Mastery` using the standardized outline design token (`border border-border/80 text-foreground`).
-  - Graph relationship `[:HAS_SKILL_PREREQUISITE]` is persisted to Neo4j.
-- **Test Spec:** [`frontend/system-tests/REQ-017-F01-ontology-and-roles-flow.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-017-F01-ontology-and-roles-flow.spec.ts#L72-L100)
+  1. Modal closes and success toast appears.
+  2. Directed relationship [:HAS_SKILL_PREREQUISITE] is stored in Neo4j.
+  3. Edge appears in prerequisites list and in interactive knowledge graph.
+- **Source / UI Implementation:** PrerequisitesTab.tsx
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F09: Verify self-referencing and circular prerequisite dependency detection is rejected
-- **Test Case ID:** `TC-WF02-F09`
+- **Test Case ID:** TC-WF02-F09
 - **Feature / Function:** Directed Skill Prerequisites
-- **Excel Sheet:** `Micro-skills management`
+- **Excel Sheet:** Micro-skills management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Prerequisite edge `Skill A -> Skill B` already exists.
+  1. Existing prerequisite edge A -> B exists in database.
 - **Step-by-Step Procedure:**
-  1. Open Create Prerequisite modal and set Source = `Skill A` and Target = `Skill A`.
-  2. Attempt to submit.
-  3. Open modal again, select Source = `Skill B` and Target = `Skill A` (creating cycle `A -> B -> A`).
-  4. Click `Create Prerequisite Edge`.
+  1. In Add Prerequisite modal, select same skill as both Source and Target -> attempt to save.
+  2. Given existing directed edge Skill A -> Skill B, attempt to add prerequisite Skill B -> Skill A.
+  3. Click "Save Prerequisite".
 - **Expected Results:**
-  - Step 2: Self-referencing is blocked with validation error: `Source and target skills must be distinct`.
-  - Step 4: Circular dependency detection (DAG cycle check) halts transaction with message: `Circular prerequisite dependency detected: Path creates a closed loop`.
-- **Documentation:** `documents/testing/unit/REQ-018-target-role-graph-editing.md`
+  1. Self-reference triggers error: "Source and target skills cannot be identical."
+  2. Circular dependency triggers graph cycle detection error: "Circular dependency detected: Prerequisite loop is not permitted."
+  3. Graph remains a directed acyclic graph (DAG).
+- **Source / UI Implementation:** SkillPrerequisiteService.java (DAG cycle detection)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 4: CREATE TARGET ROLE DRAFT & EXPERT ASSIGNMENT
 Sheet Name: Target roles management
-Target Portal: /workspace/workspace-development/ld-manager/target-roles
+Target Portal: /workspace/{slug}/ld-manager/target-roles
 ================================================================================
-```
+`
 
 ### TC-WF02-F10: Verify L&D Manager creates Target Role Draft and assigns Domain Expert
-- **Test Case ID:** `TC-WF02-F10`
+- **Test Case ID:** TC-WF02-F10
 - **Feature / Function:** Create Target Role Draft & Expert Assignment
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. User is authenticated as L&D Manager (`manager@technova.com`).
-  2. At least one active Job Position exists in Manager's department.
-  3. Domain Expert account (`expert@technova.com`) is provisioned.
-- **Test Data:**
-  - Role Code: `ROLE-AI-ENG`
-  - Title: `Enterprise AI Solutions Architect`
-  - Levels Hierarchy:
-    - Rank 1: Senior Level (Duration: 6 months)
-    - Rank 2: Middle Level (Duration: 4 months)
-    - Rank 3: Junior Level (Duration: 3 months)
-  - Assigned Expert: `expert@technova.com`
+  1. User is authenticated as L&D Manager.
+  2. Job Position and Expert account exist.
 - **Step-by-Step Procedure:**
-  1. Log in as L&D Manager and navigate to `/workspace/workspace-development/ld-manager/target-roles`.
-  2. Click the `+ Create Target Role` button.
-  3. Fill in Role Code `ROLE-AI-ENG`, Title, and select the Job Position.
-  4. Configure 3 mastery levels ensuring Rank 1 is the highest level (Senior).
-  5. In the Assigned Expert dropdown, select `expert@technova.com`.
-  6. Click `Create Target Role`.
-  7. Log in as Domain Expert (`expert@technova.com`) and navigate to `/workspace/workspace-development/expert/target-roles`.
+  1. Log in as L&D Manager.
+  2. Navigate to Target Roles page and click "+ Create Target Role".
+  3. Enter Code, Title, select Job Position, define Levels with durations (e.g. Senior: 6m, Middle: 4m, Junior: 3m).
+  4. Assign an eligible Domain Expert and click "Create Target Role".
 - **Expected Results:**
-  - Role is successfully initialized in `DRAFT` status (version `v1.0`).
-  - Stat card `TOTAL ROLE PROFILES` increments.
-  - The role row displays in the L&D Manager catalog with `DRAFT` badge and assigned expert name.
-  - The role appears immediately in the Expert's personal queue ready for micro-skill configuration.
-- **Source References:**
-  - UI: [`TargetRolesPage.tsx`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/src/features/manager/target-roles/TargetRolesPage.tsx)
-  - Test Spec: [`frontend/system-tests/REQ-018-target-role-authoring-and-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-018-target-role-authoring-and-graph.spec.ts)
+  1. Role draft is created in DRAFT status with defined level hierarchy (Rank 1 as Highest).
+  2. Assigned role appears in the assigned Expert's personal workspace queue.
+- **Source / UI Implementation:** TargetRolesPage.tsx
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F11: Verify L&D Manager can only select Job Positions within their assigned Department
-- **Test Case ID:** `TC-WF02-F11`
+- **Test Case ID:** TC-WF02-F11
 - **Feature / Function:** Create Target Role Draft & Expert Assignment
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Manager's department is `Software Department`.
-  2. Another department `Cloud Department` exists with isolated Job Positions.
+  1. Multiple departments with distinct job positions exist in the system.
 - **Step-by-Step Procedure:**
-  1. Open `+ Create Target Role` modal as L&D Manager.
-  2. Click the Job Position dropdown.
-  3. Review all available options.
+  1. Open "+ Create Target Role" modal as L&D Manager.
+  2. Inspect the Job Position dropdown options.
+  3. Verify that only Job Positions belonging to the Manager's department are selectable.
 - **Expected Results:**
-  - Only Job Positions belonging to `Software Department` appear in the dropdown.
-  - Job Positions from `Cloud Department` or other business units are completely hidden (strict departmental scoping).
-- **Test Spec:** [`frontend/system-tests/REQ-department-job-position-scoping.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-department-job-position-scoping.spec.ts)
+  1. Dropdown is strictly filtered to the Manager's department scope.
+  2. Job Positions from other departments are not accessible or selectable.
+- **Source / UI Implementation:** CreateTargetRoleModal.tsx (department job position scoping)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 5: CONFIGURE ROLE REQUIREMENTS
 Sheet Name: Target roles management
-Target Portal: /workspace/workspace-development/expert/target-roles
+Target Portal: /workspace/{slug}/expert/target-roles
 ================================================================================
-```
+`
 
 ### TC-WF02-F12: Verify Expert configures micro-skills and required knowledge levels per role level
-- **Test Case ID:** `TC-WF02-F12`
+- **Test Case ID:** TC-WF02-F12
 - **Feature / Function:** Configure Role Requirements
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Role `ROLE-AI-ENG` is assigned to Domain Expert in `DRAFT` status.
-- **Test Data:**
-  - Senior Level: `MS-ARC01` (Advanced), `MS-CORE01` (Advanced)
-  - Junior Level: `MS-CORE01` (Intermediate)
+  1. Target role is assigned to the Expert in DRAFT status.
 - **Step-by-Step Procedure:**
-  1. Authenticate as Domain Expert and open `/workspace/workspace-development/expert/target-roles`.
-  2. Locate `ROLE-AI-ENG` and click `Configure Micro-skills` (network nodes icon).
-  3. In the Configuration modal, select `Senior Level` tab.
-  4. Add micro-skill `MS-ARC01` and set knowledge requirement to `Advanced`.
-  5. Add micro-skill `MS-CORE01` and set knowledge requirement to `Advanced`.
-  6. Switch to `Junior Level` tab, add `MS-CORE01` with `Intermediate`.
-  7. Click `Save Draft`.
+  1. Log in as assigned Expert and open assigned role in DRAFT status.
+  2. Select a level tab (e.g. Senior - Rank 1).
+  3. Add Competency and micro-skills.
+  4. Select Required Knowledge Levels (Foundation, Intermediate, Advanced) for each micro-skill.
+  5. Click "Save Configuration".
 - **Expected Results:**
-  - Skills matrix updates cleanly per level.
-  - Success toast confirms: `Target Role Configuration Saved`.
-  - Reopening the View Details modal reflects the newly configured competencies and micro-skills with their assigned levels.
-- **Source References:**
-  - UI: [`ExpertAssignedRolesPage.tsx`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/src/features/expert/target-roles/ExpertAssignedRolesPage.tsx)
+  1. Micro-skills are mapped to the specific level.
+  2. Neo4j creates [:REQUIRES_SKILL] edges with requiredKnowledgeLevels list.
+  3. Success toast confirms requirements saved.
+- **Source / UI Implementation:** ExpertAssignedRolesPage.tsx (handleSaveRequirements)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F13: Verify validation requires knowledge level selection and blocks duplicate skill assignments
-- **Test Case ID:** `TC-WF02-F13`
+- **Test Case ID:** TC-WF02-F13
 - **Feature / Function:** Configure Role Requirements
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Configure Micro-skills modal is open for a role level.
+  1. Expert is on the Role Configuration matrix screen.
 - **Step-by-Step Procedure:**
-  1. Attempt to add a micro-skill without selecting a required knowledge level.
-  2. Select a skill that has already been added to the same role level.
+  1. In Add Micro-skill panel, select Competency and Micro-skill.
+  2. Leave all knowledge level pills unselected and attempt to assign.
+  3. Select valid level and assign skill.
 - **Expected Results:**
-  - Missing knowledge level blocks addition with inline error prompt.
-  - Duplicate skill is rejected or disabled in selection list; each skill may only appear once per role level.
-- **Source References:**
-  - UI: `ExpertAssignedRolesPage.tsx` (`handleSaveRequirements`)
+  1. Unselected knowledge levels block assignment with validation notice.
+- **Source / UI Implementation:** ExpertAssignedRolesPage.tsx (knowledge level validation)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 6: ROLE REVIEW, REVISION & PUBLISHING
 Sheet Name: Target roles management
-Target Portal: /workspace/workspace-development/ld-manager/target-roles
+Target Portal: /workspace/{slug}/ld-manager/target-roles
 ================================================================================
-```
+`
 
 ### TC-WF02-F14: Verify L&D Manager review with revision feedback and Expert resubmission
-- **Test Case ID:** `TC-WF02-F14`
+- **Test Case ID:** TC-WF02-F14
 - **Feature / Function:** Role Review, Revision & Publishing
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Expert has completed configuration and clicked `Submit for Review` (Role status = `SUBMITTED`).
-- **Test Data:**
-  - Feedback Comment: `Please add security micro-skills to Senior level before publishing.`
+  1. Target role is submitted by Expert.
 - **Step-by-Step Procedure:**
-  1. Log in as L&D Manager and locate the submitted role in `/ld-manager/target-roles`.
-  2. Click `Review Submission`.
-  3. Click `Request Revision` (or Reject), enter the revision feedback comment, and submit.
-  4. Log in as Domain Expert -> open `/expert/target-roles`.
-  5. Verify the role status is `REJECTED` and inspect the amber revision feedback banner.
-  6. Update configuration and click `Submit for Review` again.
+  1. Expert clicks "Submit for Approval" -> role transitions to SUBMITTED.
+  2. L&D Manager reviews role, enters feedback: "Please add Advanced level to PyTorch", and clicks "Return for Revision".
+  3. Role status transitions to REJECTED.
+  4. Expert opens role, views feedback alert banner, adjusts requirements, and resubmits.
 - **Expected Results:**
-  - Empty revision comments are rejected (feedback is required).
-  - Role lifecycle transitions correctly: `DRAFT/SENT -> SUBMITTED -> REJECTED -> SUBMITTED`.
-  - On the L&D Manager table and details modal, a `REJECTED` role does not show the `Edit Target Role` button or `STAGED FOR STAFFING` pill, delegating revision to the assigned Domain Expert.
-  - Expert receives visible feedback and can resubmit smoothly.
-- **Backend Test:** [`backend/src/test/java/com/adaptlearngraph/entities/domain/TargetRoleLifecycleTest.java`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/backend/src/test/java/com/adaptlearngraph/entities/domain/TargetRoleLifecycleTest.java)
+  1. Returning role requires non-empty feedback comment.
+  2. Role transitions correctly: DRAFT -> SUBMITTED -> REJECTED -> SUBMITTED.
+  3. Revision banner displays feedback to Expert; resubmission updates state.
+- **Source / UI Implementation:** TargetRoleLifecycleTest.java
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F15: Verify L&D Manager publishes approved role and creates successor draft v1.1
-- **Test Case ID:** `TC-WF02-F15`
+- **Test Case ID:** TC-WF02-F15
 - **Feature / Function:** Role Review, Revision & Publishing
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Target role is in `SUBMITTED` status and verified by L&D Manager.
+  1. Role is fully configured in SUBMITTED status.
 - **Step-by-Step Procedure:**
-  1. Log in as L&D Manager and click `Publish Role`.
-  2. Confirm publication dialog.
-  3. Verify role row updates to `PUBLISHED` status badge and no longer displays the `STAGED FOR STAFFING` pill.
-  4. Attempt to edit the published role (verify direct editing is locked).
-  5. Click `Create Successor Draft` on the published role.
+  1. L&D Manager approves and clicks "Publish Role".
+  2. Role transitions to PUBLISHED; direct editing is locked (immutable).
+  3. Click "Create Successor Draft" to spawn v1.1.
+  4. Verify v1.1 inherits all previous levels (Rank 1 as Highest), competencies, and skills in DRAFT status.
 - **Expected Results:**
-  - Role transitions to `PUBLISHED`; published version becomes immutable and `STAGED FOR STAFFING` pill is removed on both L&D Manager and Expert tables.
-  - Successor draft `v1.1` is spawned in `DRAFT` status inheriting all competencies and skills, also without the `STAGED FOR STAFFING` pill since a published predecessor exists.
-  - Original `v1.0` remains active and published in the knowledge graph, and the Ontology Explorer reflects the latest version status (`PUBLISHED`, `DRAFT`, `SUBMITTED`, or `REJECTED`) instead of `STAGED`.
-- **Backend Test:** `backend/src/test/java/com/adaptlearngraph/services/TargetRoleAndMicroSkillNeo4jIntegrationTest.java`
+  1. Role publishes successfully.
+  2. Published role cannot be directly edited.
+  3. Successor draft (v1.1) is created in DRAFT while v1.0 remains active and published.
+- **Source / UI Implementation:** TargetRoleService.java (publish & successor draft spawn)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 7: UNPUBLISH TARGET ROLE
 Sheet Name: Target roles management
-Target Portal: /workspace/workspace-development/ld-manager/target-roles
+Target Portal: /workspace/{slug}/ld-manager/target-roles
 ================================================================================
-```
+`
 
 ### TC-WF02-F16: Verify L&D Manager can unpublish role and Domain Expert is restricted
-- **Test Case ID:** `TC-WF02-F16`
+- **Test Case ID:** TC-WF02-F16
 - **Feature / Function:** Unpublish Target Role
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Role is in `PUBLISHED` status.
+  1. A target role is in PUBLISHED status.
 - **Step-by-Step Procedure:**
-  1. Log in as L&D Manager and click `Unpublish` on the published role row.
-  2. Confirm unpublication -> role status becomes `UNPUBLISHED`.
-  3. Log in as Domain Expert and navigate to `/expert/target-roles`.
-  4. Inspect action buttons on published and unpublished roles.
+  1. Log in as L&D Manager and click "Unpublish" on a published role -> role transitions to UNPUBLISHED.
+  2. Log in as Domain Expert and inspect the same role -> unpublish action is hidden/unauthorized.
+  3. Verify successor draft can still be created from an UNPUBLISHED role.
 - **Expected Results:**
-  - L&D Manager successfully unpublishes the role.
-  - Unpublish action button is completely absent for Domain Expert (strict RBAC enforcement).
-  - Successor drafts can still be created from an `UNPUBLISHED` role for future revisions.
-- **Test Spec:** [`frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts#L180-L212)
+  1. L&D Manager successfully unpublishes the role.
+  2. Expert lacks unpublish permissions (RBAC enforcement).
+  3. Successor drafts can still be created from UNPUBLISHED roles for future revisions.
+- **Source / UI Implementation:** TargetRolesPage.tsx & ExpertAssignedRolesPage.tsx (RBAC check)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 8: BROWSE PUBLISHED ROLES
 Sheet Name: Target roles management
-Target Portal: /workspace/workspace-development/employee/target-roles
+Target Portal: /workspace/{slug}/employee/target-roles
 ================================================================================
-```
+`
 
 ### TC-WF02-F17: Verify Employee browses published roles and unapproved roles remain hidden
-- **Test Case ID:** `TC-WF02-F17`
+- **Test Case ID:** TC-WF02-F17
 - **Feature / Function:** Browse Published Roles
-- **Excel Sheet:** `Target roles management`
+- **Excel Sheet:** Target roles management ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Multiple roles exist in various statuses (`PUBLISHED`, `DRAFT`, `SUBMITTED`, `UNPUBLISHED`).
+  1. Roles in various statuses (Published, Draft, Unpublished) exist.
 - **Step-by-Step Procedure:**
-  1. Log in as Employee (`employee@technova.com`).
-  2. Navigate to `/workspace/workspace-development/employee/target-roles`.
-  3. Inspect the catalog cards and career pathway recommendations.
-  4. Verify the visibility of draft, submitted, and unpublished roles.
+  1. Log in as Employee.
+  2. Navigate to "Upskilling" / Target Roles catalog.
+  3. Inspect published role details, level duration, and required skills.
+  4. Verify that roles in DRAFT, SUBMITTED, REJECTED, and UNPUBLISHED statuses are completely hidden.
 - **Expected Results:**
-  - Employee only sees `PUBLISHED` roles relevant to their assigned department.
-  - Roles in `DRAFT`, `SUBMITTED`, `REJECTED`, or `UNPUBLISHED` statuses are strictly hidden from the employee portal.
-- **Test Spec:** [`frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-user-roles-unpublish-levels.spec.ts#L214-L248)
+  1. Employee views active PUBLISHED roles matching their department/career path.
+  2. Non-published roles are strictly isolated from the Employee view.
+- **Source / UI Implementation:** EmployeeTargetRolesPage.tsx (published isolation)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 9: INTERACTIVE KNOWLEDGE GRAPH
 Sheet Name: Ontology Graph
-Target Portal: /workspace/workspace-development/expert/ontology (Explore Graph Tab)
+Target Portal: /workspace/{slug}/expert/ontology (Explore Graph Tab)
 ================================================================================
-```
+`
 
 ### TC-WF02-F18: Verify graph initialization, entity palette, and expanding hierarchical neighbors
-- **Test Case ID:** `TC-WF02-F18`
+- **Test Case ID:** TC-WF02-F18
 - **Feature / Function:** Interactive Knowledge Graph
-- **Excel Sheet:** `Ontology Graph`
+- **Excel Sheet:** Ontology Graph ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Target role with linked competencies and skills exists in Neo4j database.
+  1. Target role with linked competencies and skills exists in Neo4j.
 - **Step-by-Step Procedure:**
-  1. Log in as Domain Expert or L&D Manager and open `/workspace/workspace-development/expert/ontology`.
-  2. Verify the 3 KPI summary stat cards (`Micro-skills`, `Competencies`, `Skill Prerequisites`) and loading state indicator while fetching from the database.
-  3. Click the **Explore Graph** tab.
-  4. Verify clean canvas initialization (`0 nodes on canvas`, icon-only sidebar collapse toggle, Zoom In/Out, Fit to Viewport toolbar).
-  5. In the entity palette, click `Roles` filter and click a Target Role card to place it on the canvas.
-  6. In the Node Inspector panel, click `Neighbors`, and use the top-center level filter bar (`All Levels` or specific level) to filter competencies and micro-skills belonging to that level.
-  7. Use Zoom In, Zoom Out, and Fit to Viewport controls.
+  1. Log in as Expert or L&D Manager and open "Ontology Graph" explorer.
+  2. Drag and drop a Target Role node onto canvas.
+  3. Click "Neighbors" button to expand connected nodes.
+  4. Use Zoom In, Zoom Out, and Fit to Viewport controls.
 - **Expected Results:**
-  - Canvas initializes without errors; vis-network mounts cleanly after database fetch completes.
-  - Placing role renders 1 node; clicking `Neighbors` dynamically pulls and expands Levels (Rank 1 as Highest), Competencies, and Micro-skills (>1 nodes).
-  - Selecting a specific level (or `All Levels`) in the top-center filter bar displays only the competencies and micro-skills required by that level (or across the role's levels).
-  - Directed edges (`[:REQUIRES_SKILL]`, `[:HAS_LEVEL]`) render with distinct colors.
-  - Zoom and Fit controls smoothly adjust the camera viewport.
-- **Test Spec:** [`frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts#L19-L90)
+  1. Canvas initializes cleanly with action toolbar (Zoom, Pan, Fit, Clear).
+  2. Expanding neighbors dynamically renders Levels (Rank 1 as Highest), Competencies, and Micro-skills.
+  3. Directed edges ([:REQUIRES_SKILL], [:HAS_LEVEL]) render with distinctive color-coded markers.
+- **Source / UI Implementation:** OntologyExploreGraphTab.tsx (vis-network initialization)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
-```
+---
+
+`
 ================================================================================
 FUNCTION 10: INTERACTIVE EDGE LINKING & CANVAS OPERATIONS
 Sheet Name: Ontology Graph
-Target Portal: /workspace/workspace-development/expert/ontology (Explore Graph Tab)
+Target Portal: /workspace/{slug}/expert/ontology (Explore Graph Tab)
 ================================================================================
-```
+`
 
 ### TC-WF02-F19: Verify linking two micro-skills with directed prerequisite relationship on canvas
-- **Test Case ID:** `TC-WF02-F19`
+- **Test Case ID:** TC-WF02-F19
 - **Feature / Function:** Interactive Edge Linking & Canvas Operations
-- **Excel Sheet:** `Ontology Graph`
+- **Excel Sheet:** Ontology Graph ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
   1. Two unlinked micro-skills are placed on the canvas.
 - **Step-by-Step Procedure:**
   1. Place two unlinked micro-skills on canvas.
-  2. Select source skill node and click the `Connect` button.
-  3. Click target skill node.
-  4. Select relationship type `HAS_SKILL_PREREQUISITE` and confirm.
+  2. Select source skill, click "Connect", and click target skill.
+  3. Select relationship type (HAS_SKILL_PREREQUISITE) and confirm.
 - **Expected Results:**
-  - A directed arrow edge appears between the two nodes with label `HAS_SKILL_PREREQUISITE`.
-  - Neo4j database is updated immediately with the new directed edge.
-- **Test Spec:** [`frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts#L91-L122)
+  1. A directed arrow edge appears between the two nodes with label HAS_SKILL_PREREQUISITE.
+  2. Neo4j graph database is updated immediately with the new directed edge.
+- **Source / UI Implementation:** OntologyExploreGraphTab.tsx (edge linking [:HAS_SKILL_PREREQUISITE])
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ### TC-WF02-F20: Verify entity search highlights nodes, displays Node Inspector, and Clear Canvas resets
-- **Test Case ID:** `TC-WF02-F20`
+- **Test Case ID:** TC-WF02-F20
 - **Feature / Function:** Interactive Edge Linking & Canvas Operations
-- **Excel Sheet:** `Ontology Graph`
+- **Excel Sheet:** Ontology Graph ([Report5_Test Report(2).xlsx](../../Report5_Test%20Report(2).xlsx))
 - **Pre-conditions:**
-  1. Multiple entities are placed on the canvas.
+  1. Multiple entities are placed on canvas.
 - **Step-by-Step Procedure:**
-  1. Type an entity title in the Graph Search bar.
-  2. Inspect the canvas focus and Node Inspector side drawer.
-  3. Click the `Clear Canvas` button in the top action toolbar.
+  1. With multiple nodes on canvas, type an entity name in Graph Search bar.
+  2. Verify matching node is highlighted and Node Inspector panel opens displaying details.
+  3. Click "Clear Canvas" toolbar button.
 - **Expected Results:**
-  - Canvas smoothly animates to center and highlight the searched node; inspector displays metadata, code, and attributes.
-  - Clicking `Clear Canvas` resets the canvas to clean initial state (`0 nodes on canvas`) without deleting underlying database records.
-- **Test Spec:** [`frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts`](file:///d:/Semesters/Fall2026/SEP490/Project/SEP490/frontend/system-tests/REQ-017-F02-ontology-explore-graph.spec.ts)
+  1. Canvas centers and highlights the searched node; inspector displays code, title, and metadata.
+  2. "Clear Canvas" resets canvas to clean initial state (0 nodes) without deleting database entities.
+- **Source / UI Implementation:** OntologyExploreGraphTab.tsx (search highlight, Node Inspector, Clear Canvas)
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-report5-flow.spec.ts](../../frontend/system-tests/REQ-WF02-report5-flow.spec.ts)
 
 ---
 
 ```
 ================================================================================
 END-TO-END WORKFLOW & STATE TRANSITION SUITE (COMMITTED CAPSTONE TEST CASES)
+Based on SWP490_R2_BM04_Review2_Commitment_1(1).docx (Tables 11, 12, 13)
 ================================================================================
 ```
 
-### TC-WF02-E2E01: Complete End-to-End Target Role Lifecycle with Neo4j Target Role and Graph Inspection (Capstone Demo)
+### TC-WF02-E2E01: End-to-End Target Role Lifecycle with Neo4j Target Role and Graph Inspection (Capstone Demo Scenario DS-02a)
 - **Test Case ID:** `TC-WF02-E2E01`
+- **Scenario Reference:** `DS-02a` | Type: `Main` (End-to-End Role Authoring, Assignment, Configuration, Graph Inspection, and Publication Lifecycle)
+- **Document Reference:** `SWP490_R2_BM04_Review2_Commitment_1(1).docx` (Table 11: Demo Scenario DS-02a; Table 12: WF-02 Committed Test Cases)
+- **Excel Reference:** `Target roles management` ([`Report5_Test Report(2).xlsx`](../../Report5_Test%20Report(2).xlsx))
 - **Test Type:** End-to-End Workflow Test (Capstone Evaluation Live Script)
+- **Responsible Member / Presenter:** Nguyễn Anh Khôi
 - **Primary Actors:** L&D Manager (`manager@technova.com`), Domain Expert (`expert@technova.com`), Employee (`employee@technova.com`)
 - **Target Portals:**
   - L&D Manager Target Roles (`/workspace/{slug}/ld-manager/target-roles`)
-  - Expert Assigned Target Roles (`/workspace/{slug}/expert/target-roles`)
+  - Expert Assigned Target Roles (`/workspace/{slug}/expert/roles`)
   - Expert Ontology & Explore Graph (`/workspace/{slug}/expert/ontology`)
   - Employee Upskilling Catalog (`/workspace/{slug}/employee/target-roles`)
-- **Pre-conditions:**
-  1. Full Docker Compose stack running with PostgreSQL and Neo4j (`compose.dev.yml`).
-  2. Workspace `TechNova Cognitive Labs` active.
-  3. L&D Manager, Domain Expert, and Employee accounts authenticated.
-- **Step-by-Step Procedure (Kịch bản Demo Capstone):**
-  1. **L&D Manager creates Target Role:**
-     - Navigate to `/workspace/{slug}/ld-manager/target-roles`.
-     - Click `+ Create` button.
-     - Enter code (e.g. `ROLE-NEO4J-xxxx`) and title: `Neo4j Target Role`.
-     - Align with Job Position `15-1252.00 Software Developers`.
-     - Add 4th progressive rank: `Fresher`.
-     - Assign Domain Expert: `expert@technova.com` (`Dr. Sarah Chen`).
-     - Click `Create & Send to Expert`.
-  2. **L&D Manager inspects Target Role Graph:**
-     - Locate `Neo4j Target Role` row in the catalog.
-     - Click Knowledge Graph action button (`View Architecture Graph`).
-     - Inspect interactive SVG canvas showing role root, levels, and linked entities.
-     - Close graph modal cleanly.
-  3. **Domain Expert configures micro-skills:**
-     - Log in as `expert@technova.com` and open `/workspace/{slug}/expert/target-roles`.
-     - Locate `Neo4j Target Role` in status `DRAFT`.
-     - Click `Configure Micro-skills`.
-     - Configure member competencies and micro-skills for Senior, Middle, Junior ranks.
-     - Click `Save Draft` and close modal.
-  4. **Domain Expert explores Ontology Graph:**
-     - Navigate to `/workspace/{slug}/expert/ontology`.
-     - Switch to `Explore Graph` tab.
-     - Interact with the graph canvas for `Fresher` level configuration.
-     - Verify zoom controls and fit-to-viewport.
-  5. **Domain Expert verifies role graph & submits:**
-     - Return to `/workspace/{slug}/expert/target-roles`.
-     - Click Knowledge Graph on `Neo4j Target Role` to verify complete graph alignment.
-     - Click `Configure Micro-skills` -> `Submit to L&D Manager`.
-  6. **L&D Manager reviews and publishes:**
-     - Log in as `manager@technova.com`.
-     - Locate `Neo4j Target Role` in status `SUBMITTED`.
-     - Click `View Details` modal to review specifications and levels.
-     - Click `Approve & Publish`.
-     - Verify role status updates to `PUBLISHED`.
-  7. **Employee browses upskilling catalog:**
-     - Log in as `employee@technova.com` and navigate to `/workspace/{slug}/employee/target-roles`.
-     - Verify `Neo4j Target Role` is visible in the published target role catalog for upskilling enrollment.
-- **Expected Results:**
-  - Role traverses creation, expert configuration, graph inspection, L&D publication, and employee visibility seamlessly.
+
+#### BM04 Committed Scenario Specification (Table 11: DS-02a)
+> **Scenario ID:** DS-02a  
+> **Type:** Main  
+> **Preconditions and data:**  
+> Existing organization for use.  
+> User accounts for L&D Manager, Expert, and Employee are active in the organization workspace. Organization admin imports target roles when onboarding for use.  
+> **Main steps:**  
+> 1. L&D Manager assigns an eligible Expert, and dispatches.  
+> 2. Expert imports competencies, micro-skills and their relationships through import functions.  
+> 3. Expert modifies the relationships by reverse prerequisites, delete prerequisites, add prerequisites through explore graph.  
+> 4. Expert opens the assigned role, sets competencies and micro-skill with knowledge level across target role levels, and submits to Manager.  
+> 5. L&D Manager reviews submitted specifications, approves, and publishes the role.  
+> **Expected result:**  
+> End-to-end role authoring, assignment, configuration, and publication lifecycle completes successfully. Knowledge Graph dynamically renders updated entities.  
+> **Presenter:** Nguyễn Anh Khôi
+
+#### Detailed Step-by-Step Procedure & Test Execution Details
+1. **Pre-condition Setup (Onboarding & User Accounts):**
+   - Active organization: `TechNova Cognitive Labs` (workspace slug: `workspace-development`).
+   - Active user accounts: L&D Manager (`manager@technova.com`), Domain Expert (`expert@technova.com`), Employee (`employee@technova.com`).
+   - Organization admin has imported initial target roles (e.g. `Java Backend Developer` / `Application Developer`) during onboarding via Excel workbook (`01_Org_Structure_Brightpath.xlsx`).
+2. **Step 1 — L&D Manager assigns an eligible Expert, and dispatches:**
+   - Log in as L&D Manager (`manager@technova.com`) and navigate to `/workspace/workspace-development/ld-manager/target-roles`.
+   - Locate the target role in `DRAFT` status (or create/dispatch `ROLE-NEO4J-xxxx` aligned with Job Position `15-1252.00 Software Developers` with levels Senior, Middle, Junior, and Fresher).
+   - Assign an eligible Domain Expert (`Dr. Sarah Chen` / `expert@technova.com`) and click `Create & Send to Expert` (or dispatch assigned role).
+   - Role status initializes in `DRAFT` / `SENT` synchronized across L&D Manager and Expert catalogs.
+   - L&D Manager clicks `View Architecture Graph` (Knowledge Graph icon) on the target role row to inspect role root, progressive levels, and baseline nodes on the interactive SVG canvas.
+3. **Step 2 — Expert imports competencies, micro-skills and their relationships through import functions:**
+   - Log in as Domain Expert (`expert@technova.com`) and open `/workspace/workspace-development/expert/ontology`.
+   - On the ontology toolbar, click the unified `Import` button.
+   - Upload the Excel workbook containing domain competencies, micro-skills, and their parent groupings.
+   - Confirm import: entities and graph relationships persist immediately to PostgreSQL and Neo4j.
+4. **Step 3 — Expert modifies the relationships by reverse prerequisites, delete prerequisites, add prerequisites through explore graph:**
+   - In Ontology Explorer, switch to the `Explore Graph` tab (`vis-network` interactive canvas).
+   - Drag micro-skill and competency nodes onto canvas; click `Neighbors` to expand connected entities.
+   - **Add prerequisites:** Use `Connect` tool to establish directed relationship `[:HAS_SKILL_PREREQUISITE]` between source and target micro-skills.
+   - **Reverse / Delete prerequisites:** Interactively select prerequisite edges to delete or reverse them.
+   - Validate DAG cycle detection blocks circular prerequisite loops (`A -> B -> A`).
+   - Test Zoom In, Zoom Out, and Fit to Viewport controls; inspect Node Inspector drawer.
+5. **Step 4 — Expert opens the assigned role, sets competencies and micro-skill with knowledge level across target role levels, and submits to Manager:**
+   - Navigate to `/workspace/workspace-development/expert/roles` and locate the assigned role in `DRAFT` status.
+   - Click `Configure Micro-skills` (network nodes icon).
+   - Across target role levels (Senior - Rank 1, Middle, Junior, Fresher), map member competencies and assign micro-skills with specific Required Knowledge Levels (`Foundation`, `Intermediate`, `Advanced`).
+   - Click `Save Draft` (or `Save Configuration`) and click `Submit to L&D Manager`.
+   - Role status transitions from `DRAFT` to `SUBMITTED`.
+6. **Step 5 — L&D Manager reviews submitted specifications, approves, and publishes the role:**
+   - Log in as L&D Manager (`manager@technova.com`) and navigate to `/workspace/workspace-development/ld-manager/target-roles`.
+   - Locate the submitted role in `SUBMITTED` status.
+   - Open review modal, inspect all level competencies, micro-skill knowledge levels, and durations.
+   - Click `Approve & Publish`.
+   - Role status updates to `PUBLISHED` (direct editing is locked/immutable; graph nodes and edges are activated).
+   - Log in as Employee (`employee@technova.com`) and navigate to `/workspace/workspace-development/employee/target-roles` to verify the published role is visible in the upskilling catalog while draft roles remain strictly hidden.
+
+- **Expected Results (from DS-02a):**
+  - End-to-end role authoring, assignment, configuration, and publication lifecycle completes successfully.
+  - Knowledge Graph dynamically renders updated entities.
   - Zero hardcoded hex colors, zero unhandled errors, and clean dialog closures throughout.
-- **Automated Test Spec:** [`frontend/system-tests/REQ-WF02-e2e-workflow.spec.ts`](../../frontend/system-tests/REQ-WF02-e2e-workflow.spec.ts)
+- **Automated Test Spec Reference:** [`frontend/system-tests/REQ-WF02-e2e-workflow.spec.ts`](../../frontend/system-tests/REQ-WF02-e2e-workflow.spec.ts)
 
 ---
 
-### TC-WF02-ST01: Target Role Lifecycle State Transitions (DRAFT -> SUBMITTED -> REJECTED -> SUBMITTED -> PUBLISHED -> UNPUBLISHED)
+### TC-WF02-ST01: Target Role Lifecycle State Transitions (DRAFT/STAGED → SENT → REJECTED → SUBMITTED → PUBLISHED → UNPUBLISHED / SUCCESSOR DRAFT)
 - **Test Case ID:** `TC-WF02-ST01`
-- **Test Type:** State Transition Test (Lifecycle State Machine Integrity)
+- **Scenario Reference:** `DS-02b` (Alternative Revision Loop) & `DS-02c` (Immutability & Referential Integrity)
+- **Document Reference:** `SWP490_R2_BM04_Review2_Commitment_1(1).docx` (Table 11: Demo Scenarios DS-02b, DS-02c; Table 12: WF-02 Committed Test Cases; Table 13: Pass Criteria)
+- **Excel Reference:** `Target roles management` ([`Report5_Test Report(2).xlsx`](../../Report5_Test%20Report(2).xlsx))
+- **Test Type:** State Transition Test (Lifecycle State Machine Integrity & Exception Recovery)
+- **Responsible Member:** Nguyễn Anh Khôi
 - **Primary Actors:** L&D Manager (`manager@technova.com`), Domain Expert (`expert@technova.com`), Employee (`employee@technova.com`)
-- **Pre-conditions:**
-  1. Workspace active; user roles configured with proper RBAC.
-- **State Transition Matrix Verified:**
-  1. `[Initial] -> DRAFT / SENT`: L&D Manager authors role and dispatches to Domain Expert (`Create & Send to Expert`), synchronizing `SENT` status across L&D Manager and Domain Expert tables.
-  2. `DRAFT / SENT -> SUBMITTED`: Domain Expert configures required mastery levels and clicks `Submit to L&D Manager`.
-  3. `SUBMITTED -> REJECTED`: L&D Manager reviews role, inputs revision guidance (`Please calibrate intermediate proficiency thresholds`), and confirms return. Status updates to `REJECTED` without an `Edit Target Role` button on the L&D Manager table and without `STAGED FOR STAFFING`.
-  4. `REJECTED -> SUBMITTED`: Expert inspects feedback, updates configuration, and resubmits to L&D Manager.
-  5. `SUBMITTED -> PUBLISHED`: L&D Manager approves role (`Approve & Publish`). Status updates to `PUBLISHED` and removes any `STAGED FOR STAFFING` pill across both tables and later versions.
-  6. `PUBLISHED -> UNPUBLISHED`: L&D Manager unpublishes role with operational confirmation dialog. Role transitions to `UNPUBLISHED` (or draft).
-  7. **Visibility Isolation Assertion:** Employee account verifies role is removed/isolated from active upskilling catalog.
-- **Expected Results:**
-  - Every state transition strictly enforces access control and updates UI badges consistently across L&D Manager, Domain Expert, and Ontology views.
-  - Rejection feedback is preserved and surfaced to the Expert, while L&D Manager cannot directly edit a rejected role awaiting expert revision.
-  - Unpublished roles cannot be accessed or enrolled in by Employees.
-- **Automated Test Spec:** [`frontend/system-tests/REQ-WF02-state-transitions.spec.ts`](../../frontend/system-tests/REQ-WF02-state-transitions.spec.ts)
+- **Pre-conditions (from DS-02b, DS-02c):**
+  1. Workspace `TechNova Cognitive Labs` active with seeded departments and job positions.
+  2. Role accounts authenticated with strict role-based access control (RBAC).
+  3. Pre-existing micro-skills and competencies available for mapping.
+- **State Transition Matrix & Exception Scenarios Verified (DRAFT/STAGED → SENT → REJECTED → SUBMITTED → PUBLISHED → UNPUBLISHED / SUCCESSOR DRAFT):**
+  1. **Phase 1: DRAFT/STAGED → SENT (Create / Stage Role & Dispatch to Expert)**
+     - Initial State: Target role exists in DRAFT / STAGED status (created or imported during onboarding, scoped to department).
+     - L&D Manager assigns an eligible Domain Expert (Dr. Sarah Chen / expert@technova.com) and clicks Create & Send to Expert (or Send to Expert).
+     - Role transitions to SENT status, synchronized in real time across L&D Manager and Domain Expert queues.
+  2. **Phase 2: SENT → REJECTED (DS-02b Step 1: L&D Manager Revision Feedback Loop)**
+     - L&D Manager reviews dispatched/sent role specifications, identifies missing competencies or requires threshold adjustments (e.g. Please calibrate intermediate proficiency thresholds and add Advanced level to PyTorch).
+     - L&D Manager enters actionable revision feedback comment and clicks Return for Revision.
+     - Status updates to REJECTED; direct editing on the L&D Manager table is locked to preserve revision delegation to the assigned Expert.
+  3. **Phase 3: REJECTED → SUBMITTED (DS-02b Step 2: Expert Revision & Submission)**
+     - Domain Expert logs in and inspects the assigned role in REJECTED status.
+     - Amber revision feedback alert banner surfaces L&D Manager's exact comments and guidance.
+     - Expert adds missing competencies and adjusts micro-skills with required knowledge levels (Foundation, Intermediate, Advanced).
+     - Expert clicks Submit to L&D Manager -> status transitions from REJECTED to SUBMITTED.
+  4. **Phase 4: SUBMITTED → PUBLISHED (DS-02b Step 3: Approval & Immutable Graph Publication)**
+     - L&D Manager reviews resubmitted specifications, approves, and clicks Approve & Publish.
+     - Role transitions to PUBLISHED; status updates across all tables; Neo4j graph nodes and edges ([:REQUIRES_SKILL], [:HAS_LEVEL]) are activated.
+     - Direct modification is locked immediately (immutability rule).
+  5. **Phase 5: PUBLISHED → UNPUBLISHED / SUCCESSOR DRAFT (DS-02c: Immutability, Successor Draft & Unpublish)**
+     - **DS-02c Step 1 (Immutability Lock):** Attempt direct editing of published role -> verify direct modification is locked and disabled.
+     - **DS-02c Step 2 (Successor Draft Spawn):** Click Create Successor Draft -> verify successor draft 1.1 is spawned in DRAFT status below the previous published role, inheriting configurations while 1.0 remains active and published.
+     - **DS-02c Step 3 (Referential Integrity Protection):** Attempt deleting a micro-skill actively mapped to the published target role -> deletion is rejected with destructive warning toast (Cannot delete micro-skill: Skill is currently required by active Target Role(s)).
+     - **Unpublish Action:** L&D Manager unpublishes role with confirmation dialog -> role transitions to UNPUBLISHED.
+     - **Employee Isolation Assertion:** Employee account verifies role is immediately removed/isolated from active upskilling catalog.
+- **Expected Results (from DS-02b, DS-02c & Table 13):**
+  - All 6 lifecycle states execute flawlessly without data corruption or orphan records.
+  - Exception scenario DS-02b (Alternative Revision Loop): 100% passing.
+  - Exception scenario DS-02c (Immutability & Referential Integrity): 100% passing.
+  - Test pass rate: 22/22 committed cases pass (100%), 0 open defects.
+- **Automated Test Spec Reference:** [frontend/system-tests/REQ-WF02-state-transitions.spec.ts](../../frontend/system-tests/REQ-WF02-state-transitions.spec.ts)
 
 ---
 

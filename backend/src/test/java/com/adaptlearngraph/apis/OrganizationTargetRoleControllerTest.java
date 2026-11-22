@@ -502,7 +502,7 @@ class OrganizationTargetRoleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Domain Experts can no longer reject target roles"));
+                .andExpect(jsonPath("$.message").value("Domain Experts can no longer reject roles"));
     }
 
     @Test

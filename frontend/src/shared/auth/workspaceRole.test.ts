@@ -3,7 +3,7 @@ import { ROLE_HOME, singleWorkspaceRole } from './workspaceRole'
 
 describe('trusted single-role entry', () => {
   it.each([
-    ['DOMAIN_EXPERT', '/expert/target-roles'],
+    ['DOMAIN_EXPERT', '/expert/roles'],
     ['LD_MANAGER', '/ld-manager/dashboard'],
     ['EMPLOYEE', '/employee/overview'],
     ['ORGANIZATION_ADMINISTRATOR', '/admin/dashboard'],
