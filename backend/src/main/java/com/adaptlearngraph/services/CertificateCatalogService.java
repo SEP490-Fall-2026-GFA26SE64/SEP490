@@ -18,5 +18,5 @@ public final class CertificateCatalogService {
     private Actor expert(){var actor=actors.require();actor.require(Role.DOMAIN_EXPERT);return actor;}
     public List<Definition> list(int offset,int limit){var actor=expert();var result=catalog.list(actor.organizationId(),offset,limit);if(!actor.equals(expert()))throw new Failure(403,"FORBIDDEN");return result;}
     public List<Definition> list(int offset,int limit,String query,String level){var actor=expert();var result=catalog.list(actor.organizationId(),offset,limit,query,level);if(!actor.equals(expert()))throw new Failure(403,"FORBIDDEN");return result;}
-    public Definition create(UUID key,Create command){var actor=expert();if(key==null || command==null)throw new Failure(400,"INVALID_REQUEST");return catalog.create(actor.organizationId(),actor.accountId(),key,command);}
+    public Definition create(UUID key,Create command){var actor=expert();if(key==null || command==null)throw new Failure(400,"INVALID_REQUEST");throw new Failure(409,"CERTIFICATE_REVIEW_REQUIRED");}
 }

@@ -12,8 +12,8 @@ export interface ScopedDraft { id: string; revision: number; configuration: Rule
 export interface AbandonedDraft extends ScopedDraft { abandonedAt: string }
 export interface GroupCapacity { skillId: string; knowledgeLevel: KnowledgeLevel; minQuestions: number; maxQuestions: number; mandatoryQuestions: number; ordinaryQuestions: number }
 export interface PolicyWorkspace { scope: PolicyScope; draft: ScopedDraft | null; active: ScopedVersion | null; activationRevision: number; versions: ScopedVersion[]; totalVersions: number; capacities: LevelCapacity[]; maxPaperItems: number; abandonedDrafts: AbandonedDraft[]; totalAbandonedDrafts: number; groupCapacities: GroupCapacity[] }
-export type ConfigStatus = 'UNCONFIGURED' | 'DRAFT' | 'ACTIVE' | 'HISTORY'
-export interface PolicyDirectory { rows: { scope: ScopeChoice; status: ConfigStatus; hasDraft: boolean; activeVersion: number | null; versionCount: number; draftIncomplete: boolean; archivedCount: number }[]; total: number; choices: ScopeChoice[]; issues: { ownerId: string; ownerName: string; levelName: string; code: string }[] }
+export type ConfigStatus = 'UNCONFIGURED' | 'DRAFT' | 'ACTIVE' | 'HISTORY' | 'WAITING'
+export interface PolicyDirectory { statistics?: { total: number; active: number; needsConfiguration: number }; rows: { scope: ScopeChoice; status: ConfigStatus; hasDraft: boolean; activeVersion: number | null; versionCount: number; draftIncomplete: boolean; archivedCount: number }[]; total: number; choices: ScopeChoice[]; issues: { ownerId: string; ownerName: string; levelName: string; code: string }[] }
 export type ScopedCommand = { purpose: AssessmentPurpose; scopeKey: string; commandKey: string } & (
   { kind: 'create'; expectedActivationRevision: number } |
   { kind: 'save'; draftId: string; expectedRevision: number; expectedCatalogHash: string; configuration: RulePolicy } |
@@ -61,7 +61,7 @@ export function workspace(value: unknown, purpose: AssessmentPurpose, key: strin
 export function getPolicyDirectory(purpose: AssessmentPurpose, query: URLSearchParams, signal: AbortSignal) {
   return adaptiveHttp(base(purpose) + '?' + query, { signal }, raw => {
     const v = obj(raw)
-    return { rows: list(v.rows, raw => { const r = obj(raw), status = str(r.status); if (!['UNCONFIGURED', 'DRAFT', 'ACTIVE', 'HISTORY'].includes(status)) throw new Error('Invalid configuration status');
+    return { statistics: v.statistics == null ? undefined : (() => { const s = obj(v.statistics); return { total: num(s.total), active: num(s.active), needsConfiguration: num(s.needsConfiguration) } })(), rows: list(v.rows, raw => { const r = obj(raw), status = str(r.status); if (!['UNCONFIGURED', 'DRAFT', 'ACTIVE', 'HISTORY', 'WAITING'].includes(status)) throw new Error('Invalid configuration status');
       return { scope: choice(r.scope), status: status as ConfigStatus, hasDraft: bool(r.hasDraft), activeVersion: r.activeVersion === null ? null : num(r.activeVersion, 1), versionCount: num(r.versionCount), draftIncomplete: r.draftIncomplete === undefined ? false : bool(r.draftIncomplete), archivedCount: num(r.archivedCount) } }), total: num(v.total), choices: list(v.choices, choice),
       issues: v.issues === undefined ? [] : list(v.issues, raw => { const issue = obj(raw); return { ownerId: str(issue.ownerId), ownerName: str(issue.ownerName), levelName: str(issue.levelName), code: str(issue.code) } }) } satisfies PolicyDirectory
   })

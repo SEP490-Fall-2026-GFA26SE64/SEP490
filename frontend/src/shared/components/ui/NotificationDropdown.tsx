@@ -40,7 +40,7 @@ export function NotificationDropdown() {
         if (claimed && !signal.aborted && active.current) {
           const message = learningNotificationPresentation(n, language)
           const key = message.title + '\n' + message.description
-          if (!shown.has(key)) { shown.add(key); toast({ title: message.title, description: message.description, variant: message.variant, duration: 6500 }) }
+          if (!shown.has(key)) { shown.add(key); toast({ title: message.title, description: message.description, variant: message.variant, duration: 3000 }) }
         }
       }
     } catch { /* Persisted events remain available; retry on reconnect/poll. */ }
@@ -186,14 +186,14 @@ export function NotificationDropdown() {
                 data-notification-id={entry.id}
                 className={`mb-2 space-y-2 rounded-lg border-l-4 p-3 ${message.accent} ${entry.readAt ? 'bg-background' : 'bg-muted/40'}`}
               >
-                <p className="break-words text-body-sm font-semibold">{message.title}</p>
+                {(n.kind.startsWith('REVIEW_') || /(?:APPROVED|REJECTED|REQUESTED)$/.test(n.kind)) && <span className="inline-flex rounded bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">{vi ? 'Quan trọng' : 'Important'}</span>}<p className="break-words text-body-sm font-semibold">{message.title}</p>
                 <p className="break-words text-caption text-muted-foreground">
                   {message.description}
                 </p>
                 <Link
                   className="text-sm text-primary underline"
                   to={
-                    n.deepLink?.startsWith('/employee/') ? n.deepLink : n.kind === 'CONTENT_ISSUE'
+                    n.deepLink && /^\/(employee\/|expert\/(?:certificates(?:\?|$)|pathway-review\/[0-9a-f-]{36}$)|ld-manager\/(?:certificates|modules|question-bank)(?:\?|$))/.test(n.deepLink) ? n.deepLink : n.kind === 'CONTENT_ISSUE'
                       ? `/expert/modules?search=${encodeURIComponent(n.moduleId ?? '')}`
                       : `/employee/modules/${encodeURIComponent(n.moduleId ?? '')}`
                   }

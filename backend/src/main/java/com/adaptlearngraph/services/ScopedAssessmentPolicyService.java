@@ -17,7 +17,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 public final class ScopedAssessmentPolicyService {
     public record Choice(String key,String ownerId,String ownerName,String levelId,String levelName,int rank,boolean ready) {}
     public record Row(Choice scope,String status,boolean hasDraft,Long activeVersion,long versionCount,boolean draftIncomplete,long archivedCount) {}
-    public record Directory(List<Row> rows,long total,List<Choice> choices,List<com.adaptlearngraph.entities.domain.AssessmentPolicyScope.Issue> issues) {}
+    public record Statistics(long total,long active,long needsConfiguration) {}
+    public record Directory(List<Row> rows,long total,List<Choice> choices,List<com.adaptlearngraph.entities.domain.AssessmentPolicyScope.Issue> issues,Statistics statistics) {}
     public record Draft(UUID id,long revision,Policy configuration,String catalogHash,Instant updatedAt,BaselinePolicyEditor.Progress editorState) {}
     public record Version(UUID id,long version,Policy configuration,String catalogHash,Instant createdAt) {}
     public record AbandonedDraft(UUID id,long revision,Policy configuration,String catalogHash,Instant updatedAt,
@@ -148,7 +149,7 @@ public final class ScopedAssessmentPolicyService {
             T result=work.get();if(!a.equals(actor(purpose)))throw new Failure(403,"FORBIDDEN");
             // Recheck current Role responsibility on reads and exact receipt replays too.
             if(result instanceof Workspace workspace)require(a,purpose,workspace.scope().key());
-            if(result instanceof Directory directory && purpose==Purpose.SKILL_ASSESSMENT) {
+            if(result instanceof Directory directory) {
                 var allowed=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId()).scopes().stream()
                         .map(Scope::key).collect(java.util.stream.Collectors.toSet());
                 if(directory.choices().stream().anyMatch(choice->!allowed.contains(choice.key())))throw new Failure(403,"FORBIDDEN");
@@ -158,7 +159,7 @@ public final class ScopedAssessmentPolicyService {
     }
     public Directory directory(Purpose purpose,String search,String owner,String level,String filter,int page,int size) {
         var a=actor(purpose);bounds(page,size);
-        if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","WORKLIST","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
+        if(search.length()>200 || owner.length()>200 || level.length()>200 || !Set.of("","ALL","WORKLIST","UNCONFIGURED","DRAFT","ACTIVE","HISTORY").contains(filter)
                 || !level.isEmpty() && owner.isEmpty())throw new Failure(400,"INVALID_REQUEST");
         return locked(a,purpose,()->{
             var discovery=catalog.discoverForEditor(a.organizationId(),purpose,a.accountId());var all=discovery.scopes();var summaries=scopes.summaries(a.organizationId(),purpose.name());
@@ -172,22 +173,29 @@ public final class ScopedAssessmentPolicyService {
                 boolean legacy=purpose==Purpose.BASELINE && !scope.sharedBaseline();
                 if(legacy) {if(!filter.equals("HISTORY") || s==null)continue;archived=count+abandoned+(draft?1:0);}
                 String state=active?"ACTIVE":draft?"DRAFT":count>0 || abandoned>0?"HISTORY":"UNCONFIGURED";
+                if(purpose==Purpose.BASELINE && !filter.equals("HISTORY") && !filter.equals("ALL") && !scope.ready())continue;
                 if(!scope.ownerName().toLowerCase(Locale.ROOT).contains(query) && !scope.ownerId().toLowerCase(Locale.ROOT).contains(query))continue;
                 if(!owner.isEmpty() && !scope.ownerId().equals(owner) || !level.isEmpty() && !scope.levelId().equals(level))continue;
-                if(filter.equals("HISTORY")) {if(archived==0)continue;}
+                if(filter.equals("ALL")) {if(legacy)continue;}
+                else if(filter.equals("HISTORY")) {if(archived==0)continue;}
                 else if(filter.equals("WORKLIST")) {if(state.equals("HISTORY") || active && !draft)continue;}
                 else if(filter.isEmpty() && state.equals("HISTORY"))continue;
                 else if(!filter.isEmpty() && !(filter.equals("DRAFT")?draft:filter.equals(state)))continue;
-                rows.add(new Row(choice(scope),filter.equals("HISTORY")?"HISTORY":state,
+                rows.add(new Row(choice(scope),filter.equals("HISTORY")?"HISTORY":purpose==Purpose.BASELINE && !scope.ready()?"WAITING":state,
                         draft,active?s.getActiveVersion():null,count,draft && s.getDraftIncomplete(),archived));
             }
             rows.sort(Comparator.comparingInt((Row r)->(r.hasDraft()?0:r.status().equals("UNCONFIGURED")?1:2))
                     .thenComparing(r->r.scope().ownerName(),String.CASE_INSENSITIVE_ORDER).thenComparing(r->r.scope().ownerId())
                     .thenComparingInt(r->r.scope().rank()).thenComparing(r->r.scope().levelId()).thenComparing(r->r.scope().key()));
             long total=rows.size();int start=(int)Math.min((long)page*size,total);
-            var issues=discovery.issues().stream().filter(issue->(owner.isEmpty() || owner.equals(issue.ownerId()))
+            var visible=all.stream().filter(scope->purpose!=Purpose.BASELINE || filter.equals("ALL") || filter.equals("HISTORY") || scope.ready()).toList();
+            var visibleOwners=visible.stream().map(Scope::ownerId).collect(java.util.stream.Collectors.toSet());
+            var issues=discovery.issues().stream().filter(issue->visibleOwners.contains(issue.ownerId())).filter(issue->(owner.isEmpty() || owner.equals(issue.ownerId()))
                     && (query.isEmpty() || issue.ownerName().toLowerCase(Locale.ROOT).contains(query) || issue.ownerId().toLowerCase(Locale.ROOT).contains(query))).toList();
-            return new Directory(List.copyOf(rows.subList(start,Math.min(start+size,rows.size()))),total,all.stream().map(ScopedAssessmentPolicyService::choice).toList(),issues);
+            var managed=all.stream().filter(scope->purpose!=Purpose.BASELINE || scope.sharedBaseline()).toList();
+            long activeCount=managed.stream().filter(scope->states.containsKey(scope.key()) && states.get(scope.key()).getActiveId()!=null).count();
+            long needsCount=managed.stream().filter(Scope::ready).filter(scope->!states.containsKey(scope.key()) || states.get(scope.key()).getActiveId()==null || states.get(scope.key()).getDraftId()!=null).count();
+            return new Directory(List.copyOf(rows.subList(start,Math.min(start+size,rows.size()))),total,visible.stream().map(ScopedAssessmentPolicyService::choice).toList(),issues,new Statistics(managed.size(),activeCount,needsCount));
         });
     }
     public Workspace read(Purpose purpose,String key,int page,int size) {

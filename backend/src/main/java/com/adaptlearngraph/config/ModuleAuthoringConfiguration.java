@@ -118,7 +118,8 @@ public class ModuleAuthoringConfiguration {
             return "/employee/modules/"+module;
         };
     }
-    @Bean ModuleAuthoringService moduleAuthoringService(ModuleAuthoringPort port, LearningContentPort content) { return new ModuleAuthoringService(port, content); }
+    @Bean com.adaptlearngraph.repository.ReviewSubmissionNotifications reviewSubmissionNotifications(org.springframework.jdbc.core.JdbcTemplate jdbc,com.adaptlearngraph.repository.OrganizationMembershipJpaRepository members) { return new com.adaptlearngraph.repository.ReviewSubmissionNotifications(jdbc,members); }
+    @Bean ModuleAuthoringService moduleAuthoringService(ModuleAuthoringPort port, LearningContentPort content,com.adaptlearngraph.repository.ReviewSubmissionNotifications notifications) { return new ModuleAuthoringService(port, content,notifications); }
     @Bean com.adaptlearngraph.services.SkillLearningApplicationService skillLearningApplicationService(com.adaptlearngraph.services.SkillLearningService learning) {
         return new com.adaptlearngraph.services.SkillLearningApplicationService(learning);
     }

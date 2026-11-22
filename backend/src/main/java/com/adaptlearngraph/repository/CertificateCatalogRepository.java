@@ -28,7 +28,8 @@ public final class CertificateCatalogRepository {
                 RETURN s.id AS skillId,s.name AS skillName,properties(c) AS certificate ORDER BY s.name,c.knowledgeLevel,c.id SKIP $offset LIMIT $limit
                 """,Map.of("org",organization.toString(),"offset",offset,"limit",limit,"query",query.trim().toLowerCase(Locale.ROOT),"level",level)).stream().map(this::definition).toList());
     }
-    public Definition create(UUID organization,UUID expert,UUID retry,Create command) {
+    public Definition create(UUID organization,UUID expert,UUID retry,Create command) {return publish(organization,expert,expert,retry,command);}
+    public Definition publish(UUID organization,UUID expert,UUID reviewer,UUID retry,Create command) {
         String hash;
         try{hash=com.adaptlearngraph.services.RoleBaselineFlow.hash(json.writeValueAsString(command));}
         catch(Exception invalid){throw new Failure(400,"INVALID_REQUEST");}
@@ -67,12 +68,27 @@ public final class CertificateCatalogRepository {
                     MATCH (s:MicroSkill {id:$skill,organizationId:$org})
                     CREATE (c:Certificate {id:$id,organizationId:$org,version:'1',name:$name,description:$description,knowledgeLevel:$level,
                         skillVersion:$skillVersion,referenceUrl:$url,status:'ACTIVE',reviewStatus:'APPROVED',
-                        authoredBy:$expert,authoredAt:toString(datetime()),approvedBy:$expert,approvedAt:toString(datetime()),commandHash:$hash})
+                        authoredBy:$expert,authoredAt:toString(datetime()),approvedBy:$reviewer,approvedAt:toString(datetime()),commandHash:$hash})
                     CREATE (s)-[:REQUIRES_CERTIFICATE {organizationId:$org,status:'ACTIVE',createdBy:$expert,createdAt:toString(datetime())}]->(c)
                     RETURN s.id AS skillId,s.name AS skillName,properties(c) AS certificate
                     """,Map.ofEntries(Map.entry("org",organization.toString()),Map.entry("skill",command.skillId()),Map.entry("id",id),Map.entry("name",command.name()),Map.entry("level",command.knowledgeLevel().name()),
-                    Map.entry("skillVersion",command.expectedSkillVersion()),Map.entry("url",command.referenceUrl()),Map.entry("expert",expert.toString()),Map.entry("hash",hash),Map.entry("description",Objects.toString(command.description(),"")))));
+                    Map.entry("skillVersion",command.expectedSkillVersion()),Map.entry("url",command.referenceUrl()),Map.entry("expert",expert.toString()),Map.entry("hash",hash),Map.entry("reviewer",reviewer.toString()),Map.entry("description",Objects.toString(command.description(),"")))));
         });
+    }
+    public record SkillChoice(String skillId,String skillCode,String skillName,String version,List<String> levels) {}
+    public List<SkillChoice> choices(UUID org) {
+        var result=graph.read(timeout,tx->tx.list("MATCH (s:MicroSkill {organizationId:$org}) WHERE s.status='ACTIVE' AND s.reviewStatus='APPROVED' AND size(coalesce(s.certificateOnlyKnowledgeLevels,[]))>0 RETURN properties(s) AS s ORDER BY s.name,s.id LIMIT 501",Map.of("org",org.toString())).stream().map(r->{var v=r.get("s");return new SkillChoice(v.get("id").asString(),v.get("code").asString(v.get("id").asString()),v.get("name").asString(),v.get("version").asString(),strings(v,"certificateOnlyKnowledgeLevels"));}).toList());
+        if(result.size()>500)throw new Failure(422,"CERTIFICATE_SKILL_CAPACITY");return result;
+    }
+    public void validate(UUID org,Create c) {
+        var skill=choices(org).stream().filter(s->s.skillId().equals(c.skillId())).findFirst().orElseThrow(()->new Failure(409,"CERTIFICATE_PROVISION_REQUIRED"));
+        if(!skill.version().equals(c.expectedSkillVersion()))throw new Failure(409,"SKILL_VERSION_CHANGED");
+        if(!skill.levels().contains(c.knowledgeLevel().name()))throw new Failure(409,"CERTIFICATE_PROVISION_REQUIRED");
+    }
+    public void requireReplacement(UUID org,Create c) {
+        var ids=graph.read(timeout,tx->tx.list("MATCH (:MicroSkill {id:$skill,organizationId:$org})-[a:REQUIRES_CERTIFICATE]->(c:Certificate {organizationId:$org}) WHERE a.status='ACTIVE' AND c.status='ACTIVE' AND c.knowledgeLevel=$level RETURN c.id AS id LIMIT 2",Map.of("org",org.toString(),"skill",c.skillId(),"level",c.knowledgeLevel().name())).stream().map(r->r.get("id").asString()).toList());
+        if(ids.size()>1)throw new Failure(409,"DUPLICATE_CERTIFICATE_ASSIGNMENT");
+        if(c.replacesDefinitionId()==null ? !ids.isEmpty() : ids.size()!=1||!c.replacesDefinitionId().equals(ids.getFirst()))throw new Failure(409,"CERTIFICATE_ASSIGNMENT_CHANGED");
     }
     private Definition definition(org.neo4j.driver.Record row) {
         var c=row.get("certificate");return new Definition(c.get("id").asString(),c.get("version").asString(),row.get("skillId").asString(),row.get("skillName").asString(),

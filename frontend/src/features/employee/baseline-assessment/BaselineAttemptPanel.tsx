@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader } from '../../../shared/components/ui/Car
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
 import { AssessmentQuestionContent } from '../../../shared/components/ui/AssessmentQuestionContent'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { answerCommand, submitCommand, type BaselineAttempt, type BaselineCommand } from './baselineApi'
+import { useAutoFillAccess } from '../../../shared/hooks/useAutoFillAccess'
+import { autoFillCommand, answerCommand, submitCommand, type BaselineAttempt, type BaselineCommand } from './baselineApi'
 
 export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, run }: {
   attempt: BaselineAttempt; seconds: number; locked: boolean; busy?: boolean; run: (command: BaselineCommand) => Promise<void>
 }) {
   const { t } = useTranslation(), tr = (key: string) => t(`employeeBaseline.${key}`)
+  const autoFillAllowed = useAutoFillAccess()
   const pending = attempt.items.find(value => value.selectedOptionId === null)
   const [navigation, setNavigation] = useState({ attemptId: attempt.id, position: pending?.position ?? attempt.items.at(-1)?.position })
   const position = navigation.attemptId === attempt.id ? navigation.position : pending?.position ?? attempt.items.at(-1)?.position
@@ -94,6 +96,7 @@ export function BaselineAttemptPanel({ attempt, seconds, locked, busy = false, r
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary p-4"><Clock className="text-primary" size={20} />
         <div><Text variant="caption">{tr('remaining')}</Text><span role="timer" className="block font-mono font-semibold">{Math.floor(Math.max(0, seconds) / 60)}:{String(Math.max(0, seconds) % 60).padStart(2, '0')}</span></div></div>
     </CardContent></Card>
+    {autoFillAllowed && <div className="flex justify-end"><Button variant="outline" disabled={locked || busy || expired} onClick={() => { setDrafts({ attemptId: attempt.id, values: {} }); void run(autoFillCommand(attempt)) }}>Auto fill answer</Button></div>}
     <div className="grid items-start gap-4 lg:grid-cols-4">
       <Card className="lg:col-span-1"><CardHeader className="border-b border-border p-5"><Heading level={2} size="card">{ui('navigation')}</Heading><Badge variant="outline" className="w-fit">{ui('answered')}: {attempt.answeredCount}</Badge></CardHeader>
         <CardContent className="space-y-4 p-5">

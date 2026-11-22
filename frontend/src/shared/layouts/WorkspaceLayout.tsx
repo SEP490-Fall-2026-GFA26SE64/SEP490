@@ -234,7 +234,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <FileQuestion size={15} />,
       },
         {
-          label: t('scopedPolicy.skillTitle'),
+          label: language === 'vi' ? 'Đánh giá kỹ năng' : 'Skill Assessment',
           href: '/expert/skill-assessment-config',
           icon: <Sliders size={15} />,
         },
@@ -276,6 +276,7 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         href: '/ld-manager/modules',
         icon: <BookOpen size={15} />,
       },
+      { label: t('certificates.title'), href: '/ld-manager/certificates', icon: <Award size={15} /> },
     ]
   } else if (isAdmin) {
     actorTabs = [

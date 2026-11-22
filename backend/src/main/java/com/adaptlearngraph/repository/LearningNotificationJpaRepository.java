@@ -43,6 +43,9 @@ public interface LearningNotificationJpaRepository extends Repository<LearningNo
     int pathway(@Param("id") UUID id,@Param("org") String org,@Param("recipient") String recipient,@Param("key") String key,
                 @Param("kind") String kind,@Param("title") String title,@Param("body") String body,@Param("link") String link);
 
+    @Query(value="SELECT count(*)>0 FROM platform.account a JOIN platform.organization_membership m ON m.account_id=a.account_id AND m.organization_id=a.organization_id JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id WHERE a.organization_id::text=:org AND a.account_id::text=:expert AND a.active AND m.active AND r.role_code='DOMAIN_EXPERT'",nativeQuery=true)
+    boolean activeExpert(@Param("org") String org,@Param("expert") String expert);
+
     @Query("select new com.adaptlearngraph.repository.LearningNotificationJpaRepository$Row(n.id, n.kind, n.moduleId, n.title,"
             + " n.body, n.createdAt, n.readAt,n.deepLink,n.toastObservedAt) from LearningNotificationEntity n"
             + " where n.organizationId = :organization and n.recipientId = :recipient order by n.createdAt desc limit 100")
@@ -59,12 +62,18 @@ public interface LearningNotificationJpaRepository extends Repository<LearningNo
     @Query("update LearningNotificationEntity n set n.toastObservedAt=current_timestamp where n.organizationId=:org and n.recipientId=:recipient and n.id=:id and n.toastObservedAt is null")
     int observe(@Param("org") String org,@Param("recipient") String recipient,@Param("id") UUID id);
 
-    /** Oldest due, unsent notification of an active recipient (database clock), skipping rows another worker holds. */
+    /** Only Employee pathway updates are mailed; staff requests remain in-app. Oldest due notification (database clock), skipping rows another worker holds. */
     // Native: FOR UPDATE OF n SKIP LOCKED claim with now()-based scheduling.
     @Query(value = """
             SELECT n.id FROM platform.learning_notification n
             JOIN platform.account a ON a.account_id::text = n.recipient_id AND a.organization_id::text = n.organization_id
             WHERE n.mail_sent_at IS NULL AND n.mail_attempts < 8 AND n.mail_next_attempt <= now() AND a.active
+              AND n.kind IN ('RULE_PATHWAY_APPROVED','RULE_PATHWAY_REJECTED','RULE_PATHWAY_COMPLETED','PATHWAY_RECALCULATED','BYPASS_PROVISION_ADDED','CERTIFICATE_APPROVED','CERTIFICATE_REJECTED')
+              AND n.deep_link LIKE '/employee/pathway%'
+              AND EXISTS (SELECT 1 FROM platform.organization_membership m JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
+                  WHERE m.account_id=a.account_id AND m.organization_id=a.organization_id AND m.active AND r.role_code='EMPLOYEE')
+              AND NOT EXISTS (SELECT 1 FROM platform.organization_membership m JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
+                  WHERE m.account_id=a.account_id AND m.organization_id=a.organization_id AND m.active AND r.role_code IN ('LD_MANAGER','DOMAIN_EXPERT','ORGANIZATION_ADMINISTRATOR','PLATFORM_ADMINISTRATOR'))
             ORDER BY n.created_at LIMIT 1 FOR UPDATE OF n SKIP LOCKED
             """, nativeQuery = true)
     Optional<UUID> lockNextMail();

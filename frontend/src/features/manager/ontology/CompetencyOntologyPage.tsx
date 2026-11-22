@@ -560,7 +560,7 @@ function OwnedCompetencyOntologyPage() {
       } finally {
         setIsLoading(false)
       }
-  }, [effectiveOrgId, accountId, session])
+  }, [effectiveOrgId, accountId, session, isExpert, effectiveExpertDeptId, effectiveExpertDeptName, effectiveExpertJobPosCode, effectiveExpertJobPosTitle])
 
   React.useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the pending state of the external data request when its scope changes.

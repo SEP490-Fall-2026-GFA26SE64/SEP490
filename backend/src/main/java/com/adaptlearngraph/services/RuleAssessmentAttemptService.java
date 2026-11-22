@@ -83,6 +83,40 @@ public final class RuleAssessmentAttemptService {
         return latest(new Start(Purpose.valueOf(purpose),selectionId,selectionRevision,null,stepId,moduleId,moduleRevision));
     }
     public void authorize(){actor();}
+    public boolean autoFillAllowed(java.util.function.Predicate<RoleBaselineFlow.Actor> allowed){return allowed.test(actor());}
+    /** Answers the real frozen paper through ordinary answer commands; never submits or awards results. */
+    public View autoFill(UUID id,long expected,UUID key,java.util.function.Predicate<RoleBaselineFlow.Actor> allowed) {
+        var a=actor();if(!allowed.test(a))throw new Failure(403,"FORBIDDEN");
+        if(key==null || expected<1)throw new Failure(400,"INVALID_REQUEST");
+        String hash=RoleBaselineFlow.hash(write(List.of(id,expected)));
+        return interactive(a,()->{
+            var replay=receipt(a,"RULE_AUTO_FILL",id.toString(),key,hash);if(replay.isPresent())return replay.get();
+            var row=owned(a,id);
+            if(!"IN_PROGRESS".equals(row.getState()) || !attempts.clock().isBefore(row.getDeadlineAt()))throw new Failure(409,"ATTEMPT_NOT_IN_PROGRESS");
+            if(row.getRevision()!=expected)throw new Failure(409,"STALE_ATTEMPT_REVISION");
+            contexts.assertAccessible(a,row.getContextSnapshot());
+            var frozen=saved(a,row);var current=readLocked(a,id);
+            var names=new HashMap<String,String>();current.groups().forEach(g->names.put(g.requirement().skillId(),g.skillName()));
+            boolean baseline="BASELINE".equals(row.getPurpose());
+            boolean firstTransaction=!baseline && row.getPreviousAttemptId()==null && current.groups().stream().anyMatch(g->g.role()==GroupRole.MAIN && g.skillName().equals("Transaction Management") && g.requirement().knowledgeLevel()==com.adaptlearngraph.entities.domain.KnowledgeLevel.ADVANCED);
+            for(var group:frozen.paper().groups()) {
+                String name=names.get(group.requirement().skillId());var level=group.requirement().knowledgeLevel();
+                boolean fail=baseline ? level==com.adaptlearngraph.entities.domain.KnowledgeLevel.ADVANCED && Set.of("Transaction Management","Java Streams & Lambdas").contains(name)
+                    : firstTransaction && (name.equals("Transaction Management") && level!=com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION || name.equals("Spring Data JPA & Hibernate"));
+                // One correct when possible avoids a zero-score prerequisite veto while remaining below threshold.
+                int quota=fail?Math.max(0,group.rule().requiredCorrectCount()-1):group.items().size();
+                var ordered=new ArrayList<>(group.items());ordered.sort(Comparator.comparing(Candidate::mandatory).reversed().thenComparing(c->c.itemVersionId().toString()));
+                for(var item:ordered) {
+                    if(!allowed.test(a))throw new Failure(403,"FORBIDDEN");
+                    String choice=quota-->0?item.correctOptionId():item.options().stream().map(Option::id).filter(option->!option.equals(item.correctOptionId())).findFirst().orElseThrow(this::integrity);
+                    var shown=current.questions().stream().filter(q->q.itemVersionId().equals(item.itemVersionId())).findFirst().orElseThrow(this::integrity);
+                    if(!Objects.equals(shown.selectedOptionId(),choice))current=answer(id,new Answer(current.revision(),shown.position(),item.itemVersionId(),choice),UUID.nameUUIDFromBytes((key+":"+shown.position()).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+                    if(!"IN_PROGRESS".equals(current.state()))throw new Failure(409,"ATTEMPT_NOT_IN_PROGRESS");
+                }
+            }
+            retain(a,"RULE_AUTO_FILL",id.toString(),key,hash,current,UUID.randomUUID());return current;
+        });
+    }
     private void reauthorize(RoleBaselineFlow.Actor a){if(!a.equals(actor()))throw new Failure(403,"FORBIDDEN");}
     public View latest(Start command) {
         var a=actor();if(command==null || command.purpose()==null || !command.validContext())throw new Failure(400,"INVALID_REQUEST");

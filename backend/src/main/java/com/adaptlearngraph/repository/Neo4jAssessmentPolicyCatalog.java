@@ -15,7 +15,30 @@ import org.neo4j.driver.Value;
 public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatalog {
     private final Neo4jCypher graph;private final ObjectMapper json;
     private final Map<String,com.fasterxml.jackson.databind.JsonNode> legacySkills;
-    public Neo4jAssessmentPolicyCatalog(Neo4jCypher graph,ObjectMapper json){this.graph=graph;this.json=json;this.legacySkills=legacySkills(json);}
+    private final OrganizationMembershipJpaRepository memberships;
+    public Neo4jAssessmentPolicyCatalog(Neo4jCypher graph,ObjectMapper json){this(graph,json,null);}
+    public Neo4jAssessmentPolicyCatalog(Neo4jCypher graph,ObjectMapper json,OrganizationMembershipJpaRepository memberships){this.graph=graph;this.json=json;this.memberships=memberships;this.legacySkills=legacySkills(json);}
+    private Discovery managedBaseline(UUID organization,UUID account) {
+        var department=memberships==null?Optional.<UUID>empty():memberships.managedDepartment(organization,account);
+        if(department.isEmpty())return new Discovery(List.of(),List.of());
+        var owners=graph.read(5,tx->{
+            var rows=tx.records("""
+                    MATCH (d:Department {organizationId:$org,id:$department})-[assignment:HAS_JOB_POSITION]->(j:JobPosition {organizationId:$org})-[membership:HAS_ROLE]->(r:TargetRole {organizationId:$org})
+                    WHERE coalesce(d.status,'ACTIVE')='ACTIVE' AND j.status='ACTIVE'
+                      AND coalesce(assignment.status,'ACTIVE')='ACTIVE' AND coalesce(membership.status,'ACTIVE')='ACTIVE'
+                      AND (assignment.organizationId IS NULL OR assignment.organizationId=$org)
+                      AND (membership.organizationId IS NULL OR membership.organizationId=$org)
+                      AND NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED']
+                    RETURN DISTINCT r.id AS id LIMIT 10001
+                    """,Map.of("org",organization.toString(),"department",department.get().toString()));
+            if(rows.size()>10000)throw capacity();
+            return rows.stream().map(row->row.get("id").asString()).collect(java.util.stream.Collectors.toSet());
+        });
+        if(owners.isEmpty())return new Discovery(List.of(),List.of());
+        var discovery=discover(organization,Purpose.BASELINE);
+        return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
+                discovery.issues().stream().filter(issue->owners.contains(issue.ownerId())).toList());
+    }
     private record Skill(String id,String name,String version,SkillProvisionMode mode,boolean invalidMode,
                          List<String> modules,List<String> certificates,Map<KnowledgeLevel,List<String>> outcomes,boolean approved) {}
     private record Edge(String skill,KnowledgeLevel level,String prerequisite,KnowledgeLevel prerequisiteLevel) {}
@@ -23,7 +46,7 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     private record RoleLevel(String id,String name,String level,String levelName,int rank,String version,String status,List<Need> needs,Set<String> problems) {}
     @Override public List<Scope> scopes(UUID organization,Purpose purpose){return discover(organization,purpose).scopes();}
     @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
-        if(purpose==Purpose.BASELINE)return discover(organization,purpose);
+        if(purpose==Purpose.BASELINE)return managedBaseline(organization,expert);
         var owners=graph.read(5,tx->{
             var rows=tx.records("""
                     MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
