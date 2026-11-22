@@ -53,7 +53,8 @@ public final class CertificateReviewService {
         var actor=expert();InitialPathwayPorts.commandKey(key);UUID retry;
         try{retry=UUID.fromString(key);}catch(RuntimeException invalid){throw new Failure(400,"INVALID_IDEMPOTENCY_KEY");}
         if(command==null || command.expectedRevision()<1 || !Set.of("APPROVED","REJECTED").contains(Objects.toString(command.decision(),""))
-                || command.reason()==null || command.reason().isBlank() || command.reason().length()>4000)throw new Failure(400,"DECISION_AND_REASON_REQUIRED");
+                || "REJECTED".equals(command.decision()) && (command.reason()==null || command.reason().isBlank()) || command.reason()!=null && command.reason().length()>4000)throw new Failure(400,"DECISION_AND_REASON_REQUIRED");
+        String reason=Objects.toString(command.reason()," ").trim();
         var source=submissions.inOrganization(actor.organizationId(),id).orElseThrow(()->new Failure(404,"SUBMISSION_NOT_FOUND"));
         var frozen=views.decode(source);var assignment=assignments.require(actor,frozen.requestId());
         String hash=RoleBaselineFlow.hash(revisions.encode(Arrays.asList(id,command)));
@@ -71,7 +72,7 @@ public final class CertificateReviewService {
             if(!submitted)throw new Failure(503,"SUBMISSION_PATHWAY_PROVENANCE_INVALID");
             reauthorize(actor,frozen.requestId(),assignment);
             if(submissions.decide(actor.organizationId(),row.getLearnerId(),id,row.getRevision(),command.decision())!=1)throw new Failure(409,"STALE_SUBMISSION");
-            UUID decision=UUID.randomUUID();submissions.decision(decision,actor.organizationId(),id,row.getRevision(),command.decision(),actor.accountId(),revisions.encode(assignment),command.reason().trim(),retry);
+            UUID decision=UUID.randomUUID();submissions.decision(decision,actor.organizationId(),id,row.getRevision(),command.decision(),actor.accountId(),revisions.encode(assignment),reason,retry);
             if("APPROVED".equals(command.decision())) {
                 if(planning==null || review==null)throw new Failure(503,"PATHWAY_RECALCULATION_UNAVAILABLE");
                 UUID evidence=UUID.randomUUID();var snapshot=new LinkedHashMap<String,Object>();
@@ -93,7 +94,7 @@ public final class CertificateReviewService {
                 }
             }
             revisions.certificateEvent(request,frozen.pathwayRevision(),"CERTIFICATE_"+command.decision(),actor.accountId(),id,
-                    Map.of("submissionId",id,"decisionId",decision,"reason",command.reason().trim(),"certificateName",frozen.certificate().name(),
+                    Map.of("submissionId",id,"decisionId",decision,"reason",reason,"certificateName",frozen.certificate().name(),
                             "skillName",frozen.requirement().skillName(),"knowledgeLevel",frozen.requirement().knowledgeLevel(),"stepId",frozen.stepId()));
             var result=new Receipt(200,hash,revisions.encode(views.view(submissions.inOrganization(actor.organizationId(),id).orElseThrow())));
             receipts.save(actor,"CERTIFICATE_DECIDE","CERTIFICATE_REVIEW",key,result);return result;

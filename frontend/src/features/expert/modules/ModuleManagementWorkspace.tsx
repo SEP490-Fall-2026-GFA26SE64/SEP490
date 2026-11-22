@@ -19,6 +19,7 @@ import { Combobox } from '../../../shared/components/ui/Combobox'
 import { Select } from '../../../shared/components/ui/Select'
 import { Badge, type BadgeProps } from '../../../shared/components/ui/Badge'
 import { Input } from '../../../shared/components/ui/Input'
+import { ManagementSection } from '../../../shared/components/ui/ManagementUi'
 import { Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter } from '../../../shared/components/ui/Dialog'
 import { Tabs, TabsContent } from '../../../shared/components/ui/Tabs'
 import { Pagination } from '../../../shared/components/ui/Pagination'
@@ -86,12 +87,18 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [catalogSelection, setCatalogSelection] = useState<ModuleCatalogItem | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [pendingCount, setPendingCount] = useState(0)
-  const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: '', type: '', skill: '' })
+  const [filters, setFilters] = useState({ search: searchParams.get('search') ?? '', status: '', review: searchParams.get('status') === 'SUBMITTED' ? 'NEEDS_EXPERT_REVIEW' : '', type: '', skill: '' })
   const query = searchParams.get('search')
   const [previousQuery, setPreviousQuery] = useState(query)
   if (previousQuery !== query) {
     setPreviousQuery(query)
     if (query !== null) { setPageNumber(1); setFilters(old => ({ ...old, search: query })) }
+  }
+  const reviewLink = searchParams.get('status')
+  const [previousReviewLink, setPreviousReviewLink] = useState(reviewLink)
+  if (previousReviewLink !== reviewLink) {
+    setPreviousReviewLink(reviewLink)
+    if (reviewLink === 'SUBMITTED') { setPageNumber(1); setFilters(old => ({ ...old, status: '', review: 'NEEDS_EXPERT_REVIEW' })) }
   }
   const [search, setSearch] = useState(filters.search)
   useEffect(() => {
@@ -123,6 +130,8 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   const [feedback, setFeedback] = useState('')
   const [learning, setLearning] = useState<ModuleRevision | null>(null)
   const [batchApprovalOpen, setBatchApprovalOpen] = useState(false)
+  const [batchReviewed, setBatchReviewed] = useState(false)
+  const [batchDetail, setBatchDetail] = useState<string | null>(null)
   const [batchApprovalIds, setBatchApprovalIds] = useState<string[]>([])
   const [batchPendingDocs, setBatchPendingDocs] = useState<ModuleDocument[]>([])
   const [batchLoading, setBatchLoading] = useState(false)
@@ -140,6 +149,8 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
   }
 
   async function openBatchApproval() {
+    setBatchReviewed(false)
+    setBatchDetail(null)
     setBatchExpertFilter('')
     setBatchSkillFilter('')
     setBatchFailures([])
@@ -624,7 +635,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 gap-1.5 border-warning/50 bg-warning/10 text-warning hover:bg-warning/20 font-medium"
+                          className="h-8 gap-1.5 border-primary/30 bg-secondary/40 text-primary hover:bg-secondary font-medium"
                           disabled={busy || contentBusy}
                           onClick={() => void openBatchApproval()}
                         >
@@ -1057,7 +1068,7 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
       <DialogFooter><div className="flex flex-1 flex-wrap gap-2">{selected && controls(selected, false)}{selected && mode === 'approvals' && latest(selected).state === 'SUBMITTED' && page.items.some(d => d.id !== selected.id && latest(d).state === 'SUBMITTED') && <Button size="sm" variant="secondary" disabled={busy || contentBusy} onClick={() => void run(async () => { const next = page.items.find(d => d.id !== selected.id && latest(d).state === 'SUBMITTED'); await moduleRequest<ModuleDocument>(`/modules/${encodeURIComponent(selected.id)}/actions`, 'POST', { expectedVersion: selected.lockVersion, action: 'approve', feedback: null }); await load(); if (next) { setSelected(await moduleRequest<ModuleDocument>(`/modules/${next.id}`)) } else { setSelected(null) } toast({ description: copy('Approved and moved to next module.', 'Đã duyệt và chuyển sang module tiếp theo.'), variant: 'success', duration: 2500 }) })}>{copy('Approve & next', 'Duyệt & module tiếp')}</Button>}</div><Button size="sm" variant="outline" onClick={() => setSelected(null)}>{copy('Close', 'Đóng')}</Button></DialogFooter>
     </Dialog>
 
-    <Dialog open={batchApprovalOpen} onOpenChange={open => { if (!open && !busy) setBatchApprovalOpen(false) }} size="wide" className="max-w-3xl max-h-[90dvh]" ariaLabel={copy('Batch approve modules', 'Duyệt hàng loạt module')}>
+    <Dialog open={batchApprovalOpen} onOpenChange={open => { if (!open && !busy) setBatchApprovalOpen(false) }} size="wide" className="module-management-dialog max-w-3xl max-h-[90dvh]" ariaLabel={copy('Batch approve modules', 'Duyệt hàng loạt module')}>
       {(() => {
         const filteredPending = batchPendingDocs.filter(doc => {
           const rev = latest(doc)
@@ -1071,25 +1082,25 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
         const skillOptions = Array.from(new Map(batchPendingDocs.flatMap(d => latest(d).payload.teachings.map(t => [t.skillId, t.skillName] as const))).entries())
         return <>
           <DialogHeader>
-            <DialogTitle>{copy('Batch approve modules', 'Duyệt hàng loạt module')}</DialogTitle>
+            <DialogTitle><CheckCheck size={18} className="text-primary" />{copy('Batch approve modules', 'Duyệt hàng loạt module')}</DialogTitle>
             <p className="text-xs text-muted-foreground">{copy('Filter by expert or skill, review the list, and approve all selected modules in one request.', 'Lọc theo chuyên gia hoặc kỹ năng, kiểm tra danh sách và phê duyệt tất cả module đã chọn trong một lần.')}</p>
           </DialogHeader>
           <DialogBody className="space-y-3 py-3">
-            <div className="grid gap-2 sm:grid-cols-2">
-              <select aria-label={copy('Filter by expert', 'Lọc theo chuyên gia')} className="h-8 rounded-md border border-border bg-card px-2 text-xs" value={batchExpertFilter} disabled={busy || batchLoading} onChange={e => setBatchExpertFilter(e.target.value)}>
+            <ManagementSection title={copy('Review filters', 'Bộ lọc duyệt')}><div className="grid gap-3 sm:grid-cols-2">
+              <select aria-label={copy('Filter by expert', 'Lọc theo chuyên gia')} className={control} value={batchExpertFilter} disabled={busy || batchLoading} onChange={e => { setBatchExpertFilter(e.target.value); setBatchReviewed(false) }}>
                 <option value="">{copy('All experts', 'Tất cả chuyên gia')}</option>
                 {expertOptions.map(id => <option key={id} value={id}>{person(id)}</option>)}
               </select>
-              <select aria-label={copy('Filter by skill', 'Lọc theo kỹ năng')} className="h-8 rounded-md border border-border bg-card px-2 text-xs" value={batchSkillFilter} disabled={busy || batchLoading} onChange={e => setBatchSkillFilter(e.target.value)}>
+              <select aria-label={copy('Filter by skill', 'Lọc theo kỹ năng')} className={control} value={batchSkillFilter} disabled={busy || batchLoading} onChange={e => { setBatchSkillFilter(e.target.value); setBatchReviewed(false) }}>
                 <option value="">{copy('All skills', 'Tất cả kỹ năng')}</option>
                 {skillOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
               </select>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs">
+            </div></ManagementSection>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/20 bg-secondary/40 p-4 text-xs">
               <span>{batchLoading ? copy('Loading full queue…', 'Đang tải toàn bộ hàng chờ…') : copy(`${selectedVisible.length} of ${filteredPending.length} shown selected (${batchPendingDocs.length} total pending)`, `Đã chọn ${selectedVisible.length}/${filteredPending.length} đang hiển thị (tổng ${batchPendingDocs.length} chờ duyệt)`)}</span>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={busy || batchLoading} onClick={() => setBatchApprovalIds(prev => Array.from(new Set([...prev, ...filteredPending.map(d => d.id)])))}>{copy('Select filtered', 'Chọn tất cả đang lọc')}</Button>
-                <Button size="sm" variant="ghost" disabled={busy || batchLoading} onClick={() => setBatchApprovalIds(prev => prev.filter(id => !filteredPending.some(d => d.id === id)))}>{copy('Clear filtered', 'Bỏ chọn đang lọc')}</Button>
+                <Button size="sm" variant="outline" disabled={busy || batchLoading} onClick={() => { setBatchReviewed(false); setBatchApprovalIds(prev => Array.from(new Set([...prev, ...filteredPending.map(d => d.id)]))) }}>{copy('Select filtered', 'Chọn tất cả đang lọc')}</Button>
+                <Button size="sm" variant="ghost" disabled={busy || batchLoading} onClick={() => { setBatchReviewed(false); setBatchApprovalIds(prev => prev.filter(id => !filteredPending.some(d => d.id === id))) }}>{copy('Clear filtered', 'Bỏ chọn đang lọc')}</Button>
               </div>
             </div>
             {batchFailures.length > 0 && (
@@ -1104,22 +1115,25 @@ function OwnedModuleManagementWorkspace({ mode, managerShell = false }: { mode: 
               {filteredPending.map(doc => {
                 const rev = latest(doc)
                 const checked = batchApprovalIds.includes(doc.id)
-                return <label key={doc.id} className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20">
-                  <input type="checkbox" className="mt-1" checked={checked} disabled={busy} onChange={e => setBatchApprovalIds(prev => e.target.checked ? [...prev, doc.id] : prev.filter(id => id !== doc.id))} />
-                  <div className="min-w-0 flex-1 space-y-1 text-xs">
-                    <p className="text-sm font-medium break-words">{rev.payload.title}</p>
-                    <p className="text-muted-foreground">{rev.payload.teachings.map(t => t.skillName).join(', ')} · {rev.payload.knowledgeLevel ?? '—'} · {rev.payload.duration} {copy('min', 'phút')} · {person(doc.responsibleExpertId ?? doc.createdBy)}</p>
+                return <ManagementSection key={doc.id} title={rev.payload.teachings.map(t => t.skillName).join(', ')} aside={<Badge variant="outline" className="text-primary">v{rev.number}</Badge>}>
+                  <div className="flex items-start gap-3">
+                    <input aria-label={copy(`Select ${rev.payload.title}`, `Chọn ${rev.payload.title}`)} type="checkbox" className="mt-1 accent-primary" checked={checked} disabled={busy} onChange={e => { setBatchReviewed(false); setBatchApprovalIds(prev => e.target.checked ? [...prev, doc.id] : prev.filter(id => id !== doc.id)) }} />
+                    <div className="min-w-0 flex-1 space-y-1 text-xs"><p className="text-sm font-medium break-words">{rev.payload.title}</p><p className="text-muted-foreground">{rev.payload.knowledgeLevel ?? '—'} · {rev.payload.duration} {copy('min', 'phút')} · {person(doc.responsibleExpertId ?? doc.createdBy)}</p></div>
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => setBatchDetail(previous => previous === doc.id ? null : doc.id)}><Eye size={14} />{copy('View details', 'Xem chi tiết')}</Button>
                   </div>
-                </label>
+                  {batchDetail === doc.id && <div className="border-t border-border pt-3"><CatalogModuleDetails module={rev.payload} content={rev.payload.content} hasHistory={false} embedded staff={staff} onClose={() => setBatchDetail(null)} /></div>}
+                </ManagementSection>
               })}
             </div>
+            <label className="flex items-start gap-2 text-xs"><input type="checkbox" className="mt-0.5 accent-primary" disabled={busy || batchLoading} checked={batchReviewed} onChange={e => setBatchReviewed(e.target.checked)} />{copy('I have reviewed all selected modules shown in this list.', 'Tôi đã xem lại toàn bộ module được chọn trong danh sách đang hiển thị.')}</label>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" disabled={busy} onClick={() => setBatchApprovalOpen(false)}>{copy('Cancel', 'Huỷ')}</Button>
-            <Button disabled={busy || batchLoading || !selectedVisible.length} onClick={() => void run(async () => {
+            <Button disabled={busy || batchLoading || !selectedVisible.length || !batchReviewed} onClick={() => void run(async () => {
               const chosen = filteredPending.filter(d => batchApprovalIds.includes(d.id))
               if (!chosen.length) return
               setBatchFailures([])
+              setBatchReviewed(false)
               const result = await moduleRequest<{ approved: ModuleDocument[]; failed: Array<{ id: string; message: string }> }>('/modules/batch-approve', 'POST', {
                 items: chosen.map(doc => ({ id: doc.id, expectedVersion: doc.lockVersion })),
               })

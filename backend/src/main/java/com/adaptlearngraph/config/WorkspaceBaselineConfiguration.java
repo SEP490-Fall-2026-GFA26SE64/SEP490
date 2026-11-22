@@ -141,8 +141,8 @@ public class WorkspaceBaselineConfiguration {
         return new com.adaptlearngraph.services.KnowledgeJourneyService(identity,selections,
                 new com.adaptlearngraph.repository.JpaKnowledgeJourneyReader(data,graph),json);
     }
-    @Bean com.adaptlearngraph.repository.AssessmentPolicyCatalog assessmentPolicyCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json) {
-        return new com.adaptlearngraph.repository.Neo4jAssessmentPolicyCatalog(graph,json);
+    @Bean com.adaptlearngraph.repository.AssessmentPolicyCatalog assessmentPolicyCatalog(com.adaptlearngraph.repository.Neo4jCypher graph,ObjectMapper json,com.adaptlearngraph.repository.OrganizationMembershipJpaRepository memberships) {
+        return new com.adaptlearngraph.repository.Neo4jAssessmentPolicyCatalog(graph,json,memberships);
     }
     @Bean com.adaptlearngraph.services.ScopedAssessmentPolicyService assessmentRulePolicyService(
             SubscriptionIdentity identity,SubscriptionWorkspaceStore memberships,com.adaptlearngraph.repository.AssessmentPolicyCatalog catalog,

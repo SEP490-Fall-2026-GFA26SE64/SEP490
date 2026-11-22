@@ -15,8 +15,10 @@ public final class ModuleAuthoringService {
     }
     private final ModuleAuthoringPort port;
     private final LearningContentPort learningContent;
+    private final com.adaptlearngraph.repository.ReviewSubmissionNotifications submissionNotices;
     public ModuleAuthoringService(ModuleAuthoringPort port) { this(port, null); }
-    public ModuleAuthoringService(ModuleAuthoringPort port, LearningContentPort learningContent) { this.port = port; this.learningContent = learningContent; }
+    public ModuleAuthoringService(ModuleAuthoringPort port, LearningContentPort learningContent) { this(port,learningContent,null); }
+    public ModuleAuthoringService(ModuleAuthoringPort port,LearningContentPort learningContent,com.adaptlearngraph.repository.ReviewSubmissionNotifications notices) { this.port=port;this.learningContent=learningContent;this.submissionNotices=notices; }
     public Content lessons(String title, List<LearningContent.Lesson> lessons, List<String> jobPositions) {
         Actor actor = staff(); expert(actor);
         if (learningContent == null) throw new Failure(503, "Learning content is not configured");
@@ -251,7 +253,8 @@ public final class ModuleAuthoringService {
             Document result = new Document(doc.id(), doc.organizationId(), doc.jobPositionIds(), doc.createdBy(),
                     doc.createdAt(), doc.lockVersion() + 1, doc.everReleased(), doc.archived(), doc.releasedRevision(),
                     doc.revisions(), history, doc.intake(), expertId);
-            port.save(result); return result;
+            port.save(result);
+            return result;
         });
     }
     private void check(Document doc, long expected) { if (doc.lockVersion() != expected) throw new Failure(409, "Module changed. Reload and review the latest revision"); }
@@ -318,7 +321,9 @@ public final class ModuleAuthoringService {
         List<Event> history = new ArrayList<>(doc.history()); history.add(new Event(history.size() + 1, revision.number(), action, actor.id(), ModuleAuthoring.now(), detail));
         Document result = new Document(doc.id(), doc.organizationId(), doc.jobPositionIds(), doc.createdBy(), doc.createdAt(), doc.lockVersion() + 1,
                 doc.everReleased() || released != null, archived, released, revisions, history, doc.intake(), doc.responsibleExpertId());
-        port.save(result); return result;
+        port.save(result);
+        if(action.equals("SUBMIT"))Objects.requireNonNull(submissionNotices,"Submission notifications not configured").submitted(actor.organizationId(),actor.id(),"MODULES",1);
+        return result;
     }
     public void delete(String id, long expected) {
         Actor actor = staff(); expert(actor); port.transaction(() -> {

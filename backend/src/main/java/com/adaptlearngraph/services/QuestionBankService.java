@@ -14,10 +14,13 @@ public final class QuestionBankService implements QuestionBankUseCase {
     private final Clock clock;
     private final int maxRows;
     private final long maxBytes;
+    private final com.adaptlearngraph.repository.ReviewSubmissionNotifications submissionNotices;
     public QuestionBankService(Actors actors, Catalog catalog, Store store, Clock clock) {
         this(actors,catalog,store,clock,500,10485760);
     }
-    public QuestionBankService(Actors actors,Catalog catalog,Store store,Clock clock,int maxRows,long maxBytes) {
+    public QuestionBankService(Actors actors,Catalog catalog,Store store,Clock clock,int maxRows,long maxBytes) {this(actors,catalog,store,clock,maxRows,maxBytes,null);}
+    public QuestionBankService(Actors actors,Catalog catalog,Store store,Clock clock,int maxRows,long maxBytes,com.adaptlearngraph.repository.ReviewSubmissionNotifications notices) {
+        this.submissionNotices=notices;
         if(maxRows<1||maxRows>5000||maxBytes<1024||maxBytes>52428800)throw new IllegalArgumentException("Invalid Question Bank import limits");
         this.maxRows=maxRows;this.maxBytes=maxBytes;
         this.actors=actors; this.catalog=catalog; this.store=store; this.clock=clock;
@@ -120,7 +123,7 @@ public final class QuestionBankService implements QuestionBankUseCase {
             case "VIEW" -> { manager(a);require("SUBMITTED".equals(v.state),409,"Only submitted versions can be acknowledged");v.viewed.put(a.id(),v.id.toString());return; }
             case "ASSIGN" -> { manager(a);require(in.owner()!=null,400,"Select an Expert");catalog.requireExpert(a,in.owner());String reason=text(in.reason(),"Assignment reason",2000);UUID old=q.owner;q.owner=in.owner();audit(b,q,v,a,"ASSIGNED",reason); }
             case "SUCCESSOR" -> { owner(q,a);require("PUBLISHED".equals(v.state),409,"Resolve the current draft/review first");q.versions.add(draft(v.number+1,v.content,a));audit(b,q,latest(q),a,"SUCCESSOR_CREATED",null); }
-            case "SUBMIT" -> { owner(q,a);require(!q.retired&&"DRAFT".equals(v.state),409,"Only an active draft can be submitted");v.content=content(a,v.content,true);v.state="SUBMITTED";v.submittedBy=a.id();v.submittedAt=clock.instant();v.viewed.clear();audit(b,q,v,a,"SUBMITTED",null); }
+            case "SUBMIT" -> { owner(q,a);require(!q.retired&&"DRAFT".equals(v.state),409,"Only an active draft can be submitted");v.content=content(a,v.content,true);v.state="SUBMITTED";v.submittedBy=a.id();v.submittedAt=clock.instant();v.viewed.clear();audit(b,q,v,a,"SUBMITTED",null);submitted(a,1); }
             case "WITHDRAW", "RETURN" -> { boolean withdraw="WITHDRAW".equals(in.action());if(withdraw)owner(q,a);else manager(a);require("SUBMITTED".equals(v.state),409,"Submission already changed");String reason=text(in.reason(),"Reason",2000);v.state="DRAFT";v.reason=reason;v.viewed.clear();audit(b,q,v,a,in.action(),reason); }
             case "APPROVE" -> approveOne(b,a,q,v);
             case "REQUEST_RETIRE", "REQUEST_REACTIVATE" -> { owner(q,a);boolean retire="REQUEST_RETIRE".equals(in.action());require(retire?!q.retired:q.retired,409,"Question availability already changed");require(q.request==null,409,"An availability request is already pending");require(q.versions.stream().anyMatch(x->"PUBLISHED".equals(x.state)),409,"Publish a question before requesting availability changes");q.request=retire?"RETIRE":"REACTIVATE";String reason=text(in.reason(),"Reason",2000);audit(b,q,v,a,in.action(),reason); }
@@ -174,7 +177,6 @@ public final class QuestionBankService implements QuestionBankUseCase {
             require(!rowsToImport.isEmpty(),409,"No new questions to import (all rows already exist)");
             for(var row:rowsToImport){var existing=b.questions.stream().filter(x->x.code.equals(row.code())).findFirst().orElse(null);var nowMatches=duplicates(b,row.content(),existing==null?null:existing.id).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());var seenMatches=batch.matching.getOrDefault(row.code(),List.of()).stream().filter(c->!batchCodes.contains(c)).collect(java.util.stream.Collectors.toSet());require(nowMatches.equals(seenMatches),409,row.code()+": matching content changed since preview; upload again");}
             int submittedCount=0;
-            String firstSubmittedCode=null;
             for(var row:rowsToImport) {
                 require(!containsCode(b,row.code()),409,"Generated code conflict. Upload the file again.");
                 var created=create(b,a,row.code(),content(a,row.content(),false));
@@ -187,11 +189,13 @@ public final class QuestionBankService implements QuestionBankUseCase {
                     v.viewed.clear();
                     audit(b,created,v,a,"SUBMITTED",null);
                     created.revision++;
+                    submittedCount++;
                 }
             }
             if(batch.fileHash!=null&&!batch.fileHash.isBlank())b.committedFileHashes.add(batch.fileHash);
-            batch.committed=true;return view(b);});
+            batch.committed=true;submitted(a,submittedCount);return view(b);});
     }
+    private void submitted(Actor a,int count){if(count>0)Objects.requireNonNull(submissionNotices,"Submission notifications not configured").submitted(a.organization().toString(),a.id().toString(),"QUESTIONS",count);}
     @Override public List<Notice> notices() { return List.of(); }
     @Override public void markRead(UUID id) {var a=actor();store.atomic(a,b->{var n=b.notices.stream().filter(x->x.id.equals(id)&&x.recipient.equals(a.id())).findFirst().orElseThrow(()->new Failure(404,"Notification not found"));n.readAt=clock.instant();return null;});}
     private static void require(boolean ok,int status,String message) {if(!ok)throw new Failure(status,message);}

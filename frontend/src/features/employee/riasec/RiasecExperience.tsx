@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { WorkspaceSessionContext } from '../../../shared/auth/workspaceSession'
+import { WorkspaceLayout } from '../../../shared/layouts/WorkspaceLayout'
+import { useAutoFillAccess } from '../../../shared/hooks/useAutoFillAccess'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { Button } from '../../../shared/components/ui/Button'
 import { Card, CardContent } from '../../../shared/components/ui/Card'
 import { Dialog, DialogBody, DialogFooter, DialogHeader, DialogTitle } from '../../../shared/components/ui/Dialog'
@@ -18,7 +22,17 @@ export function RiasecExperience({ scope, active, enabled }: { scope: string; ac
   if (!enabled) return <EmptyState title={t('riasecUi.unavailable')} />
   return <Assessment key={scope} active={active} />
 }
-function Assessment({ active }: { active: boolean }) {
+export function RiasecAttemptPage() {
+  const identity = useContext(WorkspaceSessionContext)?.identity
+  const { attemptId } = useParams<{ attemptId: string }>()
+  return <WorkspaceLayout><Assessment key={`${identity?.organizationId}:${identity?.accountId}:${attemptId}`} active={true} attemptId={attemptId} /></WorkspaceLayout>
+}
+function Assessment({ active, attemptId }: { active: boolean; attemptId?: string }) {
+  const navigate = useNavigate(), location = useLocation(), attemptPage = Boolean(attemptId)
+  const returnPath = '/employee/overview?tab=riasec'
+  const openAttempt = (id: string) => navigate('/employee/riasec/attempt/' + encodeURIComponent(id), { state: { riasecEditorId: editorId } })
+
+  const autoFillAllowed = useAutoFillAccess()
   const { language, t } = useTranslation(), vi = language === 'vi'
   const ui = (key: string) => t(`riasecUi.${key}`)
   const copy = (en: string, vn: string) => vi ? vn : en
@@ -38,7 +52,7 @@ function Assessment({ active }: { active: boolean }) {
   const historyTrigger = useRef<HTMLButtonElement>(null)
   const startTrigger = useRef<HTMLButtonElement>(null)
   const changeHistoryOpen = (open: boolean) => { setHistoryOpen(open); if (!open) requestAnimationFrame(() => (historyIntent === 'start' ? startTrigger.current ?? historyTrigger.current : historyTrigger.current)?.focus()) }
-  const [editorId] = useState(() => crypto.randomUUID())
+  const [editorId] = useState(() => typeof location.state?.riasecEditorId === 'string' && /^[0-9a-f-]{36}$/i.test(location.state.riasecEditorId) ? location.state.riasecEditorId : crypto.randomUUID())
   const [view, setView] = useState<View | null>(null), [error, setError] = useState(''), [saveError, setSaveError] = useState(false)
   const [busy, setBusy] = useState(false), [saving, setSaving] = useState(false), [selected, setSelected] = useState<string | null>(null)
   const [answers, setAnswers] = useState<Map<string, number>>(new Map())
@@ -119,7 +133,7 @@ function Assessment({ active }: { active: boolean }) {
     try { await work(); return true } catch (e) { setError(e instanceof Error ? e.message : 'RIASEC_UNAVAILABLE'); return false }
     finally { mutating.current = false; epoch.current++; setBusy(false); void load() }
   }
-  const start = () => command(async () => { const d = await riasecRequest<Draft>('/draft', 'POST', { editorId }); syncDraft(d); setView(v => v ? { ...v, draft: d } : v); setIndex(0); setReview(false) })
+  const start = () => command(async () => { const d = await riasecRequest<Draft>('/draft', 'POST', { editorId }); syncDraft(d); setView(v => v ? { ...v, draft: d } : v); setIndex(0); setReview(false); if (d.draftId) openAttempt(d.draftId) })
   const takeover = () => command(async () => {
     const latest = await riasecRequest<View>()
     const d = await riasecRequest<Draft>('/draft/takeover', 'POST', { editorId, draftId: latest.draft.draftId, revision: latest.draft.revision })
@@ -129,12 +143,12 @@ function Assessment({ active }: { active: boolean }) {
     if (!await flush()) return
     const d = draft.current!
     const receipt = await riasecRequest<{ id: string }>('/submit', 'POST', { editorId, draftId: d.draftId, revision: d.revision })
-    setSelected(receipt.id); setConfirm(false)
+    setSelected(receipt.id); setConfirm(false); if (attemptPage) navigate(returnPath, { replace: true })
   })
   const current = view?.results.find(r => r.id === view?.currentId)
   const result = view?.results.find(r => r.id === selected && !r.deletedAt) ?? current
   const running = view?.results.some(aiRunning) ?? false
-  const locked = !active || busy || saveError || view?.draft.editorId !== editorId
+  const locked = !active || busy || saveError || attemptPage && view?.draft.draftId !== attemptId || view?.draft.editorId !== editorId
   const historyAction = async (action: HistoryAction): Promise<boolean> => {
     if (action.kind === 'start') return start()
     return command(async () => {
@@ -158,35 +172,44 @@ function Assessment({ active }: { active: boolean }) {
     <Button ref={historyTrigger} size="sm" variant="outline" onClick={() => { setHistoryIntent(undefined); changeHistoryOpen(true) }}>{copy('Result history', 'Danh sách kết quả')}</Button>
   </div>
   return <section className="space-y-5">
-    {view && <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <Card className="border-primary/35 border-t-2 border-t-primary bg-gradient-to-br from-secondary/50 to-card"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{copy('RIASEC assessment', 'Bài RIASEC')}</Text><Heading level={2} size="card">{copy('Explore your interests', 'Khám phá sở thích')}</Heading><Text variant="caption">{view.draft.draftId ? copy('Your saved draft is below.', 'Bài nháp đã lưu ở bên dưới.') : copy('60 activities · No time limit', '60 hoạt động · Không giới hạn giờ')}</Text>{!view.draft.draftId && <Button ref={startTrigger} size="sm" disabled={busy || running} onClick={() => { setHistoryIntent('start'); changeHistoryOpen(true) }}>{copy('Start assessment', 'Làm bài RIASEC')}</Button>}</CardContent></Card>
+    {!attemptPage && view && <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <Card className="border-primary/35 border-t-2 border-t-primary bg-gradient-to-br from-secondary/50 to-card"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{copy('RIASEC assessment', 'Bài RIASEC')}</Text><Heading level={2} size="card">{copy('Explore your interests', 'Khám phá sở thích')}</Heading><Text variant="caption">{view.draft.draftId ? copy('Continue your saved attempt on the assessment page.', 'Tiếp tục lượt đang làm trên trang bài thi riêng.') : copy('60 activities · No time limit', '60 hoạt động · Không giới hạn giờ')}</Text>{view.draft.draftId && <Button size="sm" disabled={busy || running} onClick={async () => { if (await takeover() && view.draft.draftId) openAttempt(view.draft.draftId) }}>{copy('Continue assessment', 'Tiếp tục làm bài')}</Button>}{!view.draft.draftId && <Button ref={startTrigger} size="sm" disabled={busy || running} onClick={() => { setHistoryIntent('start'); changeHistoryOpen(true) }}>{copy('Start assessment', 'Làm bài RIASEC')}</Button>}</CardContent></Card>
       {[{label:copy('Current result','Kết quả hiện hành'), value:current ? '1' : '0', note:current ? new Date(current.submittedAt).toLocaleDateString(vi ? 'vi-VN' : 'en-GB') : copy('No active result','Chưa có kết quả')}, {label:copy('History','Lịch sử'),value:String(view.results.filter(r => !r.deletedAt && r.id !== view.currentId).length),note:copy('Previous active submissions','Các lần nộp trước còn hoạt động')}, {label:copy('Inactive','Không hoạt động'),value:String(view.results.filter(r => r.deletedAt).length),note:copy('Recover within 7 days','Khôi phục trong 7 ngày')}].map(item => <Card key={item.label} className="border-primary/35 border-t-2 border-t-primary"><CardContent className="space-y-2 p-4"><Text variant="eyebrow">{item.label}</Text><Heading level={2} size="section">{item.value}</Heading><Text variant="caption">{item.note}</Text></CardContent></Card>)}
     </div>}
 
       {!view && !error && <Text role="status">{copy('Loading…', 'Đang tải…')}</Text>}
 
-      {running && view!.results.find(aiRunning)!.id !== result?.id && <RiasecAiProgress key={view!.results.find(aiRunning)!.id} result={view!.results.find(aiRunning)!} />}
+      {!attemptPage && running && view!.results.find(aiRunning)!.id !== result?.id && <RiasecAiProgress key={view!.results.find(aiRunning)!.id} result={view!.results.find(aiRunning)!} />}
       {error && <div role="alert" className="space-y-2 text-destructive"><Text>{failureText(error)}</Text>
         {saveError ? <><Text>{copy('Unsaved answers remain in this tab. Retry saving, or continue here with the latest saved draft.', 'Câu chưa lưu vẫn còn trong tab này. Thử lưu lại hoặc tiếp tục tại đây với nháp đã lưu mới nhất.')}</Text><Button variant="outline" onClick={() => void flush()} disabled={saving}>{copy('Retry save', 'Thử lưu lại')}</Button><Button variant="outline" disabled={saving || busy} onClick={() => void takeover()}>{copy('Continue with saved draft', 'Tiếp tục với nháp đã lưu')}</Button></> : <Button variant="outline" onClick={() => { readFailure.current = null; void load() }}>{copy('Reload', 'Tải lại')}</Button>}
       </div>}
-    {view?.draft.draftId && <>
-      <div role="status" className="flex flex-wrap items-center gap-3 text-body-sm">
-        {view.draft.editorId !== editorId ? <><span>{copy('This draft is being edited elsewhere. You can view it here.', 'Nháp đang được sửa ở nơi khác. Bạn có thể xem tại đây.')}</span><Button disabled={busy} onClick={() => void takeover()}>{copy('Continue here', 'Tiếp tục tại đây')}</Button></> : <span>{saving ? copy('Saving…', 'Đang lưu…') : saveError ? copy('Not saved', 'Chưa lưu') : copy('Saved to your account', 'Đã lưu theo tài khoản')}</span>}
+    {attemptPage && <Card className="overflow-hidden border-primary/25 border-t-4 border-t-primary shadow-sm"><CardContent className="space-y-4 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1"><Text variant="eyebrow">{copy('Career interests', 'Sở thích nghề nghiệp')}</Text><Heading level={1} size="section">{copy('RIASEC assessment', 'Bài đánh giá RIASEC')}</Heading><Text variant="body-sm">{copy('Choose how much you enjoy each activity. There are no right or wrong answers.', 'Chọn mức độ yêu thích của bạn với từng hoạt động. Không có đáp án đúng hay sai.')}</Text></div>
+        <Button variant="outline" size="sm" disabled={busy || saving} onClick={async () => { if (!saveError && await flush()) navigate(returnPath) }}>{copy('Back to RIASEC', 'Về trang RIASEC')}</Button>
       </div>
-      {review ? <Card><CardContent className="space-y-4 p-5"><Heading level={2} size="section">{ui('review')} · {answers.size}/60</Heading>
+      {view && view.draft.draftId === attemptId && <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <div className="flex flex-wrap items-center gap-3"><span className="rounded-lg border border-primary/20 bg-secondary px-3 py-2 text-sm font-semibold text-secondary-foreground">{copy('Answered', 'Đã trả lời')} {answers.size} / 60</span><span role="status" className={`text-sm font-medium ${saveError ? 'text-destructive' : 'text-muted-foreground'}`}>{view.draft.editorId !== editorId ? copy('Open in another tab', 'Đang mở ở tab khác') : saving ? copy('Saving…', 'Đang lưu…') : saveError ? copy('Not saved', 'Chưa lưu') : copy('All changes saved', 'Đã lưu mọi thay đổi')}</span></div>
+        {autoFillAllowed && <div className="shrink-0"><Button variant="secondary" disabled={locked || saving} onClick={() => { const next = new Map(manifest.items.map((item, i) => [item.id, i >= 10 && i < 20 ? 4 : i >= 50 ? 3 : 2])); setAnswers(next); pending.current = Object.fromEntries(next); void flush() }}>Auto fill answer</Button></div>}
+      </div>}
+    </CardContent></Card>}
+    {attemptPage && view && view.draft.draftId !== attemptId && <EmptyState title={copy('This attempt is no longer active.', 'Lượt làm bài này không còn hoạt động.')} />}
+    {attemptPage && view && view.draft.draftId === attemptId && <>
+      {view.draft.editorId !== editorId && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warning bg-card p-4 text-sm"><span>{copy('This draft is being edited elsewhere. Continue here to edit your answers.', 'Nháp đang được sửa ở nơi khác. Chọn tiếp tục tại đây để trả lời.')}</span><Button disabled={busy} onClick={() => void takeover()}>{copy('Continue here', 'Tiếp tục tại đây')}</Button></div>}
+      {review ? <Card><CardContent className="space-y-4 p-5"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4"><div className="space-y-1"><Heading level={2} size="subsection">{copy('Review your answers', 'Kiểm tra câu trả lời')}</Heading><Text variant="body-sm">{copy('Select a question to check or change your answer before submitting.', 'Chọn câu hỏi để xem hoặc sửa câu trả lời trước khi nộp.')}</Text></div><span className="shrink-0 rounded-full border border-primary/20 bg-secondary px-3 py-1.5 text-sm font-semibold text-secondary-foreground">{answers.size}/60 {copy('answered', 'câu đã trả lời')}</span></div>
       {answers.size < 60 && <Text role="status">{copy('Unanswered questions:', 'Câu chưa trả lời:')} {manifest.items.flatMap((q, i) => answers.has(q.id) ? [] : [i + 1]).join(', ')}</Text>}
       <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">{manifest.items.map((item, i) => <Button key={item.id} variant={answers.has(item.id) ? 'secondary' : 'outline'} onClick={() => move(i)}>{i + 1}</Button>)}</div>
       <div className="flex gap-3"><Button variant="outline" onClick={() => setReview(false)}>{ui('back')}</Button><Button disabled={answers.size !== 60 || locked || saving} onClick={() => setConfirm(true)}>{ui('submit')}</Button></div>
     </CardContent></Card> : <RiasecAttemptPanel attempt={{ attemptId: view.draft.draftId, answers: [...answers].map(([itemId, value]) => ({ itemId, value })) }}
       manifest={manifest} answers={answers} index={index} locked={locked} saving={saving} headingRef={heading} onMove={move} onRate={rate} onReview={() => setReview(true)} />}
     </>}
-    {view && <div className="space-y-3">
+    {!attemptPage && view && <div className="space-y-3">
       {result ? <RiasecResultComparison key={result.id} result={result} activeIds={view.activePositionIds}
         navigation={navigation} footer={<div className="space-y-3 border-t border-border px-4 py-3"><RiasecAiProgress key={`${result.id}:${result.aiStatus}`} result={result} />{view.catalogAvailable === false && <Text variant="caption">{copy('The position catalog is currently unavailable. Saved scores and suggestions are retained.', 'Danh mục vị trí hiện chưa khả dụng. Điểm và gợi ý đã lưu vẫn được giữ.')}</Text>}{result.id === view.currentId && result.aiStatus === 'FAILED' && <Button variant="outline" size="sm" disabled={busy || running} onClick={() => void historyAction({ kind: 'retry', result })}>{copy('Retry AI suggestions', 'Thử lại gợi ý AI')}</Button>}</div>} /> : <div className="rounded-xl border border-border bg-card">{navigation}<div className="p-4"><Text variant="body-sm">{copy('No active result. Open result history to recover an inactive result or start a new assessment.', 'Chưa có kết quả hoạt động. Mở danh sách để khôi phục hoặc làm bài mới.')}</Text></div></div>}
 
     </div>}
 
-    {view && <RiasecResultHistory key={`${historyOpen}:${historyIntent}`} initialAction={historyIntent} open={historyOpen} onOpenChange={changeHistoryOpen} view={view} selectedId={result?.id} busy={busy} onAction={historyAction} />}
+    {!attemptPage && view && <RiasecResultHistory key={`${historyOpen}:${historyIntent}`} initialAction={historyIntent} open={historyOpen} onOpenChange={changeHistoryOpen} view={view} selectedId={result?.id} busy={busy} onAction={historyAction} />}
     <Dialog open={confirm} onOpenChange={setConfirm} closeLabel={ui('cancel')}><DialogHeader><DialogTitle>{ui('submit')}</DialogTitle></DialogHeader><DialogBody><Text>{copy('Submit all 60 answers? Scores and this submission will be saved. AI will then explore company positions using your interests.', 'Nộp đủ 60 câu? Điểm và lần nộp này sẽ được lưu. AI sau đó khám phá các vị trí trong công ty theo sở thích của bạn.')}</Text></DialogBody><DialogFooter><Button variant="outline" disabled={busy} onClick={() => setConfirm(false)}>{ui('cancel')}</Button><Button disabled={busy || saving || locked} onClick={() => void submit()}>{ui('submit')}</Button></DialogFooter></Dialog>
 
   </section>

@@ -1,5 +1,4 @@
-import { BaselineQuestionRequests, type QuestionRequest } from './BaselineQuestionRequests'
-import { linkRequestedQuestion } from '../../api/baselineQuestionRequests'
+import { useSearchParams } from 'react-router-dom'
 import { ImportedQuestionsPreview } from './ImportedQuestionsPreview'
 import './questionHistory.css'
 import { QuestionId } from './QuestionId'
@@ -107,7 +106,7 @@ export function QuestionBankWorkspace() {
   return <OwnedQuestionBankWorkspace key={(identity?.organizationId ?? '') + ':' + (identity?.accountId ?? '') + ':' + (identity?.roles?.join(',') ?? '')} />
 }
 function OwnedQuestionBankWorkspace() {
-  const [bankTab, setBankTab] = useState('questions'), [questionRequest, setQuestionRequest] = useState<QuestionRequest | null>(null)
+  const [reviewParams] = useSearchParams()
   const { language } = useTranslation(), vi = language === 'vi'
   const copy = (en: string, vn: string) => vi ? vn : en
   const { toast } = useToast()
@@ -117,7 +116,13 @@ function OwnedQuestionBankWorkspace() {
     setMessageState(text)
     if (text) toast({ description: text, variant: 'success', duration: 3000 })
   }
-  const [search, setSearch] = useState(''), [skill, setSkill] = useState('all'), [status, setStatus] = useState('all'), [owner, setOwner] = useState('all'), [page, setPage] = useState(1)
+  const [search, setSearch] = useState(''), [skill, setSkill] = useState('all'), [status, setStatus] = useState(reviewParams.get('status') === 'SUBMITTED' ? 'SUBMITTED' : 'all'), [owner, setOwner] = useState('all'), [page, setPage] = useState(1)
+  const reviewStatus = reviewParams.get('status')
+  const [previousReviewStatus, setPreviousReviewStatus] = useState(reviewStatus)
+  if (previousReviewStatus !== reviewStatus) {
+    setPreviousReviewStatus(reviewStatus)
+    if (reviewStatus === 'SUBMITTED') { setStatus('SUBMITTED'); setPage(1) }
+  }
   const [levelFilter, setLevelFilter] = useState('all')
   const [editor, setEditor] = useState<Editor | null>(null), [editorShowErrors, setEditorShowErrors] = useState(false), [detail, setDetail] = useState<string | null>(null), [versionId, setVersionId] = useState('')
   const [detailTab, setDetailTab] = useState('content')
@@ -171,7 +176,7 @@ function OwnedQuestionBankWorkspace() {
   const stateName = (v: BankVersion) => v.state === 'DRAFT' ? copy('Draft', 'Bản nháp') : v.state === 'SUBMITTED' ? copy('Pending review', 'Chờ duyệt') : copy('Published', 'Đã xuất bản')
   const knowledgeLevel = (value: string | null) => ({ FOUNDATION: copy('Foundation', 'Nền tảng'), INTERMEDIATE: copy('Intermediate', 'Trung cấp'), ADVANCED: copy('Advanced', 'Nâng cao') })[value ?? ''] ?? copy('Unclassified', 'Chưa phân loại')
   const own = (q: BankQuestion) => session?.actor.role === 'DOMAIN_EXPERT' && q.owner === session.actor.id
-  const edit = (q?: BankQuestion) => { setQuestionRequest(null); setEditorShowErrors(false); setEditor(q ? { id: q.id, revision: q.revision, code: q.code, content: { ...current(q).content, options: [...current(q).content.options] }, acknowledged: false } : { id: null, revision: null, code: '', content: emptyContent(), acknowledged: false }); setError('') }
+  const edit = (q?: BankQuestion) => { setEditorShowErrors(false); setEditor(q ? { id: q.id, revision: q.revision, code: q.code, content: { ...current(q).content, options: [...current(q).content.options] }, acknowledged: false } : { id: null, revision: null, code: '', content: emptyContent(), acknowledged: false }); setError('') }
   const openDetail = (q: BankQuestion, version?: string) => { setDetailTab('content'); setMessage(''); setDetail(q.id); setVersionId(version ?? current(q).id) }
   const ask = (q: BankQuestion, name: string) => setAction({ q, name, reason: '', owner: q.owner ?? '' })
   const setContent = (patch: Partial<BankContent>) => setEditor(prev => prev ? { ...prev, content: { ...prev.content, ...patch } } : null)
@@ -192,8 +197,6 @@ function OwnedQuestionBankWorkspace() {
     void run(async () => {
       if (!editor) return
       const nextBank = await bankRequest<BankView>('/questions', { id: editor.id, expectedRevision: editor.revision, content: editor.content, acknowledgeDuplicates: editor.acknowledged })
-      const requestTarget = editor.id ? nextBank.questions.find(q => q.id === editor.id) : nextBank.questions.find(q => !(bank?.questions ?? []).some(old => old.id === q.id))
-      if (questionRequest && requestTarget) await linkRequestedQuestion(questionRequest.request.id, requestTarget.id)
       if (!submitAfterSave) {
         setBank(nextBank)
         setEditor(null)
@@ -293,9 +296,7 @@ function OwnedQuestionBankWorkspace() {
       </div>
 
 
-      {!manager && <Tabs value={bankTab} onValueChange={setBankTab}><TabsList><TabsTrigger value="questions">{copy('Questions', 'Câu hỏi')}</TabsTrigger><TabsTrigger value="requests">Requests</TabsTrigger></TabsList></Tabs>}
-      {!manager && bankTab === 'requests' && <BaselineQuestionRequests onCreate={request => { edit(); setQuestionRequest(request); setEditor(prev => prev ? { ...prev, content: { ...prev.content, skillId: request.request.skillId, skillName: request.request.skillName, knowledgeLevel: request.request.level, mandatory: request.missingMandatory > 0 } } : prev) }} />}
-      <div hidden={!manager && bankTab === 'requests'}>
+      <div>
       <Card><CardHeader className="border-b border-border p-4"><div className="flex flex-col gap-3"><div><CardTitle className="flex items-center gap-2"><FileQuestion className="size-4 text-primary" />{copy('Question Bank Directory', 'Danh sách câu hỏi')}</CardTitle><CardDescription>{copy('Browse by MicroSkill, review versions and track responsibility.', 'Xem theo MicroSkill, theo dõi phiên bản và người phụ trách.')}</CardDescription></div><div className="flex flex-wrap items-end justify-between gap-2.5">
         <div className="grid flex-1 min-w-0 gap-2.5 sm:grid-cols-2 xl:grid-cols-5 items-end">
           <FormField label={copy('Search', 'Tìm kiếm')}><Input className="h-8 text-xs bg-card" aria-label={copy('Search questions', 'Tìm câu hỏi')} leftIcon={<Search className="size-3.5" />} placeholder={copy('Search questions…', 'Tìm câu hỏi…')} value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} /></FormField>

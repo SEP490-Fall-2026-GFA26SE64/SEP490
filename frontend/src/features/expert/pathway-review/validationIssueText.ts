@@ -6,7 +6,7 @@ export function validationIssueText(reason: string, step: RuleStep | undefined, 
     MODULE_OPTIONS_CHANGED: step?.options.length === 0
       ? ['No modules selected for this skill. Include a module from the list, then save.', 'Không còn module được chọn cho skill này. Thêm module từ danh sách rồi lưu.']
       : ['A selected module revision is no longer eligible. Refresh provision and replace the affected option.', 'Một phiên bản module đã chọn không còn đủ điều kiện. Làm mới nguồn học và thay lựa chọn đó.'],
-    PROVISION_REQUIRES_EXPERT_ACTION: ['Configure suitable learning provision, or use Bypass with a reason if no eligible provision exists.', 'Cấu hình nguồn học phù hợp; chỉ dùng Bypass kèm lý do khi không có nguồn đủ điều kiện.'],
+    PROVISION_REQUIRES_EXPERT_ACTION: ['No suitable learning provision is included. Add an eligible module or configure the required certificate.', 'Chưa có nguồn học phù hợp. Thêm module đúng mức hoặc cấu hình chứng chỉ yêu cầu.'],
     PINNED_REQUIREMENT_SCOPE_CHANGED: ['The saved requirement differs from its original snapshot. Reload and inspect the requirement before saving.', 'Yêu cầu đã lưu khác bản gốc. Tải lại và kiểm tra yêu cầu trước khi lưu.'],
     CURRENT_REQUIREMENT_SCOPE_CHANGED: ['The catalog requirement changed. Refresh provision and review its Skill version and knowledge level.', 'Yêu cầu catalog đã đổi. Làm mới nguồn học, kiểm tra phiên bản Skill và mức kiến thức.'],
     CERTIFICATE_PROVISION_CHANGED: ['The certificate definition changed or is unavailable. Refresh provision and select the current definition.', 'Định nghĩa chứng chỉ đã đổi hoặc chưa khả dụng. Làm mới nguồn học và kiểm tra định nghĩa hiện tại.'],

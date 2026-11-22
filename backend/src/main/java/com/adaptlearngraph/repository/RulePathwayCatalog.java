@@ -128,6 +128,29 @@ public final class RulePathwayCatalog {
         catch(Exception invalid){throw new Failure(503,"CATALOG_SNAPSHOT_INVALID");}
         return new Snapshot(fingerprint,required,options,certificates,related);
     }
+    /** Validate historical owned definitions without requiring their assignment to remain current. */
+    public Snapshot retainCertificates(UUID organization,Snapshot fresh,Snapshot original,Plan plan) {
+        var pins=new TreeMap<String,Certificate>(original.certificates());
+        for(var step:plan.steps())if(step.certificate()!=null){var c=step.certificate();pins.put(step.requirement().key(),new Certificate(c.id(),c.version(),c.name(),c.referenceUrl(),List.of(),c.description()));}
+        if(pins.isEmpty())return fresh;
+        var ids=pins.values().stream().map(Certificate::id).distinct().toList();
+        if(ids.size()>1000)throw new Failure(422,"CERTIFICATE_PIN_CAPACITY");
+        var rows=graph.read(timeout,tx->tx.list("MATCH (s:MicroSkill {organizationId:$org})-[:REQUIRES_CERTIFICATE]->(c:Certificate {organizationId:$org}) WHERE c.id IN $ids AND c.status='ACTIVE' AND c.reviewStatus='APPROVED' RETURN s.id AS skill,properties(c) AS certificate LIMIT 1001",Map.of("org",organization.toString(),"ids",ids)));
+        var result=new TreeMap<>(fresh.certificates());
+        for(var entry:pins.entrySet()){
+            result.remove(entry.getKey());var pin=entry.getValue();
+            var need=fresh.requirements().stream().filter(r->r.key().equals(entry.getKey())&&r.provision()==Provision.CERTIFICATE_ONLY).findFirst();
+            if(need.isEmpty())continue;
+            var matches=rows.stream().filter(r->{var c=r.get("certificate");return r.get("skill").asString().equals(need.get().skillId())
+                && c.get("knowledgeLevel").asString().equals(need.get().knowledgeLevel().name()) && c.get("skillVersion").asString().equals(need.get().skillVersion())
+                && c.get("id").asString().equals(pin.id()) && c.get("version").asString().equals(pin.version())
+                && c.get("name").asString().equals(pin.name()) && c.get("referenceUrl").asString().equals(pin.referenceUrl())
+                && Objects.equals(c.get("description").asString(""),Objects.toString(pin.description(),""));}).toList();
+            if(matches.size()==1)result.put(entry.getKey(),pin);
+        }
+        String fingerprint;try{fingerprint=RoleBaselineFlow.hash(json.writeValueAsString(List.of(fresh.requirements(),fresh.options(),result)));}catch(Exception e){throw new Failure(503,"CERTIFICATE_SNAPSHOT_INVALID");}
+        return new Snapshot(fingerprint,fresh.requirements(),fresh.options(),result,fresh.related());
+    }
     private static boolean ready(ModuleAuthoring.Package payload) {
         return payload.knowledgeLevel()!=null && payload.teachings().size()==1 && !payload.content().lessons().isEmpty()
                 && payload.content().lessons().stream().allMatch(LearningContent.Lesson::complete)

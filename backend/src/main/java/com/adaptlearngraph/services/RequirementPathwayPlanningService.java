@@ -21,7 +21,7 @@ public final class RequirementPathwayPlanningService {
         for(var gap:carried)requested.add(requirement(gap.getRequirementSnapshot()));
         var strict=new HashSet<String>();plan.steps().stream().filter(step->step.kind()==Kind.REQUIRED && step.state()!=State.FULFILLED && step.state()!=State.BYPASSED)
                 .forEach(step->strict.add(step.requirement().key()));
-        var fresh=catalog.providers(scope,input.roleSnapshot(),input.binding().levelId(),requested,strict);
+        var fresh=catalog.retainCertificates(row.getOrganizationId(),catalog.providers(scope,input.roleSnapshot(),input.binding().levelId(),requested,strict),input.catalog(),plan);
         var byKey=new HashMap<String,Requirement>();fresh.requirements().forEach(requirement->byKey.put(requirement.key(),requirement));
         var requirements=new ArrayList<Requirement>();
         for(var step:plan.steps()) {
