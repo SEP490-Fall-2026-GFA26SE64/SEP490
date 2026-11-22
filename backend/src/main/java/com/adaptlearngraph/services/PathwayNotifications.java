@@ -7,7 +7,29 @@ import java.util.*;
 /** Semantic notifications share the domain transaction and never mutate state from a read. */
 public final class PathwayNotifications {
     private final LearningNotificationJpaRepository notifications;
-    public PathwayNotifications(LearningNotificationJpaRepository notifications){this.notifications=notifications;}
+    private final Neo4jCypher graph;
+    public PathwayNotifications(LearningNotificationJpaRepository notifications){this(notifications,null);}
+    public PathwayNotifications(LearningNotificationJpaRepository notifications,Neo4jCypher graph){this.notifications=notifications;this.graph=graph;}
+    private String roleId(RequirementPathwayJpaRepository.Row row) {
+        try {var id=new com.fasterxml.jackson.databind.ObjectMapper().readTree(row.getFrozenInput()).path("input").path("binding").path("roleId").asText();if(id.isBlank())throw new IllegalStateException("Missing role binding");return id;}
+        catch(java.io.IOException invalid){throw new IllegalStateException("Invalid role binding",invalid);}
+    }
+    private void expertEvent(RequirementPathwayJpaRepository.Row row,String type,long revision,Map<String,Object> detail,UUID actor) {
+        boolean submitted=Set.of("RULE_PATHWAY_REQUESTED","CERTIFICATE_EVIDENCE_SUBMITTED").contains(type);
+        boolean decided=Set.of("RULE_PATHWAY_APPROVED","RULE_PATHWAY_REJECTED","CERTIFICATE_APPROVED","CERTIFICATE_REJECTED").contains(type);
+        if(!submitted && !decided)return;
+        String expert=actor==null?null:actor.toString();
+        if(submitted) {
+            if(graph==null)return;
+            expert=graph.read(5,tx->{var rows=tx.records("MATCH(r:TargetRole {organizationId:$org,id:$role}) RETURN r.assignedExpertId AS expert LIMIT 2",Map.of("org",row.getOrganizationId().toString(),"role",roleId(row)));return rows.size()==1?rows.getFirst().get("expert").asString(null):null;});
+        }
+        if(expert==null || !notifications.activeExpert(row.getOrganizationId().toString(),expert))return;
+        String kind="REVIEW_"+type;
+        String identity=Objects.toString(detail.getOrDefault("submissionId",row.getRequestId()))+":"+Objects.toString(detail.getOrDefault("decisionId",revision));
+        String link=type.startsWith("CERTIFICATE")?"/expert/certificates?tab=review":"/expert/pathway-review/"+row.getRequestId();
+        notifications.pathway(UUID.randomUUID(),row.getOrganizationId().toString(),expert,"REQUEST:"+type+":"+identity,kind,type,
+                "Role / Vị trí: "+row.getRoleName()+" · "+row.getLevelName()+"\nCertificate / Chứng chỉ: "+Objects.toString(detail.get("certificateName"),"")+"\nRequest: "+row.getRequestId(),link);
+    }
     private void send(RequirementPathwayJpaRepository.Row row,String key,String kind,String title,String body) {
         InitialJpa.requireTransaction();
         notifications.pathway(UUID.randomUUID(),row.getOrganizationId().toString(),row.getLearnerId().toString(),
@@ -15,7 +37,9 @@ public final class PathwayNotifications {
                 "Role / Vị trí: "+row.getRoleName()+" · "+row.getLevelName()+"\n"+body,
                 "/employee/pathway?view=role&archive="+row.getRequestId());
     }
-    public void event(RequirementPathwayJpaRepository.Row row,long revision,String type,Map<String,Object> detail) {
+    public void event(RequirementPathwayJpaRepository.Row row,long revision,String type,Map<String,Object> detail) {event(row,revision,type,detail,null);}
+    public void event(RequirementPathwayJpaRepository.Row row,long revision,String type,Map<String,Object> detail,UUID actor) {
+        expertEvent(row,type,revision,detail,actor);
         String title=switch(type) {
             case "RULE_PATHWAY_APPROVED" -> "Pathway approved / Lộ trình được duyệt";
             case "RULE_PATHWAY_REJECTED" -> "Pathway rejected / Lộ trình bị từ chối";

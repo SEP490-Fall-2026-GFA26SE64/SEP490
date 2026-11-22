@@ -14,8 +14,8 @@ import { getPolicyWorkspace, runScopedCommand, type BaselineEditorState, type Po
 export function BaselinePolicyDialog({ scopeKey, initialAction, onClose, onActivated, renderError }: { scopeKey: string; initialAction: 'configure' | 'edit' | 'view'; onClose: (saved: boolean) => void; onActivated?: (workspace: PolicyWorkspace) => void; renderError: (error: unknown) => ReactNode }) {
   const { t, language } = useTranslation(), copy = (en: string, vi: string) => language === 'vi' ? vi : en
   const [workspace, setWorkspace] = useState<PolicyWorkspace | null>(null), [reload, setReload] = useState(0), [editing, setEditing] = useState(initialAction !== 'view')
-  const [error, setError] = useState<unknown>(null), [busy, setBusy] = useState(false), [pending, setPending] = useState<{ command: ScopedCommand; dismiss: boolean } | null>(null)
-  const [dirty, setDirty] = useState(false), [closing, setClosing] = useState(false), [abandoning, setAbandoning] = useState(false), [activating, setActivating] = useState(false)
+  const [error, setError] = useState<unknown>(null), [busy, setBusy] = useState(false), [pending, setPending] = useState<{ command: ScopedCommand; dismiss: boolean; activateAfterSave: boolean } | null>(null)
+  const [dirty, setDirty] = useState(false), [closing, setClosing] = useState(false), [abandoning, setAbandoning] = useState(false), [formStep, setFormStep] = useState(1)
   const [notice, setNotice] = useState(''), [historyPage, setHistoryPage] = useState(0)
   const form = useRef<BaselineFormHandle>(null), flight = useRef(false), changed = useRef(false)
   const draft = workspace?.draft, legacy = Boolean(workspace && workspace.scope.levelId !== 'ALL_ROLE_LEVELS'), locked = busy || pending !== null
@@ -31,38 +31,48 @@ export function BaselinePolicyDialog({ scopeKey, initialAction, onClose, onActiv
     const warn = (event: BeforeUnloadEvent) => event.preventDefault()
     window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn)
   }, [dirty, pending])
-  async function execute(command: ScopedCommand, dismiss = false) {
+  async function execute(command: ScopedCommand, dismiss = false, activateAfterSave = false) {
     if (flight.current) return
-    flight.current = true; setBusy(true); setError(null); setPending({ command, dismiss }); setNotice('')
+    let savedForActivation = false
+    flight.current = true; setBusy(true); setError(null); setPending({ command, dismiss, activateAfterSave }); setNotice('')
     try {
-      const result = await runScopedCommand(command)
-      changed.current = true; setWorkspace(result); setPending(null); setDirty(false); setClosing(false); setAbandoning(false); setActivating(false)
-      setNotice(command.kind === 'activate' ? t('scopedPolicy.activated') : command.kind === 'abandon' ? t('baselineUX.abandoned') : t('scopedPolicy.saved'))
-      if (command.kind === 'activate' && onActivated) { onActivated(result); return }
-      if (command.kind !== 'progress') setEditing(false)
+      let result = await runScopedCommand(command)
+      changed.current = true; setWorkspace(result)
+      if (command.kind === 'progress' && activateAfterSave) {
+        savedForActivation = true
+        if (!result.draft?.configuration) throw new Error('Saved configuration is incomplete')
+        const activation: ScopedCommand = { purpose: 'BASELINE', scopeKey, kind: 'activate', commandKey: crypto.randomUUID(), draftId: result.draft.id, expectedRevision: result.draft.revision, expectedActivationRevision: result.activationRevision, expectedCatalogHash: result.scope.catalogHash }
+        setPending({ command: activation, dismiss: false, activateAfterSave: false })
+        result = await runScopedCommand(activation)
+      }
+      const activated = command.kind === 'activate' || activateAfterSave
+      setWorkspace(result); setPending(null); setDirty(false); setClosing(false); setAbandoning(false)
+      setNotice(activated ? t('scopedPolicy.activated') : command.kind === 'abandon' ? t('baselineUX.abandoned') : t('scopedPolicy.saved'))
+      if (activated && onActivated) { onActivated(result); return }
+      if (command.kind !== 'progress' || activated) setEditing(false)
       if (dismiss) onClose(true)
     } catch (failure) {
       setError(failure)
-      // Keep the editor values and the dialog on failure. Ambiguous outcomes retain the exact command for an explicit retry.
+      if (savedForActivation) setNotice(t('scopedPolicy.savedActivationFailed'))
+      // Retry only the uncertain stage: activation retries never repeat the already saved draft command.
       if (failure instanceof AdaptiveBaselineApiError && failure.status >= 400 && failure.status < 500) setPending(null)
     } finally { flight.current = false; setBusy(false) }
   }
   function close() { if (locked) return; if (dirty) setClosing(true); else onClose(changed.current) }
-  function save(editorState: BaselineEditorState, dismiss: boolean) {
+  function save(editorState: BaselineEditorState, dismiss: boolean, activateAfterSave = false) {
     if (!workspace || locked || legacy) return
     void execute({ purpose: 'BASELINE', scopeKey, kind: 'progress', commandKey: crypto.randomUUID(), draftId: draft?.id ?? null,
-      expectedRevision: draft?.revision ?? 0, expectedActivationRevision: workspace.activationRevision, expectedCatalogHash: workspace.scope.catalogHash, editorState }, dismiss)
+      expectedRevision: draft?.revision ?? 0, expectedActivationRevision: workspace.activationRevision, expectedCatalogHash: workspace.scope.catalogHash, editorState }, dismiss, activateAfterSave)
   }
-  const ready = Boolean(draft?.configuration && workspace?.scope.ready && draft.catalogHash === workspace.scope.catalogHash)
   return <><Dialog open onOpenChange={open => { if (!open) close() }} size="wide" className="max-w-3xl" ariaLabel={t('scopedPolicy.baselineTitle')}>
     <DialogHeader><DialogTitle><SlidersHorizontal className="size-5 text-primary" />{workspace?.scope.ownerName ?? t('scopedPolicy.baselineTitle')}</DialogTitle><DialogDescription>{legacy ? copy('Historical Role level policy · read only', 'Chính sách Role Level cũ · chỉ xem') : copy('One policy for this Role. The selected Role level determines each employee’s required Skills.', 'Một chính sách chung cho vị trí. Role Level đã chọn quyết định Skill cần đánh giá của từng nhân viên.')}</DialogDescription>
       <div className="flex flex-wrap gap-2">{workspace?.active && <Badge variant="success">{t('scopedPolicy.ACTIVE')} · v{workspace.active.version}</Badge>}{draft && <Badge variant="secondary">{t('scopedPolicy.DRAFT')}</Badge>}{dirty && <Badge variant="warning">{copy('Unsaved changes', 'Thay đổi chưa lưu')}</Badge>}</div>
     </DialogHeader>
     {error != null && <div className="mb-3">{renderError(error)}</div>}
     {notice && <Text role="status" variant="body-sm" tone="success" className="mb-3">{notice}</Text>}
-    {pending && !busy && <div className="mb-3 space-y-2"><Text role="status" variant="body-sm">{t('scopedPolicy.pending')}</Text><Button variant="outline" onClick={() => void execute(pending.command, pending.dismiss)}>{t('scopedPolicy.retry')}</Button></div>}
+    {pending && !busy && <div className="mb-3 space-y-2"><Text role="status" variant="body-sm">{t('scopedPolicy.pending')}</Text><Button variant="outline" onClick={() => void execute(pending.command, pending.dismiss, pending.activateAfterSave)}>{t('scopedPolicy.retry')}</Button></div>}
     {!workspace ? <DialogBody><Text role="status">{error ? copy('Configuration could not be loaded.', 'Chưa tải được cấu hình.') : t('scopedPolicy.loading')}</Text>{error != null && <Button variant="outline" onClick={() => setReload(value => value + 1)}>{t('scopedPolicy.retry')}</Button>}</DialogBody>
-      : editing && !legacy ? <BaselinePolicyForm key={`${draft?.id ?? 'local'}:${draft?.revision ?? 0}:${reload}`} ref={form} workspace={workspace} locked={locked} onSave={save} onDirtyChange={setDirty} />
+      : editing && !legacy ? <BaselinePolicyForm key={`${draft?.id ?? 'local'}:${draft?.revision ?? 0}:${reload}`} ref={form} workspace={workspace} locked={locked} onSave={save} onDirtyChange={setDirty} onStepChange={setFormStep} />
       : <DialogBody className="space-y-4">
         {legacy && <Text variant="body-sm">{copy('Retained for history. New baseline assessments require an explicitly activated shared Role policy.', 'Giữ lại để tra cứu lịch sử. Lượt baseline mới cần chính sách chung theo vị trí được kích hoạt tường minh.')}</Text>}
         {!workspace.scope.ready && <Text variant="body-sm">{t('scopedPolicy.notReady')}</Text>}
@@ -80,12 +90,11 @@ export function BaselinePolicyDialog({ scopeKey, initialAction, onClose, onActiv
     <DialogFooter className="flex-wrap">
       {draft && !legacy && <Button variant="ghost" size="sm" className="mr-auto text-destructive" leftIcon={<Trash2 size={14} />} disabled={locked} onClick={() => setAbandoning(true)}>{t('baselineUX.abandon')}</Button>}
       <Button variant="outline" disabled={locked} onClick={close}>{copy('Close', 'Đóng')}</Button>
-      {workspace && !legacy && (editing ? <><Button variant="secondary" disabled={locked || !dirty && Boolean(draft)} onClick={() => form.current?.save()}>{copy('Save draft', 'Lưu bản nháp')}</Button><Button disabled={locked || dirty || !ready} title={dirty ? copy('Save your changes before activating.', 'Lưu thay đổi trước khi kích hoạt.') : undefined} onClick={() => setActivating(true)}>{copy('Activate', 'Kích hoạt')}</Button></> : <Button disabled={locked} onClick={() => setEditing(true)}>{copy('Configure', 'Cấu hình')}</Button>)}
-      {editing && dirty && <Text variant="caption" className="w-full">{copy('Save draft successfully before activating. The active policy stays unchanged while editing.', 'Lưu bản nháp thành công trước khi kích hoạt. Chính sách đang hoạt động được giữ nguyên khi chỉnh sửa.')}</Text>}
+      {workspace && !legacy && (editing ? formStep === 3 && <Button disabled={locked || !workspace.scope.ready} isLoading={busy} onClick={() => form.current?.saveAndActivate()}>{copy('Save & Activate', 'Lưu và kích hoạt')}</Button> : <Button disabled={locked} onClick={() => setEditing(true)}>{copy('Configure', 'Cấu hình')}</Button>)}
+      {editing && formStep === 3 && <Text variant="caption" className="w-full">{copy('Save & Activate saves this configuration, then activates the saved revision after validation.', 'Lưu và kích hoạt sẽ lưu cấu hình này, sau đó kiểm tra và kích hoạt đúng phiên bản đã lưu.')}</Text>}
     </DialogFooter>
   </Dialog>
   <Dialog open={closing} onOpenChange={open => { if (!locked) setClosing(open) }} ariaLabel={copy('Unsaved changes', 'Thay đổi chưa lưu')}><DialogHeader><DialogTitle>{copy('Save changes before closing?', 'Lưu thay đổi trước khi đóng?')}</DialogTitle><DialogDescription>{copy('Discarding leaves the previously saved draft and active policy unchanged.', 'Bỏ thay đổi vẫn giữ nguyên bản nháp đã lưu và chính sách đang hoạt động.')}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" disabled={locked} onClick={() => setClosing(false)}>{copy('Continue editing', 'Tiếp tục chỉnh sửa')}</Button><Button variant="outline" disabled={locked} onClick={() => onClose(changed.current)}>{copy('Discard changes', 'Bỏ thay đổi')}</Button><Button disabled={locked} onClick={() => form.current?.save(true)}>{copy('Save draft', 'Lưu bản nháp')}</Button></DialogFooter></Dialog>
-  <Dialog open={activating} onOpenChange={open => { if (!locked) setActivating(open) }} ariaLabel={copy('Activate saved draft', 'Kích hoạt bản nháp đã lưu')}><DialogHeader><DialogTitle>{copy('Activate saved draft?', 'Kích hoạt bản nháp đã lưu?')}</DialogTitle><DialogDescription>{copy('Uses only the exact saved revision after server readiness checks.', 'Chỉ dùng đúng phiên bản đã lưu sau khi server kiểm tra điều kiện.')}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" disabled={locked} onClick={() => setActivating(false)}>{t('scopedPolicy.cancel')}</Button><Button disabled={locked || dirty || !ready} onClick={() => { if (workspace && draft) void execute({ purpose: 'BASELINE', scopeKey, kind: 'activate', commandKey: crypto.randomUUID(), draftId: draft.id, expectedRevision: draft.revision, expectedActivationRevision: workspace.activationRevision, expectedCatalogHash: workspace.scope.catalogHash }) }}>{copy('Activate', 'Kích hoạt')}</Button></DialogFooter></Dialog>
   <Dialog open={abandoning} onOpenChange={open => { if (!locked) setAbandoning(open) }} ariaLabel={t('baselineUX.abandonTitle')}><DialogHeader><DialogTitle>{t('baselineUX.abandonTitle')}</DialogTitle><DialogDescription>{t('baselineUX.abandonHelp')}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" disabled={locked} onClick={() => setAbandoning(false)}>{t('baselineUX.keepDraft')}</Button><Button variant="destructive" disabled={locked} onClick={() => { if (draft) void execute({ purpose: 'BASELINE', scopeKey, kind: 'abandon', commandKey: crypto.randomUUID(), draftId: draft.id, expectedRevision: draft.revision }) }}>{t('baselineUX.confirmAbandon')}</Button></DialogFooter></Dialog>
   </>
 }

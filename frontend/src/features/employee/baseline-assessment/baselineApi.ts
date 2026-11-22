@@ -31,6 +31,7 @@ export function startCommand(target: AssessmentTarget, purpose: AssessmentPurpos
 export function answerCommand(attempt: BaselineAttempt, item: PresentedItem, selectedOptionId: string) {
   return command('/' + encodeURIComponent(attempt.id) + '/answers', { expectedRevision: attempt.revision, position: item.position, itemVersionId: item.itemVersionId, selectedOptionId })
 }
+export const autoFillCommand = (attempt: BaselineAttempt) => command('/' + encodeURIComponent(attempt.id) + '/auto-fill', { expectedRevision: attempt.revision })
 export const submitCommand = (attempt: BaselineAttempt) => command('/' + encodeURIComponent(attempt.id) + '/submit', { expectedRevision: attempt.revision })
 function command(path: string, body: unknown): BaselineCommand { return { path, body: JSON.stringify(body), key: crypto.randomUUID() } }
 export const executeCommand = (value: BaselineCommand) => request(value.path, parseAttempt, { method: 'POST', body: value.body, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': value.key } })

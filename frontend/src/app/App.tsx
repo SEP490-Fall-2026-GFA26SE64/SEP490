@@ -24,6 +24,7 @@ const ForgotPasswordPage = lazy(() => import('../features/auth/ForgotPasswordPag
 const ResetPasswordPage = lazy(() => import('../features/auth/ResetPasswordPage').then(module => ({ default: module.ResetPasswordPage })))
 const MemberActivationPage = lazy(() => import('../features/subscription/WorkspaceLoginPage').then(module => ({ default: module.MemberActivationPage })))
 const AssessmentPage = lazy(() => import('../features/employee/assessment/AssessmentPage').then(module => ({ default: module.AssessmentPage })))
+const RiasecAttemptPage = lazy(() => import('../features/employee/riasec/RiasecExperience').then(module => ({ default: module.RiasecAttemptPage })))
 const RiasecRedirect = lazy(() => import('../features/employee/riasec/riasecNavigation').then(module => ({ default: module.RiasecRedirect })))
 const EmployeeBaselineRoute = lazy(() => import('../features/employee/baseline-assessment/EmployeeBaselinePage').then(module => ({ default: module.EmployeeBaselineRoute })))
 const MySkillsPage = lazy(() => import('../features/employee/baseline-assessment/MySkillsPage').then(module => ({ default: module.MySkillsPage })))
@@ -105,6 +106,7 @@ export default function App() {
             <Route path="/employee/upskilling" element={<EmployeeUpskillingPage />} />
             <Route path="/employee/target-roles" element={<EmployeeTargetRolesPage />} />
             <Route path="/employee/riasec" element={<RiasecRedirect />} />
+            <Route path="/employee/riasec/attempt/:attemptId" element={<RiasecAttemptPage />} />
             <Route path="/employee/guidance" element={<Navigate to="/employee/upskilling?tab=roles" replace />} />
             <Route path="/employee/pathway" element={<AdaptivePathwayPage />} />
             <Route path="/employee/modules/:moduleId" element={<LearningModuleReaderPage />} />
@@ -146,6 +148,7 @@ export default function App() {
             <Route path="/expert/guidance-review" element={<Navigate to="/expert/pathway-review" replace />} />
             <Route path="/expert/ontology" element={<CompetencyOntologyPage />} />
             <Route path="/expert/certificates" element={<CertificatesPage />} />
+            <Route path="/ld-manager/certificates" element={<CertificatesPage manager />} />
             <Route path="/expert/learning-content" element={<LearningContentAuthoringPage />} />
             <Route path="/expert/modules" element={<LearningModulesPage />} />
             <Route path="/expert/assessment-bank" element={<AssessmentBankPage />} />

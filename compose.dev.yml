@@ -211,6 +211,7 @@ services:
       MFA_ENABLED: ${MFA_ENABLED:-false}
       REGISTRATION_MFA_ENABLED: ${REGISTRATION_MFA_ENABLED:-false}
       REGISTRATION_MAIL_WORKER_ENABLED: "true"
+      LEARNING_MAIL_ENABLED: ${LEARNING_MAIL_ENABLED:-true}
       # This fixture has no SMTP dependency; database/graph health checks remain active.
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
       LEARNING_ASSETS_ENDPOINT: http://minio:9000

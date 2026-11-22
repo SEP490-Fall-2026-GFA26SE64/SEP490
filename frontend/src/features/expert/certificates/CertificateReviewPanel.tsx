@@ -1,3 +1,4 @@
+import { useToast } from '../../../shared/hooks/useToast'
 import { useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Award, Eye, RefreshCw } from 'lucide-react'
@@ -47,6 +48,7 @@ export function CertificateReviewPanel({ scope }: { scope: string }) {
 }
 function ReviewEvidence({ id, scope, onClose }: { id: string; scope: string; onClose: () => void }) {
   const { t, language } = useTranslation(), tr = (key: string) => t('certificates.' + key), client = useQueryClient(), vi = language === 'vi'
+  const { toast } = useToast()
   const detail = useQuery({ queryKey: ['certificates', scope, 'review', id], queryFn: ({ signal }) => readCertificateReview(id, signal), retry: false, gcTime: 0 })
   const [reason, setReason] = useState(''), [pending, setPending] = useState<PendingPathwayCommand | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState<PathwayError | null>(null), lock = useRef(false)
   const [confirmation, setConfirmation] = useState<'APPROVED' | 'REJECTED' | null>(null)
@@ -55,7 +57,7 @@ function ReviewEvidence({ id, scope, onClose }: { id: string; scope: string; onC
     lock.current = true; setPending(command); setBusy(true); setError(null); setConfirmation(null)
     try {
       const accepted = await sendCertificateSubmission(command)
-      client.setQueryData(['certificates', scope, 'review', id], accepted); setPending(null)
+      client.setQueryData(['certificates', scope, 'review', id], accepted); setPending(null); toast({ variant: 'success', duration: 3000, description: accepted.status === 'APPROVED' ? (vi ? 'Đã duyệt minh chứng.' : 'Evidence approved.') : (vi ? 'Đã từ chối minh chứng.' : 'Evidence rejected.') })
       await client.invalidateQueries({ queryKey: ['certificates', scope, 'reviewQueue'] }); await client.invalidateQueries({ queryKey: ['initialPathway', scope] })
     } catch (cause) { const failure = cause instanceof PathwayError ? cause : new PathwayError('NETWORK_ERROR'); setError(failure); if (!failure.ambiguous) { setPending(null); void detail.refetch() } }
     finally { lock.current = false; setBusy(false) }
@@ -77,16 +79,16 @@ function ReviewEvidence({ id, scope, onClose }: { id: string; scope: string; onC
             <Text variant="caption">{vi ? 'Ngày nộp' : 'Submitted'}: {new Date(d.submittedAt).toLocaleString(language)}</Text>
           </ManagementSection>
           <ManagementSection title={d.decision ? (vi ? 'Kết quả duyệt' : 'Review decision') : (vi ? 'Nhận xét duyệt' : 'Review notes')}>
-            {d.decision ? <><Text variant="body-sm" className="whitespace-pre-wrap break-words">{d.decision.reason}</Text><Text variant="caption">{new Date(d.decision.decidedAt).toLocaleString(language)}</Text></> : <FormField label={tr('reason')}><Input required value={reason} maxLength={4000} disabled={blocked} onChange={event => setReason(event.target.value)} /></FormField>}
+            {d.decision ? <><Text variant="body-sm" className="whitespace-pre-wrap break-words">{d.decision.reason}</Text><Text variant="caption">{new Date(d.decision.decidedAt).toLocaleString(language)}</Text></> : <FormField label={vi ? 'Lý do (bắt buộc khi từ chối)' : 'Reason (required for rejection)'}><Input value={reason} maxLength={4000} disabled={blocked} onChange={event => setReason(event.target.value)} /></FormField>}
           </ManagementSection>
         </>}{pending && <Text role="status">{t('initialPathway.uncertain')}</Text>}
       </DialogBody>
-      <DialogFooter><Button variant="outline" disabled={blocked} onClick={onClose}>{vi ? 'Đóng' : 'Close'}</Button>{d?.status === 'PENDING' && <><Button variant="outline" disabled={blocked || !reason.trim()} onClick={() => setConfirmation('REJECTED')}>{tr('reject')}</Button><Button disabled={blocked || !reason.trim()} onClick={() => setConfirmation('APPROVED')}>{tr('approve')}</Button></>}</DialogFooter>
+      <DialogFooter><Button variant="outline" disabled={blocked} onClick={onClose}>{vi ? 'Đóng' : 'Close'}</Button>{d?.status === 'PENDING' && <><Button variant="outline" disabled={blocked || !reason.trim()} onClick={() => setConfirmation('REJECTED')}>{tr('reject')}</Button><Button disabled={blocked} onClick={() => setConfirmation('APPROVED')}>{tr('approve')}</Button></>}</DialogFooter>
     </Dialog>
     <Dialog open={confirmation !== null} onOpenChange={open => { if (!open && !busy) setConfirmation(null) }} ariaLabel={vi ? 'Xác nhận duyệt minh chứng' : 'Confirm evidence decision'}>
       <DialogHeader><DialogTitle><Award size={18} className="text-primary" />{confirmation === 'APPROVED' ? (vi ? 'Duyệt minh chứng?' : 'Approve evidence?') : (vi ? 'Từ chối minh chứng?' : 'Reject evidence?')}</DialogTitle><DialogDescription>{d?.learnerName} · {d?.requirement.skillName}</DialogDescription></DialogHeader>
-      <DialogBody><ManagementSection title={tr('reason')}><Text variant="body-sm" className="whitespace-pre-wrap break-words">{reason}</Text></ManagementSection></DialogBody>
-      <DialogFooter><Button variant="outline" disabled={busy} onClick={() => setConfirmation(null)}>{t('initialPathway.cancel')}</Button><Button variant={confirmation === 'REJECTED' ? 'destructive' : 'primary'} disabled={busy || !d || !confirmation || !reason.trim()} onClick={() => { if (d && confirmation) void decide(prepareCertificateDecision(d, confirmation, reason.trim())) }}>{vi ? 'Xác nhận' : 'Confirm'}</Button></DialogFooter>
+      <DialogBody><ManagementSection title={tr('reason')}><Text variant="body-sm" className="whitespace-pre-wrap break-words">{reason || (vi ? 'Không có nhận xét thêm.' : 'No additional notes.')}</Text></ManagementSection></DialogBody>
+      <DialogFooter><Button variant="outline" disabled={busy} onClick={() => setConfirmation(null)}>{t('initialPathway.cancel')}</Button><Button variant={confirmation === 'REJECTED' ? 'destructive' : 'primary'} disabled={busy || !d || !confirmation || confirmation === 'REJECTED' && !reason.trim()} onClick={() => { if (d && confirmation) void decide(prepareCertificateDecision(d, confirmation, reason.trim())) }}>{vi ? 'Xác nhận' : 'Confirm'}</Button></DialogFooter>
     </Dialog>
   </>
 }

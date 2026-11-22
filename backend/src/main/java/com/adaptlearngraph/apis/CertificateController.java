@@ -16,13 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Profile("local & workspace-baseline & !local-baseline-demo & !prod")
 @ConditionalOnProperty(name={"pathway.initial.enabled","assessment.baseline.workspace.enabled"},havingValue="true")
 public final class CertificateController {
-    private final CertificateCatalogService catalog;private final CertificateSubmissionService submissions;private final CertificateReviewService review;private final ObjectMapper json;
-    public CertificateController(CertificateCatalogService catalog,CertificateSubmissionService submissions,CertificateReviewService review,ObjectMapper json){
+    private final CertificateAuthoringService authoring;private final CertificateCatalogService catalog;private final CertificateSubmissionService submissions;private final CertificateReviewService review;private final ObjectMapper json;
+    public CertificateController(CertificateCatalogService catalog,CertificateSubmissionService submissions,CertificateReviewService review,ObjectMapper json,CertificateAuthoringService authoring){
+        this.authoring=authoring;
         this.catalog=catalog;this.submissions=submissions;this.review=review;this.json=json.copy().enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION)
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
     }
     @GetMapping("/expert/certificates")ResponseEntity<?> catalog(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit,@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="")String level){return ok(catalog.list(offset,limit,q,level));}
-    @PostMapping(value="/expert/certificates",consumes="application/json")ResponseEntity<?> create(@RequestHeader("Idempotency-Key")UUID key,@RequestBody String body){return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(catalog.createHttp(key,parse(body,CertificateCatalogService.CreateInput.class)));}
+    @PostMapping(value="/expert/certificates",consumes="application/json")ResponseEntity<?> create(@RequestHeader("Idempotency-Key")UUID key,@RequestBody String body){return ResponseEntity.status(201).cacheControl(CacheControl.noStore()).body(Map.of("id",authoring.submit(key,List.of(parse(body,CertificateCatalogService.CreateInput.class))).getFirst()));}
     @GetMapping("/employee/pathways/{request}/certificate-submissions")ResponseEntity<?> history(@PathVariable UUID request,@RequestParam UUID stepId,
             @RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(submissions.history(request,stepId,offset,limit));}
     @PostMapping(value="/employee/pathways/{request}/certificate-submissions",consumes="application/json")ResponseEntity<?> submit(@PathVariable UUID request,@RequestHeader("Idempotency-Key")String key,@RequestBody String body){return receipt(submissions.submitHttp(request,key,parse(body,CertificateSubmissionService.Submit.class)));}

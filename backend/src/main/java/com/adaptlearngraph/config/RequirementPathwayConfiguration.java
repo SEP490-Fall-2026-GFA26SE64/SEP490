@@ -33,6 +33,13 @@ public class RequirementPathwayConfiguration {
     @Bean RulePathwayCatalog rulePathwayCatalog(Neo4jCypher graph,ModuleAuthoringPort modules,ObjectMapper json,Environment env){return new RulePathwayCatalog(graph,modules,json,env.getProperty("assessment.rule.catalog-timeout-seconds",Integer.class,5));}
     @Bean CertificateCatalogRepository certificateCatalogRepository(Neo4jCypher graph,ObjectMapper json,Environment env){return new CertificateCatalogRepository(graph,json,env.getProperty("assessment.rule.catalog-timeout-seconds",Integer.class,5));}
     @Bean CertificateCatalogService certificateCatalogService(Actors actors,CertificateCatalogRepository catalog){return new CertificateCatalogService(actors,catalog);}
+    @Bean CertificateAuthoringStore certificateAuthoringStore(org.springframework.jdbc.core.JdbcTemplate jdbc,ObjectMapper json){return new CertificateAuthoringStore(jdbc,json);}
+    @Bean CertificateAuthoringService certificateAuthoringService(QuestionBankPorts.Actors actors,QuestionBankPorts.Catalog people,CertificateCatalogRepository catalog,CertificateAuthoringStore store,LearningNotificationJpaRepository notices,ReviewSubmissionNotifications submissions,@Qualifier(TransactionManagers.JPA) PlatformTransactionManager manager){return new CertificateAuthoringService(actors,people,catalog,store,notices,new TransactionTemplate(manager),submissions);}
+    @Bean(name="certificatePublicationScheduler",destroyMethod="shutdown")
+    ThreadPoolTaskScheduler certificatePublicationScheduler(){var scheduler=new ThreadPoolTaskScheduler();scheduler.setPoolSize(1);scheduler.setThreadNamePrefix("certificate-publication-");return scheduler;}
+    @Bean(destroyMethod="close") AutoCloseable certificatePublicationWorker(CertificateAuthoringService service,@Qualifier("certificatePublicationScheduler") ThreadPoolTaskScheduler scheduler){
+        var future=scheduler.scheduleWithFixedDelay(()->{try{long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(5);for(int n=0;n<100&&System.nanoTime()<deadline;n++)if(!service.publishOne())break;}catch(RuntimeException e){org.slf4j.LoggerFactory.getLogger(CertificateAuthoringService.class).warn("Certificate projection requires retry ({})",e.getClass().getSimpleName());}},Duration.ofSeconds(10));return ()->future.cancel(false);
+    }
     @Bean CertificateSubmissionService certificateSubmissionService(Actors actors,CurrentRoleSelectionStore selections,RequirementPathwayJpaRepository rules,
             RequirementPathwayRevisions revisions,RequirementPathwayAdmissionService admission,RequirementPathwayAccess access,RulePathwayCatalog catalog,
             CertificateSubmissionJpaRepository submissions,LearningContentPort content,LearningAssetPort files,Receipts receipts,ObjectMapper json){
@@ -44,7 +51,7 @@ public class RequirementPathwayConfiguration {
             RequirementPathwayPlanningService planning,RequirementPathwayReviewService review){
         return new CertificateReviewService(actors,assignments,selections,submissions,views,rules,revisions,content,files,receipts,outbox,clock,effects,audit).recalculateWith(planning,review);
     }
-    @Bean PathwayNotifications pathwayNotifications(LearningNotificationJpaRepository notifications){return new PathwayNotifications(notifications);}
+    @Bean PathwayNotifications pathwayNotifications(LearningNotificationJpaRepository notifications,Neo4jCypher graph){return new PathwayNotifications(notifications,graph);}
     @Bean BypassedGapService bypassedGapService(Actors actors,RequirementPathwayJpaRepository rules,RequirementPathwayRevisions revisions,
             RequirementPathwayAdmissionService admission,RulePathwayCatalog catalog,PathwayNotifications notifications) {
         return new BypassedGapService(actors,rules,revisions,admission,catalog,notifications);

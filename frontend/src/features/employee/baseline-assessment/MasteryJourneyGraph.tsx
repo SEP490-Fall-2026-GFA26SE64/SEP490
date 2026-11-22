@@ -115,8 +115,12 @@ export function MasteryJourneyGraph({ assigned, assignmentState, targets, record
   role?.skills.forEach((s,index) => {
     const angle = -Math.PI/2+index/role.skills.length*Math.PI*2
     let point: GraphPoint
-    if (linear) point = {x:width*(index%skillColumns+.5)/skillColumns,y:gridStart+Math.floor(index/skillColumns)*gridRow}
-    else if (dense) point = { x: width*(index%skillColumns+.5)/skillColumns,y: gridStart+Math.floor(index/skillColumns)*gridRow }
+    if (linear || dense) {
+      const row = Math.floor(index / skillColumns)
+      const rowCount = Math.min(skillColumns, role.skills.length - row * skillColumns)
+      const spacing = width / skillColumns
+      point = { x: width / 2 + (index % skillColumns - (rowCount - 1) / 2) * spacing, y: gridStart + row * gridRow }
+    }
     else if (narrow) {
       const rows = Math.ceil(role.skills.length/2), row = Math.floor(index/2), before = Math.ceil(rows/2)
       const y = row < before ? 75+row*155 : height-140-(rows-1-row)*155
