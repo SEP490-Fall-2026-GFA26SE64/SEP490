@@ -730,6 +730,7 @@ class PaymentOrderPostgresIntegrationTest {
     void seatAddonGuardsRejectInvalidStaleDuplicateAndUnauthorizedRequests() {
         var context=provisioned();
         UUID org=context.actor().organizationId();
+        assertEquals("INCREASE",orders.quoteSeatAddon(context,org,"CURRENT",1,NOW.plusMillis(1)).kind());
         assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->
                 orders.quoteSeatAddon(context,org,"CURRENT",0,NOW.plusSeconds(1))).code());
         assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->

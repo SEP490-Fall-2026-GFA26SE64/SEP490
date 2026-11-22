@@ -2,7 +2,7 @@
 
 **Scope:** local/dev slice; the payment provider is the in-process test double. Live payOS is excluded.
 
-**Environment:** Windows 11, Java 21, Docker Desktop (Testcontainers PostgreSQL), Flyway migrations `V76__subscription_seat_addons.sql` (subscription), workspace `V77` and module `V74`.
+**Environment:** Windows 11, Java 21, Docker Desktop (Testcontainers PostgreSQL), Flyway migration `V83__subscription_seat_addons.sql` in the subscription, workspace and module histories. The 2026-11-19 runs used V76/V77/V74; the files were renumbered to V83 on 2026-11-22 after `origin/main` took those numbers, and the affected tests were rerun (see below).
 
 ## Persistence / transaction (Testcontainers PostgreSQL)
 
@@ -29,3 +29,15 @@
 ## Unrelated failure
 
 `JpaSchemaValidationIntegrationTest` fails on module-migration lineage (missing `registration_org_structure`), in tables outside this slice. It was not fixed here.
+
+## Rerun after the V83 renumbering (2026-11-22)
+
+`MigrationConfigurationTest` and `MergedMigrationLineageIntegrationTest` now expect V83 as the latest version in all three histories, with each directory's known version gaps.
+
+The first rerun found an intermittent 409 in I-06. When the quote came in the same second that the paid period started, the quote compared the period start with a time truncated to whole seconds. The period didn't count as started yet. Period selection and proration now use the untruncated clock instant. I-02 gained a deterministic check: a quote 1 ms after a period that started at a sub-second instant. Without the fix, this check fails.
+
+| Command | Result |
+| --- | --- |
+| `.\mvnw.cmd test "-Dtest=MigrationConfigurationTest,MergedMigrationLineageIntegrationTest,SeatAddonPricingTest,PaymentOrderPostgresIntegrationTest,SubscriptionPlanApiIntegrationTest"`, run three times | Passed — 53 tests, 0 failures, in each of the three runs |
+
+`SharedSkillScopeHttpTest` was moved aside during these runs. On `origin/main` it no longer compiles: the `RuleAssessmentController` constructor changed in #41. That compile break is unrelated to this slice and was not fixed.

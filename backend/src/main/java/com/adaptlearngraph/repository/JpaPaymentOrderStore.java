@@ -117,7 +117,7 @@ public final class JpaPaymentOrderStore implements PaymentOrderStore {
             checkOrganization(context, organizationId, now);
             UUID subscription = data.subscriptions().subscriptionOf(organizationId)
                     .orElseThrow(() -> conflict("The organization subscription is not ready."));
-            return price(organizationId, subscription, target, seats, now);
+            return price(organizationId, subscription, target, seats, clockNow);
         });
     }
 
@@ -144,7 +144,7 @@ public final class JpaPaymentOrderStore implements PaymentOrderStore {
             if (data.orders().unresolvedChange(organization)) {
                 throw conflict("Finish the pending renewal or additional seat payment first.");
             }
-            var quote = price(organization, subscription, command.target(), command.seats(), now);
+            var quote = price(organization, subscription, command.target(), command.seats(), clockNow);
             // Prorated prices only fall over time, so a later order never charges more than the confirmed quote.
             if (quote.amountVnd() > command.expectedAmountVnd()) throw conflict("The seat price changed. Review the new quote.");
             var period = data.subscriptions().paidPeriod(subscription, quote.periodId()).orElseThrow();
@@ -210,6 +210,7 @@ public final class JpaPaymentOrderStore implements PaymentOrderStore {
         });
     }
 
+    // Periods start at the untruncated apply instant, so selection must not use the second-truncated audit time.
     private SeatAddonQuote price(UUID organizationId, UUID subscription, String target, int seats, Instant now) {
         var periods = data.subscriptions().openPeriods(organizationId, now).stream().map(JpaSubscriptionWorkspaceStore::paidPeriod).toList();
         if ("CURRENT".equals(target)) {

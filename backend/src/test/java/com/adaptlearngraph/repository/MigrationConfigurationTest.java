@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -25,11 +26,14 @@ class MigrationConfigurationTest {
                     assertTrue(versions.add(version), directory + " duplicate V" + version);
                 }
             }
-            int latest = Map.of("migration", 76, "workspace-migration", 77, "module-migration", 74).get(directory);
-            assertEquals(latest - 2, versions.size(), directory);
-            // V68/V69 were retired when pricing V67 was reconciled with assessment V71-V73.
+            int latest = 83;
+            // V68/V69 were retired when pricing V67 was reconciled with assessment V71-V73; the other
+            // gaps are versions that only exist in another history.
+            var gaps = Map.of("migration", Set.of(68, 69, 78), "workspace-migration", Set.of(68, 69),
+                    "module-migration", Set.of(68, 69, 74, 75, 76, 77, 78)).get(directory);
+            assertEquals(latest - gaps.size(), versions.size(), directory);
             for (int version = 1; version <= latest; version++) {
-                assertEquals(version != 68 && version != 69, versions.contains(version), directory + " V" + version);
+                assertEquals(!gaps.contains(version), versions.contains(version), directory + " V" + version);
             }
         }
     }
