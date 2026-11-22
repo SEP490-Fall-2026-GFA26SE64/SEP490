@@ -13,7 +13,8 @@ vi.mock('./subscriptionApi', async importOriginal => ({
 }))
 
 const pending: Status = { order: { orderId: 'order', terms: { name: 'Starter', description: 'Description', priceVnd: 4900000, currency: 'VND', durationMonths: 1, employeeSeats: 20 },
-  paymentStatus: 'PAID', checkoutUrl: null, providerOrderCode: 123456, confirmedAt: '2026-10-23T00:10:00Z', observedPaidAmount: 4900000, failureCode: null, createdAt: '2026-10-23T00:00:00Z', expiresAt: '2026-10-23T00:30:00Z' },
+  paymentStatus: 'PAID', checkoutUrl: null, providerOrderCode: 123456, confirmedAt: '2026-10-23T00:10:00Z', observedPaidAmount: 4900000, failureCode: null, createdAt: '2026-10-23T00:00:00Z', expiresAt: '2026-10-23T00:30:00Z',
+  kind: 'REGISTRATION', addonSeats: 0, addonAmountVnd: 0, seatAddonKind: null },
 applicationState: 'NOT_APPLIED', workspace: { organizationId: null, state: 'NOT_STARTED', failureCode: null } }
 describe('Truthful payment status', () => {
   afterEach(() => { cleanup(); vi.unstubAllGlobals() })

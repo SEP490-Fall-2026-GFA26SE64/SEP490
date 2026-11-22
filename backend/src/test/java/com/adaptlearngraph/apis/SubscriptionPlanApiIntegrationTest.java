@@ -161,6 +161,51 @@ class SubscriptionPlanApiIntegrationTest {
     }
 
     @Test
+    void seatAddonRoutesRequireTheOrganizationAdministratorCsrfAndValidInput() throws Exception {
+        var owner=fixture(false);
+        enableSubscription(owner);
+        var other=fixture(false);
+        enableSubscription(other);
+        var browser=signedIn(owner);
+        String base="/api/v1/organizations/"+owner.organizationId()+"/subscription";
+        var quote=get(browser,base+"/seat-addons/quote?target=CURRENT&seats=3");
+        assertEquals(200,quote.statusCode(),quote.body());
+        assertEquals("INCREASE",body(quote).path("kind").asText());
+        assertEquals(3,body(quote).path("seats").asInt());
+        assertTrue(body(quote).path("amountVnd").asLong()>0);
+        assertEquals("no-store",quote.headers().firstValue("Cache-Control").orElseThrow());
+        assertEquals(400,get(browser,base+"/seat-addons/quote?target=CURRENT&seats=0").statusCode());
+        assertEquals(400,get(browser,base+"/seat-addons/quote?target=CURRENT&seats=51").statusCode());
+        assertEquals(400,get(browser,base+"/seat-addons/quote?target=LATER&seats=1").statusCode());
+        assertEquals(409,get(browser,base+"/seat-addons/quote?target=SCHEDULED&seats=1").statusCode());
+        var summary=body(get(browser,base));
+        assertEquals(0,summary.path("desiredAddonSeats").asInt());
+        assertEquals(0,summary.path("current").path("addonSeats").asInt());
+        assertFalse(summary.path("seatChangeBlocked").asBoolean());
+
+        var order=Map.of("idempotencyKey",UUID.randomUUID(),"seats",3,"target","CURRENT","expectedAmountVnd",body(quote).path("amountVnd").asLong());
+        var missingCsrf=browser.send(HttpRequest.newBuilder(uri(base+"/seat-addons/orders")).header("Content-Type","application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(order))).build(),HttpResponse.BodyHandlers.ofString());
+        assertEquals(403,missingCsrf.statusCode());
+        assertEquals(401,send(browser(),"POST",base+"/seat-addons/orders",order).statusCode());
+        assertEquals(400,send(browser,"POST",base+"/seat-addons/orders",Map.of("seats",1.5,"target","CURRENT",
+                "idempotencyKey",UUID.randomUUID(),"expectedAmountVnd",10)).statusCode());
+        String foreign="/api/v1/organizations/"+other.organizationId()+"/subscription";
+        assertEquals(403,get(browser,foreign+"/seat-addons/quote?target=CURRENT&seats=1").statusCode());
+        assertEquals(403,send(browser,"POST",foreign+"/seat-addons/orders",order).statusCode());
+        assertEquals(403,send(browser,"PUT",foreign+"/seat-addons",Map.of("desiredAddonSeats",0,"expectedDesiredAddonSeats",0)).statusCode());
+
+        assertEquals(200,send(browser,"PUT",base+"/seat-addons",Map.of("desiredAddonSeats",0,"expectedDesiredAddonSeats",0)).statusCode());
+        assertEquals(400,send(browser,"PUT",base+"/seat-addons",Map.of("desiredAddonSeats",2,"expectedDesiredAddonSeats",0)).statusCode());
+        assertEquals(409,send(browser,"PUT",base+"/seat-addons",Map.of("desiredAddonSeats",0,"expectedDesiredAddonSeats",4)).statusCode());
+        assertEquals(400,send(browser,"PUT",base+"/seat-addons",Map.of("desiredAddonSeats",0)).statusCode());
+
+        jdbc.update("UPDATE platform.organization SET status='SUSPENDED' WHERE organization_id=?",owner.organizationId());
+        assertEquals(403,get(browser,base+"/seat-addons/quote?target=CURRENT&seats=1").statusCode());
+        assertEquals(403,send(browser,"POST",base+"/seat-addons/orders",order).statusCode());
+    }
+
+    @Test
     void requiresRealPlatformPasswordAndCsrfThenPreservesVersionsAndPrivateMetadata() throws Exception {
         var browser = browser();
         assertEquals(401, get(browser, "/api/v1/platform/subscription-plans").statusCode());

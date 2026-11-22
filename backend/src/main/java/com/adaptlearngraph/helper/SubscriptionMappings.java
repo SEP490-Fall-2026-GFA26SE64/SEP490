@@ -41,7 +41,8 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
                     source.organizationId(), source.ownerAccountId(), source.planId(), source.planVersionId(),
                     nested(context, source.terms(), PlanTermsResponse.class), source.providerOrderCode(),
                     source.paymentStatus(), source.paymentLinkId(), source.checkoutUrl(), source.observedPaidAmount(),
-                    source.createdAt(), source.expiresAt(), source.confirmedAt(), source.failureCode(), source.attempt());
+                    source.createdAt(), source.expiresAt(), source.confirmedAt(), source.failureCode(), source.attempt(),
+                    source.addonSeats(), source.addonAmountVnd(), source.seatAddonKind());
         });
         mapper.typeMap(Setup.class, WorkspaceSetupResponse.class).setConverter(context -> {
             Setup source = context.getSource();
@@ -55,7 +56,8 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
         mapper.typeMap(PaidPeriod.class, PaidPeriodResponse.class).setConverter(context -> {
             PaidPeriod source = context.getSource();
             return new PaidPeriodResponse(source.periodId(), source.startsAt(), source.endsAt(),
-                    nested(context, source.terms(), PlanTermsResponse.class));
+                    nested(context, source.terms(), PlanTermsResponse.class), source.planId(), source.addonSeats(),
+                    source.totalSeats());
         });
         mapper.typeMap(Summary.class, SummaryResponse.class).setConverter(context -> {
             Summary source = context.getSource();
@@ -64,7 +66,8 @@ public final class SubscriptionMappings implements ModelMapperRegistrar {
             return new SummaryResponse(source.organizationId(), source.organizationName(), source.workspaceStatus(),
                     source.subscriptionStatus(), nested(context, source.current(), PaidPeriodResponse.class),
                     nested(context, source.scheduled(), PaidPeriodResponse.class), source.usedSeats(),
-                    source.allocatedSeats(), source.admissionLimit(), history);
+                    source.allocatedSeats(), source.admissionLimit(), history, source.desiredAddonSeats(),
+                    source.scheduledShortfall(), source.renewalPlanId(), source.seatChangeBlocked());
         });
         mapper.typeMap(Workspace.class, WorkspaceResponse.class).setConverter(context -> {
             Workspace source = context.getSource();

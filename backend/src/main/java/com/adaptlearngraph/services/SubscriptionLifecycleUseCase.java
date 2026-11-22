@@ -21,5 +21,8 @@ public interface SubscriptionLifecycleUseCase {
     Member myAssignment(UUID organizationId);
     void changeMember(UUID organizationId,UUID membershipId,boolean active,Set<String> roles,long revision);
     Member updateMember(UUID organizationId,UUID membershipId,MemberProfileUpdate update);
+    com.adaptlearngraph.repository.PaymentOrderStore.SeatAddonQuote quoteSeatAddon(UUID organizationId,String target,int seats);
+    Status createSeatAddon(com.adaptlearngraph.repository.PaymentOrderStore.SeatAddonCommand command);
+    int changeAddonSeats(UUID organizationId,int desired,int expected);
     record Status(PaymentOrder order,String applicationState,Setup workspace) {}
 }

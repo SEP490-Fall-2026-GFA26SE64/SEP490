@@ -67,19 +67,32 @@ public final class JpaSubscriptionWorkspaceStore implements SubscriptionWorkspac
 
     @Override
     public Summary summary(UUID organizationId, Instant now) {
-        var periods = data.subscriptions().openPeriods(organizationId, now).stream()
-                .map(row -> new PaidPeriod(row.periodId(), row.startsAt(), row.endsAt(), new PlanTerms(row.name(), row.description(),
-                        row.priceVnd(), row.currency(), row.durationMonths(), row.employeeSeats()))).toList();
+        var periods = data.subscriptions().openPeriods(organizationId, now).stream().map(JpaSubscriptionWorkspaceStore::paidPeriod).toList();
         PaidPeriod current = periods.stream().filter(p -> !p.startsAt().isAfter(now)).findFirst().orElse(null);
         PaidPeriod next = periods.stream().filter(p -> p.startsAt().isAfter(now)).findFirst().orElse(null);
-        int allocated = current == null ? 0 : current.terms().employeeSeats();
+        int allocated = current == null ? 0 : current.totalSeats();
         Integer pending = data.orders().pendingSeats(organizationId);
-        int limit = SubscriptionAccessPolicy.admissionLimit(allocated, pending, next == null ? null : next.terms().employeeSeats());
+        int limit = SubscriptionAccessPolicy.admissionLimit(allocated, pending, next == null ? null : next.totalSeats());
         int used = used(organizationId);
         var history = data.orders().historyOf(organizationId).stream().map(PaymentOrderJpaRepository.Row::order).toList();
         String status = data.organizations().status(organizationId).orElseThrow(() -> new org.springframework.dao.EmptyResultDataAccessException(1));
         String name = data.organizations().name(organizationId).orElseThrow(() -> new org.springframework.dao.EmptyResultDataAccessException(1));
-        return new Summary(organizationId, name, status, current == null ? "EXPIRED" : "ACTIVE", current, next, used, allocated, limit, history);
+        int desired = data.subscriptions().subscriptionOf(organizationId).flatMap(data.subscriptions()::desiredAddonSeats).orElse(0);
+        int shortfall = next == null ? 0 : Math.max(0, desired - next.addonSeats());
+        UUID renewalPlan = data.subscriptions().latestPaidPeriod(organizationId, org.springframework.data.domain.PageRequest.of(0, 1))
+                .stream().findFirst().map(SubscriptionJpaRepository.PaidPeriodRow::planId).orElse(null);
+        return new Summary(organizationId, name, status, current == null ? "EXPIRED" : "ACTIVE", current, next, used, allocated, limit,
+                history, desired, shortfall, renewalPlan, data.orders().unresolvedChange(organizationId));
+    }
+
+    /** Splits a paid period into its plan part and all of its add-on seats (renewal-included and purchased later). */
+    static PaidPeriod paidPeriod(SubscriptionJpaRepository.PaidPeriodRow row) {
+        int orderAddon = row.orderAddonSeats() == null ? 0 : row.orderAddonSeats();
+        long orderAddonAmount = row.orderAddonAmountVnd() == null ? 0 : row.orderAddonAmountVnd();
+        var plan = new PlanTerms(row.name(), row.description(), row.priceVnd() - orderAddonAmount, row.currency(),
+                row.durationMonths(), row.employeeSeats() - orderAddon);
+        return new PaidPeriod(row.periodId(), row.startsAt(), row.endsAt(), plan, row.planId(),
+                orderAddon + Math.toIntExact(row.extraSeats() == null ? 0 : row.extraSeats()));
     }
 
     @Override

@@ -25,7 +25,7 @@ class MigrationConfigurationTest {
                     assertTrue(versions.add(version), directory + " duplicate V" + version);
                 }
             }
-            int latest = Map.of("migration", 74, "workspace-migration", 75, "module-migration", 73).get(directory);
+            int latest = Map.of("migration", 76, "workspace-migration", 77, "module-migration", 74).get(directory);
             assertEquals(latest - 2, versions.size(), directory);
             // V68/V69 were retired when pricing V67 was reconciled with assessment V71-V73.
             for (int version = 1; version <= latest; version++) {

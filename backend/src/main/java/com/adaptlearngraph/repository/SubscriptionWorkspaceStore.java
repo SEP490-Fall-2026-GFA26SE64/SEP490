@@ -19,9 +19,31 @@ public interface SubscriptionWorkspaceStore {
     List<Member> members(UUID organizationId);
     void changeMember(Actor actor, UUID organizationId, UUID memberId, boolean active, Set<String> roles, long revision, Instant now);
     Member updateMember(Actor actor, UUID organizationId, UUID memberId, MemberProfileUpdate update, Instant now);
-    record PaidPeriod(UUID periodId, Instant startsAt, Instant endsAt, PlanTerms terms) {}
+    /** {@code terms} are the plan part of the period; {@code addonSeats} are the period's additional Employee seats. */
+    record PaidPeriod(UUID periodId, Instant startsAt, Instant endsAt, PlanTerms terms, UUID planId, int addonSeats) {
+        public PaidPeriod(UUID periodId, Instant startsAt, Instant endsAt, PlanTerms terms) {
+            this(periodId, startsAt, endsAt, terms, null, 0);
+        }
+
+        public int totalSeats() {
+            return terms.employeeSeats() + addonSeats;
+        }
+    }
+    /**
+     * {@code desiredAddonSeats} are kept at the next same-plan renewal of {@code renewalPlanId}; {@code scheduledShortfall}
+     * are desired seats not yet paid for the scheduled period; {@code seatChangeBlocked} while a renewal or seat add-on
+     * order is unresolved.
+     */
     record Summary(UUID organizationId, String organizationName, String workspaceStatus, String subscriptionStatus, PaidPeriod current,
-                   PaidPeriod scheduled, int usedSeats, int allocatedSeats, int admissionLimit, List<PaymentOrder> paymentHistory) {}
+                   PaidPeriod scheduled, int usedSeats, int allocatedSeats, int admissionLimit, List<PaymentOrder> paymentHistory,
+                   int desiredAddonSeats, int scheduledShortfall, UUID renewalPlanId, boolean seatChangeBlocked) {
+        public Summary(UUID organizationId, String organizationName, String workspaceStatus, String subscriptionStatus,
+                       PaidPeriod current, PaidPeriod scheduled, int usedSeats, int allocatedSeats, int admissionLimit,
+                       List<PaymentOrder> paymentHistory) {
+            this(organizationId, organizationName, workspaceStatus, subscriptionStatus, current, scheduled, usedSeats,
+                    allocatedSeats, admissionLimit, paymentHistory, 0, 0, null, false);
+        }
+    }
     record Setup(UUID organizationId, String state, Instant readyAt, String failureCode) {}
     record Workspace(UUID organizationId, String name, String status, String setupState, OrganizationProfile profile,
                      WorkspaceSubscription subscription, List<WorkspaceAdministrator> administrators) {}

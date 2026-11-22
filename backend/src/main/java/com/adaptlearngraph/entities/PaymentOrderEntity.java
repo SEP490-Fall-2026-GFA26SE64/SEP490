@@ -76,8 +76,30 @@ public class PaymentOrderEntity {
     private Instant expiresAt;
     @Column(name = "development_bypassed_at")
     private Instant developmentBypassedAt;
+    @Column(name = "addon_seats", updatable = false)
+    private Integer addonSeats;
+    @Column(name = "addon_amount_vnd", updatable = false)
+    private Long addonAmountVnd;
+    @Column(name = "seat_addon_kind", updatable = false)
+    private String seatAddonKind;
+    @Column(name = "target_period_id", updatable = false)
+    private UUID targetPeriodId;
 
     protected PaymentOrderEntity() {
+    }
+
+    /** Snapshot whose totals include {@code addonSeats}/{@code addonAmountVnd}; a seat add-on order also names its target period. */
+    @SuppressWarnings("java:S107")
+    public PaymentOrderEntity(UUID orderId, UUID intentId, UUID createdBy, int attempt, UUID planId, UUID planVersionId,
+            String name, String description, long priceVnd, String currency, int durationMonths, int employeeSeats,
+            UUID idempotencyKey, String requestDigest, UUID supersedesOrderId, Instant createdAt, Instant expiresAt,
+            int addonSeats, long addonAmountVnd, String seatAddonKind, UUID targetPeriodId) {
+        this(orderId, intentId, createdBy, attempt, planId, planVersionId, name, description, priceVnd, currency,
+                durationMonths, employeeSeats, idempotencyKey, requestDigest, supersedesOrderId, createdAt, expiresAt);
+        this.addonSeats = addonSeats;
+        this.addonAmountVnd = addonAmountVnd;
+        this.seatAddonKind = seatAddonKind;
+        this.targetPeriodId = targetPeriodId;
     }
 
     @SuppressWarnings("java:S107")
@@ -131,4 +153,8 @@ public class PaymentOrderEntity {
     public Instant getCreatedAt() { return createdAt; }
     public Instant getExpiresAt() { return expiresAt; }
     public Instant getDevelopmentBypassedAt() { return developmentBypassedAt; }
+    public Integer getAddonSeats() { return addonSeats; }
+    public Long getAddonAmountVnd() { return addonAmountVnd; }
+    public String getSeatAddonKind() { return seatAddonKind; }
+    public UUID getTargetPeriodId() { return targetPeriodId; }
 }

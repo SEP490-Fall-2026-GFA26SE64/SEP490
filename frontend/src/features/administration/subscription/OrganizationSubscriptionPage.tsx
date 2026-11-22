@@ -14,6 +14,7 @@ import { getIdentity,getStatus,getSummary,type Identity } from '../../subscripti
 import { Failure,Loading,StateLabel } from "../../subscription/SubscriptionFeedback"
 import { useCopy } from "../../subscription/SubscriptionFeedback.helpers"
 import { AdminPageLayout } from '../AdminPageLayout'
+import { SeatAddonPanel } from './SeatAddonPanel'
 
 const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
 
@@ -40,7 +41,7 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
   const [renew, setRenew] = useState(false)
   const value = summary.data
   const unresolved = !!order.data?.order && order.data.applicationState !== 'APPLIED'
-  const canRenew = !!value && value.workspaceStatus !== 'SUSPENDED' && !value.scheduled && !unresolved && order.isSuccess
+  const canRenew = !!value && value.workspaceStatus !== 'SUSPENDED' && !value.scheduled && !unresolved && !value.seatChangeBlocked && order.isSuccess
   const refresh = () => { void order.refetch(); void summary.refetch() }
   return <AdminPageLayout identity={identity} organizationName={value?.organizationName}
     title={c('Organization subscription', 'Gói đăng ký tổ chức')}
@@ -95,10 +96,14 @@ function SubscriptionContent({ identity, organization, principal }: { identity: 
             description={c('Includes pending and scheduled lower-seat commitments; it does not remove existing users.', 'Bao gồm cam kết giảm chỗ đang chờ hoặc đã đặt lịch; không tự xóa người dùng.')} />
         </div>
       </div>
+      <SeatAddonPanel summary={value} organization={organization} refresh={refresh} />
       {value.scheduled && <Card><CardHeader><CardTitle>{c('Scheduled subscription period', 'Kỳ đăng ký tiếp theo')}</CardTitle></CardHeader>
-        <CardContent><p className="font-semibold">{value.scheduled.terms.name} · {value.scheduled.terms.employeeSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
+        <CardContent><p className="font-semibold">{value.scheduled.terms.name} · {value.scheduled.totalSeats} {c('Employee seats', 'chỗ Nhân viên')}</p>
+          {value.scheduled.addonSeats > 0 && <p className="mt-1 text-caption text-muted-foreground">
+            {value.scheduled.terms.employeeSeats} {c('included', 'trong gói')} + {value.scheduled.addonSeats} {c('additional', 'mua thêm')}</p>}
           <p className="mt-2 text-body-sm">{date(value.scheduled.startsAt)} → {date(value.scheduled.endsAt)} (Asia/Ho_Chi_Minh)</p></CardContent></Card>}
-      {renew && canRenew && <PlanCatalog base={base} principal={principal} onCreated={() => { setRenew(false); refresh() }} />}
+      {renew && canRenew && <PlanCatalog base={base} principal={principal} onCreated={() => { setRenew(false); refresh() }}
+        addon={value.renewalPlanId ? { planId: value.renewalPlanId, seats: value.desiredAddonSeats } : undefined} />}
       {order.isError && <Failure error={order.error} retry={() => void order.refetch()} />}
       {order.data?.order && <section aria-label={c('Latest payment', 'Thanh toán mới nhất')} className="space-y-3">
         <h2 className="text-section font-semibold">{c('Latest payment', 'Thanh toán mới nhất')}</h2>

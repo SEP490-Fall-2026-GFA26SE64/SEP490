@@ -25,7 +25,7 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
                 i.registrationId, i.organizationId, i.ownerAccountId, o.planId, o.planVersionId, o.name, o.description,
                 o.priceVnd, o.currency, o.durationMonths, o.employeeSeats, o.providerOrderCode, o.paymentStatus,
                 o.paymentLinkId, o.checkoutUrl, o.observedPaidAmount, o.createdAt, o.expiresAt, o.paidAt, o.failureCode,
-                o.attempt)
+                o.attempt, o.addonSeats, o.addonAmountVnd, o.seatAddonKind, o.targetPeriodId)
             from PaymentOrderEntity o join SubscriptionIntentEntity i on i.intentId = o.intentId
             """;
 
@@ -33,12 +33,13 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
                UUID planId, UUID planVersionId, String name, String description, Long priceVnd, String currency,
                Integer durationMonths, Integer employeeSeats, Long providerOrderCode, String paymentStatus,
                String paymentLinkId, String checkoutUrl, Long observedPaidAmount, Instant createdAt, Instant expiresAt,
-               Instant paidAt, String failureCode, Integer attempt) {
+               Instant paidAt, String failureCode, Integer attempt, Integer addonSeats, Long addonAmountVnd,
+               String seatAddonKind, UUID targetPeriodId) {
         public PaymentOrder order() {
             return new PaymentOrder(orderId, intentId, kind, registrationId, organizationId, ownerAccountId, planId,
                     planVersionId, new PlanTerms(name, description, priceVnd, currency, durationMonths, employeeSeats),
                     providerOrderCode, paymentStatus, paymentLinkId, checkoutUrl, observedPaidAmount, createdAt, expiresAt,
-                    paidAt, failureCode, attempt);
+                    paidAt, failureCode, attempt, addonSeats, addonAmountVnd, seatAddonKind, targetPeriodId);
         }
     }
 
@@ -57,8 +58,25 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
     @Query(ROW + "where i.registrationId = :registration and i.ownerAccountId = :owner order by o.createdAt desc, o.attempt desc")
     List<Row> latestOfRegistration(@Param("registration") UUID registrationId, @Param("owner") UUID owner, Pageable first);
 
-    @Query(ROW + "where i.organizationId = :organization order by o.createdAt desc, o.attempt desc")
-    List<Row> latestOfOrganization(@Param("organization") UUID organizationId, Pageable first);
+    @Query(ROW + "where i.organizationId = :organization and i.kind = :kind order by o.createdAt desc, o.attempt desc")
+    List<Row> latestOfOrganization(@Param("organization") UUID organizationId, @Param("kind") String kind, Pageable first);
+
+    /**
+     * Whether the organization has an intent of {@code kinds} whose latest attempt is still in progress, paid but not yet
+     * applied, or needs reconciliation; an unpaid terminal latest attempt no longer blocks.
+     */
+    @Query("""
+            select count(o) > 0 from PaymentOrderEntity o join SubscriptionIntentEntity i on i.intentId = o.intentId
+            where i.organizationId = :organization and i.kind in :kinds and i.state <> 'APPLIED'
+              and o.attempt = (select max(l.attempt) from PaymentOrderEntity l where l.intentId = i.intentId)
+              and (i.state in ('APPLYING', 'WAITING_CAPACITY', 'EXCEPTION')
+                or o.paymentStatus in ('CREATING', 'PENDING', 'UNKNOWN', 'PARTIAL', 'PAID', 'EXCEPTION', 'DEV_BYPASSED'))
+            """)
+    boolean unresolved(@Param("organization") UUID organizationId, @Param("kinds") List<String> kinds);
+
+    default boolean unresolvedChange(UUID organizationId) {
+        return unresolved(organizationId, List.of("RENEWAL", "SEAT_ADDON"));
+    }
 
     /** Organization billing history, including the initial purchase made by its registration. */
     @Query(ROW + """
@@ -88,7 +106,7 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
 
     @Query("""
             select min(o.employeeSeats) from PaymentOrderEntity o join SubscriptionIntentEntity i on i.intentId = o.intentId
-            where i.organizationId = :organization and i.state in ('OPEN', 'WAITING_CAPACITY', 'EXCEPTION')
+            where i.organizationId = :organization and i.kind = 'RENEWAL' and i.state in ('OPEN', 'WAITING_CAPACITY', 'EXCEPTION')
               and o.paymentStatus in ('CREATING', 'PENDING', 'UNKNOWN', 'PARTIAL', 'PAID', 'EXCEPTION')
             """)
     Integer pendingSeats(@Param("organization") UUID organizationId);
@@ -177,14 +195,14 @@ public interface PaymentOrderJpaRepository extends Repository<PaymentOrderEntity
     List<UUID> dueForCheck(@Param("checkedBefore") Instant checkedBefore, Pageable limit);
 
     record Confirmation(UUID orderId, Long providerOrderCode, String name, Long priceVnd, Integer durationMonths,
-                        Integer employeeSeats, Instant paidAt, String kind, String email, String slug) {
+                        Integer employeeSeats, Instant paidAt, String kind, String email, String slug, Integer addonSeats) {
         @Override public String toString() { return "PaymentConfirmation[redacted]"; }
     }
 
     @Query("""
             select new com.adaptlearngraph.repository.PaymentOrderJpaRepository$Confirmation(o.orderId, o.providerOrderCode, o.name,
                 o.priceVnd, o.durationMonths, o.employeeSeats, o.paidAt, i.kind, a.identifier,
-                (select w.slug from OrganizationWorkspaceEntity w where w.organizationId = a.organizationId))
+                (select w.slug from OrganizationWorkspaceEntity w where w.organizationId = a.organizationId), o.addonSeats)
             from PaymentOrderEntity o join SubscriptionIntentEntity i on i.intentId = o.intentId
             join AccountEntity a on a.accountId = o.createdBy where o.orderId = :orderId
             """)

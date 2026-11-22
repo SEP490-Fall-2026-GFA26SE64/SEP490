@@ -53,6 +53,31 @@ public final class SubscriptionLifecycleService implements SubscriptionLifecycle
         }
         return view(order);
     }
+    @Override
+    public PaymentOrderStore.SeatAddonQuote quoteSeatAddon(UUID organizationId,String target,int seats) {
+        var context=identity.current();
+        workspaces.require(context.actor(),organizationId,Action.RENEW,clock.instant());
+        return orders.quoteSeatAddon(context,organizationId,target,seats,clock.instant());
+    }
+    @Override
+    public Status createSeatAddon(PaymentOrderStore.SeatAddonCommand command) {
+        var context=identity.current();
+        workspaces.require(context.actor(),command.organizationId(),Action.RENEW,clock.instant());
+        if (policy.payosEnabled()) gateway.requireConfigured();
+        var order=orders.createSeatAddon(context,command,clock.instant());
+        if (!policy.payosEnabled()) {
+            processing.bypassForDevelopment(order.orderId(), clock.instant());
+            processing.apply(order.orderId(), clock.instant());
+            order = orders.find(order.orderId()).orElseThrow();
+        }
+        return view(order);
+    }
+    @Override
+    public int changeAddonSeats(UUID organizationId,int desired,int expected) {
+        var context=identity.current();
+        workspaces.require(context.actor(),organizationId,Action.SEAT_REDUCTION,clock.instant());
+        return orders.changeDesiredAddonSeats(context,organizationId,desired,expected,clock.instant());
+    }
     @Override public Status status(UUID orderId) { return view(authorized(orderId)); }
     @Override
     public Status current(UUID organizationId) {

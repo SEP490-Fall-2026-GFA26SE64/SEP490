@@ -21,10 +21,11 @@ public interface SubscriptionIntentJpaRepository
     List<UUID> lockOfRegistration(@Param("registration") UUID registrationId);
 
     @Query(value = """
-            SELECT intent_id FROM platform.subscription_intent WHERE organization_id = :organization AND state <> 'APPLIED'
+            SELECT intent_id FROM platform.subscription_intent
+            WHERE organization_id = :organization AND kind = :kind AND state <> 'APPLIED'
             FOR UPDATE
             """, nativeQuery = true)
-    List<UUID> lockUnappliedOfOrganization(@Param("organization") UUID organizationId);
+    List<UUID> lockUnappliedOfOrganization(@Param("organization") UUID organizationId, @Param("kind") String kind);
 
     @Query(value = "SELECT intent_id FROM platform.subscription_intent WHERE intent_id = :intent FOR UPDATE", nativeQuery = true)
     Optional<UUID> lock(@Param("intent") UUID intentId);
