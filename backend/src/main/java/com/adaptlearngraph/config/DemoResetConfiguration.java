@@ -23,6 +23,6 @@ public class DemoResetConfiguration {
         MinioClient files = endpoint.isBlank() || "unconfigured".equals(access) ? null
                 : MinioClient.builder().endpoint(endpoint).credentials(access, secret).build();
         return new DemoResetService(new DemoResetStore(jdbc, neo4j.getIfAvailable(), files, bucket),
-                DevelopmentWorkspaceAccountBootstrap.TECHNOVA_ORG_ID).checkpoint(checkpoint.getIfAvailable());
+                DemoOrganizationsSeedBootstrap.retainedOrganizations()).checkpoint(checkpoint.getIfAvailable());
     }
 }

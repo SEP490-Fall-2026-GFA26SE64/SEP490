@@ -4,28 +4,29 @@ import com.adaptlearngraph.dtos.DemoResetResultDto;
 import com.adaptlearngraph.repository.DemoResetStore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Recycles a demo environment: keeps the seed organization and platform catalog, removes everything onboarded since. */
+/** Recycles a demo environment: keeps the seed organizations and platform catalog, removes everything onboarded since. */
 public class DemoResetService {
     private static final Logger log = LoggerFactory.getLogger(DemoResetService.class);
 
     private final DemoResetStore store;
-    private final UUID retainedOrganization;
+    private final Set<UUID> retainedOrganizations;
     private com.adaptlearngraph.repository.DemoCheckpointStore checkpoint;
     public DemoResetService checkpoint(com.adaptlearngraph.repository.DemoCheckpointStore value){checkpoint=value;return this;}
     public synchronized DemoResetResultDto reset(String commandKey){return checkpoint==null?reset():checkpoint.restore(commandKey);}
 
-    public DemoResetService(DemoResetStore store, UUID retainedOrganization) {
+    public DemoResetService(DemoResetStore store, Set<UUID> retainedOrganizations) {
         this.store = store;
-        this.retainedOrganization = retainedOrganization;
+        this.retainedOrganizations = Set.copyOf(retainedOrganizations);
     }
 
     public synchronized DemoResetResultDto reset() {
         if(checkpoint!=null)return checkpoint.restore(UUID.randomUUID().toString());
-        var postgres = store.resetPostgres(retainedOrganization);
+        var postgres = store.resetPostgres(retainedOrganizations);
         List<String> warnings = new ArrayList<>();
         int nodes = 0;
         int files = 0;
