@@ -12,7 +12,7 @@ stateDiagram-v2
     none --> draft : Authorized owner creates draft
     draft --> draft : Save with revision and catalog hash
     draft --> none : Publish immutable version and consume draft
-    draft --> abandoned : L&D abandons saved baseline draft
+    draft --> abandoned : Owner abandons saved draft
     abandoned --> none : Preserve history
   }
   state "Scoped activation" as Active {
@@ -23,8 +23,8 @@ stateDiagram-v2
     active --> active : Replace pointer with next scoped version
   }
   note right of Scope
-    L&D owns Role plus member Level BASELINE
-    Expert owns Skill plus knowledge SKILL_ASSESSMENT
+    L&D: one Baseline policy per Role
+    Expert: Skill rules for assigned Roles
   end note
   note right of Active
     Draft may coexist with active policy

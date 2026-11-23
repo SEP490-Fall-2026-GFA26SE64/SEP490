@@ -91,8 +91,6 @@ public interface RuleAssessmentOutcomeJpaRepository extends Repository<RuleAsses
                     AND prerequisite.organization_id=a.organization_id AND prerequisite.learner_id=a.learner_id
                 WHERE a.organization_id=:org AND a.learner_id=:learner AND a.id=:attempt
                     AND prerequisite.state NOT IN ('BYPASSED','ASSESSED_SATISFIED')
-                    AND NOT EXISTS (SELECT 1 FROM platform.latest_knowledge_assessment h WHERE h.organization_id=a.organization_id AND h.learner_id=a.learner_id
-                        AND h.skill_id=prerequisite.skill_id AND h.knowledge_level=prerequisite.knowledge_level AND h.skill_version=prerequisite.requirement_snapshot->>'skillVersion' AND h.passed)
                     AND NOT EXISTS (SELECT 1 FROM platform.skill_knowledge_evidence e
                         WHERE e.organization_id=a.organization_id AND e.learner_id=a.learner_id AND e.skill_id=prerequisite.skill_id AND e.knowledge_level=prerequisite.knowledge_level
                             AND e.requirement_snapshot->>'skillVersion'=prerequisite.requirement_snapshot->>'skillVersion')

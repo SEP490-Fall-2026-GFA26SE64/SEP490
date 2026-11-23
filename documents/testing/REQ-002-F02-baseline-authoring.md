@@ -194,3 +194,53 @@ Commands: frontend `npm.cmd test -- --run` (19 files, **83/83 passed**) and `npm
 Current management Compose/Playwright Save → Publish lifecycle, broader concurrent command serialization, desktop/mobile visual review and production Identity/Catalog integrations remain open. Prior historical slider and legacy-route results are not evidence for those gaps.
 
 The subsequent full backend command `backend/mvnw.cmd -q test` completed with **204/204 passed, 0 failures/errors/skips** across 45 test classes, including PostgreSQL and Neo4j Testcontainers. It confirms regression compatibility of the changed backend with the current suite; it does not add the still-missing concurrency or management browser scenario.
+
+## Current feature verification ? 23 November 2026
+
+These cases follow the feature, not a demo scenario. Committed IDs are retained for traceability. Their recorded result is the single 26-case local run on 23 November (18 feature +1 backend workflow +7 state, 0 failures/errors/skips); regression and supporting checks are not added to that commitment count. Older sections retain historical evidence only.
+
+### Evidence and scope
+
+Java21/JUnit/Surefire and disposable PostgreSQL17.6 Testcontainers through V83. Catalog/identity/assignment and some external ports are controlled fixtures, not full deployed-system verification. E01 is a backend workflow, not browser E2E. RIASEC uses a deterministic HTTP model response, not live-model quality. No CI or NFR result is inferred. Report5 remains deferred.
+
+[Layer-specific execution notes](integration/REQ-001-002-041-042-assessment-pathway.md).
+
+### TC-WF05-F01 — Baseline policy
+
+- **Preconditions/data:** L&D; independent R1/R2 scopes.
+- **Steps:** Create, save and activate R1; reopen both scopes.
+- **Expected:** R1 active configuration/hash retained; R2 unchanged.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PolicyPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PolicyPersistenceTest.java), method `baselinePublication`.
+
+### TC-WF05-F02 — Frozen baseline resume
+
+- **Preconditions/data:** Employee selected Role/Level; active baseline policy.
+- **Steps:** Start; answer; publish newer policy; resume; switch learner.
+- **Expected:** Original paper, answers and deadline retained; another learner denied.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05AttemptPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05AttemptPersistenceTest.java), method `frozenResume`.
+
+### TC-WF05-F03 — Baseline deadline
+
+- **Preconditions/data:** Short deadline; unanswered baseline paper.
+- **Steps:** Wait past deadline; expire; send late answer; expire again.
+- **Expected:** FINALIZED/DEADLINE; zero correct; one result; no official evidence.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05AttemptPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05AttemptPersistenceTest.java), method `serverExpiry`.
+
+### TC-WF05-S01 — Invalid publication
+
+- **Preconditions/data:** Existing active baseline version.
+- **Steps:** Save incomplete draft; try activate; complete draft; empty bank; try activate.
+- **Expected:** Invalid publication blocked; original active version/history and editable draft retained.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PolicyPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PolicyPersistenceTest.java), method `invalidPublicationRetainsPrevious`.
+
+### TC-WF05-S02 — Single finalization
+
+- **Preconditions/data:** Active baseline and revisioned answers.
+- **Steps:** Save answer; send stale revision; submit; replay same command.
+- **Expected:** Stale denied; same final response; one group result and finalized outbox event.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05AttemptPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05AttemptPersistenceTest.java), method `finalizesOnce`.

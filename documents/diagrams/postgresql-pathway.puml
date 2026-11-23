@@ -4,7 +4,7 @@ top to bottom direction
 hide empty members
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title Requirement pathway, timing and certificate - selected workspace source through V64 / 2026-11-18
+title Requirement pathway, timing and certificate - selected workspace source through V82 / 2026-11-23
 entity "pathway_requirement_snapshot" as pathway_requirement_snapshot {
   uuid id <<PK>>
   uuid organization_id
@@ -160,13 +160,60 @@ note bottom of initial_pathway_current
 end note
 note bottom of learning_notification
   Separate text-keyed notification owner, not a SQL FK to pathway.
-  module_id OR valid /employee/ deep_link is required after V64.
+  V80-V82 allow explicit Employee, assigned-Expert and L&D review deep links.
   Dedup recipient/event; toast observation differs from read state.
 end note
 legend bottom
-  Selected columns through V64; not a complete or live schema capture.
+  Selected columns through V82; not a complete or live schema capture.
   Parent -> child = physical FK; edges may summarize composite ownership.
   Certificate request/step references and notification deep links are JSON/text, NOT cross-store FKs.
   Immutable revision/change_origin/source_event/approval basis preserve recalculation history.
 endlegend
+entity "certificate_authoring" as certificate_authoring {
+  uuid id <<PK>>
+  uuid organization_id
+  uuid author_id
+  bigint revision
+  text skill_id
+  text knowledge_level
+  text skill_name
+  jsonb input
+  text state
+  uuid reviewer_id "NULLABLE"
+  text reason
+  text definition_id "NULLABLE"
+  timestamptz created_at
+  timestamptz updated_at
+  integer attempts
+  timestamptz next_attempt
+}
+entity "certificate_authoring_batch" as certificate_authoring_batch {
+  uuid organization_id <<PK>>
+  uuid actor_id <<PK>>
+  uuid key <<PK>>
+  text hash
+  jsonb ids
+}
+entity "certificate_authoring_view" as certificate_authoring_view {
+  uuid organization_id
+  uuid draft_id <<PK, FK>>
+  bigint revision <<PK>>
+  uuid reviewer_id <<PK>>
+  timestamptz viewed_at
+}
+entity "certificate_authoring_event" as certificate_authoring_event {
+  uuid id <<PK>>
+  uuid organization_id
+  uuid draft_id <<FK>>
+  bigint revision
+  uuid actor_id
+  text action
+  jsonb snapshot
+  timestamptz occurred_at
+}
+certificate_authoring --> certificate_authoring_view : exact draft FK; revision review acknowledgement
+certificate_authoring --> certificate_authoring_event : retained authoring event FK
+note bottom of certificate_authoring_batch
+  ids JSON is an idempotent batch receipt, not a physical draft FK.
+end note
 @enduml

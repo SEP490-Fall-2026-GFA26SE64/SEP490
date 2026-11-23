@@ -157,3 +157,45 @@ T5 uses mocked browser fetch/hooks where appropriate and is frontend unit/compon
 - A stale expected-selection request returned `409 STALE_SELECTION` and preserved selection/revision. Two competing changes produced exactly one `200` and one `409 STALE_SELECTION`, with the revision incremented once. With the configured assessment guard enabled, a change returned `409 ASSESSMENT_IN_PROGRESS` and preserved state; Compose was restored to the default `false` afterward.
 - Computer Use still exposed no browser surface, so the repository uses pinned Playwright 1.63.0 with installed headless Chrome. Pre-Cluster-4 cleanup made setup tolerate both GET `204` and an existing selection, added semantic dialog assertions, and added executable stale/competing-change API coverage. Both Playwright scenarios passed after one test-only strict-locator correction. Vitest is explicitly scoped to source unit/component files to prevent cross-discovery of Playwright specs.
 - Local system evidence is complete for the approved Cluster 2 scope. Production Identity, real Catalog-owner handoff, assessment-activity and pathway adapters are still provisional and must be revalidated when delivered; F02 is not marked production Done.
+
+## Current feature verification ? 23 November 2026
+
+These cases follow the feature, not a demo scenario. Committed IDs are retained for traceability. Their recorded result is the single 26-case local run on 23 November (18 feature +1 backend workflow +7 state, 0 failures/errors/skips); regression and supporting checks are not added to that commitment count. Older sections retain historical evidence only.
+
+### Evidence and scope
+
+Java21/JUnit/Surefire and disposable PostgreSQL17.6 Testcontainers through V83. Catalog/identity/assignment and some external ports are controlled fixtures, not full deployed-system verification. E01 is a backend workflow, not browser E2E. RIASEC uses a deterministic HTTP model response, not live-model quality. No CI or NFR result is inferred. Report5 remains deferred.
+
+[Layer-specific execution notes](integration/REQ-001-002-041-042-assessment-pathway.md).
+
+### TC-WF05-F04 — Actual Role member Level
+
+- **Preconditions/data:** R1 contains L1; L2 belongs elsewhere.
+- **Steps:** Read selection; try selecting R1/L2.
+- **Expected:** LEVEL_NOT_AVAILABLE; original selection unchanged.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05AttemptPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05AttemptPersistenceTest.java), method `exactLevel`.
+
+### TC-WF05-F05 — Assessment target lock
+
+- **Preconditions/data:** Active baseline for R1/L1.
+- **Steps:** Try changing Role or Level; select same target again.
+- **Expected:** Changed target denied ASSESSMENT_IN_PROGRESS; same target is a no-op.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05AttemptPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05AttemptPersistenceTest.java), method `activeLock`.
+
+### TC-WF05-F06 — Compatible evidence reuse
+
+- **Preconditions/data:** Owned exact evidence plus wrong-version, wrong-level and foreign-owner records.
+- **Steps:** Resolve baseline and query official proof; reread evidence.
+- **Expected:** Only exact tenant/learner/Skill/knowledge/version proof exempts; history unchanged.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05KnowledgeEvidencePersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05KnowledgeEvidencePersistenceTest.java), method `exactEvidenceExemption`.
+
+### TC-WF05-S03 — Pending request lock
+
+- **Preconditions/data:** Confirmed request, generation not yet run.
+- **Steps:** Change Role/Level; choose same target.
+- **Expected:** TARGET_ROLE_LEVEL_LOCKED for changes; same selection retained; no current pathway revision yet.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PathwayPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PathwayPersistenceTest.java), method `pendingLocksTarget`.

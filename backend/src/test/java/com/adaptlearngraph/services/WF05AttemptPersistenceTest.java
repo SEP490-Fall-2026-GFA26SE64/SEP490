@@ -47,11 +47,11 @@ class WF05AttemptPersistenceTest {
     RoleBaselineFlow.Role role(String id,String level){return new RoleBaselineFlow.Role(id,id,id,"Scope","J1","Job","v1","a".repeat(64),
         List.of(new RoleBaselineFlow.Level(level,level,level,1,"Context","All",List.of(new RoleBaselineFlow.Skill("S-A","S-A","Skill A",List.of("FOUNDATION"),true)),"3 months"),
             new RoleBaselineFlow.Level(level+"-other",level+"-other","Other member level",2,"Context","All",List.of(new RoleBaselineFlow.Skill("S-A","S-A","Skill A",List.of("FOUNDATION"),true)),"3 months")),"role-v1");}
-    @Test @DisplayName("TC-WF05-F04 persistence: exact member Level selected and unrelated Level denied")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F04 - Select an actual Role member Level")
     void exactLevel(){assertThat(selections.current(current).orElseThrow().levelId()).isEqualTo("L1");
         assertThatThrownBy(()->flow.choose("R1","L2",selection.selectionId(),UUID.randomUUID().toString())).hasMessageContaining("LEVEL_NOT_AVAILABLE");
         assertThat(selections.current(current).orElseThrow().selectionId()).isEqualTo(selection.selectionId());}
-    @Test @DisplayName("TC-WF05-F02 persistence: resume frozen paper/answers after new policy publication, deny other learner")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F02 - Resume frozen paper and answers; deny another learner")
     void frozenResume(){var a=service.start(command,UUID.randomUUID());var q=a.questions().getFirst();
         var answered=service.answer(a.attemptId(),new RuleAssessmentAttemptService.Answer(a.revision(),q.position(),q.itemVersionId(),"A"),UUID.randomUUID());
         var active=f.service.read(Purpose.BASELINE,f.baseline.key(),0,20);
@@ -60,7 +60,7 @@ class WF05AttemptPersistenceTest {
         assertThat(resumed.questions()).isEqualTo(answered.questions());assertThat(resumed.deadlineAt()).isEqualTo(a.deadlineAt());
         assertThat(service.start(command,UUID.randomUUID()).attemptId()).isEqualTo(a.attemptId());
         current=new RoleBaselineFlow.Actor(f.org,f.otherActor);assertThatThrownBy(()->service.resume(a.attemptId())).hasMessageContaining("NOT_FOUND");}
-    @Test @DisplayName("TC-WF05-S02 persistence: stale answer denied, submit replay keeps one result and one processing job")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-S02 - Stale answer denied; submit replay finalizes once")
     void finalizesOnce(){var a=service.start(command,UUID.randomUUID());var q=a.questions().getFirst();
         var b=service.answer(a.attemptId(),new RuleAssessmentAttemptService.Answer(a.revision(),q.position(),q.itemVersionId(),"A"),UUID.randomUUID());
         assertThatThrownBy(()->service.answer(a.attemptId(),new RuleAssessmentAttemptService.Answer(a.revision(),q.position(),q.itemVersionId(),"B"),UUID.randomUUID())).hasMessageContaining("STALE_ATTEMPT_REVISION");
@@ -68,13 +68,13 @@ class WF05AttemptPersistenceTest {
         assertThat(replay).isEqualTo(done);assertThat(done.finishReason()).isEqualTo("SUBMITTED");assertThat(done.results().getFirst().correctCount()).isEqualTo(1);
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_group_result WHERE attempt_id=?",Integer.class,a.attemptId())).isEqualTo(1);
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.outbox_event WHERE event_type='RULE_ASSESSMENT_FINALIZED' AND aggregate_id=?",Integer.class,a.attemptId())).isEqualTo(1);}
-    @Test @DisplayName("TC-WF05-F05 persistence: active assessment blocks changed target before selection/archive writes")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F05 - Active assessment prevents target changes")
     void activeLock(){service.start(command,UUID.randomUUID());
         assertThatThrownBy(()->flow.choose("R2","L2",selection.selectionId(),UUID.randomUUID().toString())).hasMessageContaining("ASSESSMENT_IN_PROGRESS");
         assertThatThrownBy(()->flow.choose("R1","L1-other",selection.selectionId(),UUID.randomUUID().toString())).hasMessageContaining("ASSESSMENT_IN_PROGRESS");
         assertThat(selections.current(current).orElseThrow().selectionId()).isEqualTo(selection.selectionId());
         assertThat(flow.choose("R1","L1",selection.selectionId(),UUID.randomUUID().toString()).selectionId()).isEqualTo(selection.selectionId());}
-    @Test @DisplayName("TC-WF05-F03/S02 persistence: real server deadline finalizes unanswered items once and ignores late answer")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F03 - Deadline finalizes diagnostics without achievement")
     void serverExpiry() throws InterruptedException {
         var active=f.service.read(Purpose.BASELINE,f.baseline.key(),0,20);
         var draft=f.service.create(Purpose.BASELINE,f.baseline.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),active.activationRevision()));

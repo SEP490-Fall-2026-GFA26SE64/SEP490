@@ -7,18 +7,18 @@ sequenceDiagram
   autonumber
   actor Owner as L&D Baseline or Expert Skill owner
   participant UI as Scoped policy UI
-  participant Service as ScopedAssessmentPolicyService
+  participant Service as Baseline and shared Skill policy services
   participant Catalog as Neo4j policy catalog and Question Bank
   participant PG as PostgreSQL scoped policy store
-  Owner->>UI: Choose Role-Level or Skill-knowledge scope
+  Owner->>UI: Open Role Baseline or common Skill settings
   UI->>Service: Read directory and current scope
-  Service->>Catalog: Resolve owned catalog and bank capacity
+  Service->>Catalog: Resolve assigned Roles and bank capacity
   Service-->>UI: Draft, active pointer and scoped history
   Owner->>Service: Create or save draft with expected revision
   Service->>PG: Authorize, coordinate org-purpose and retain receipt
   Service->>PG: Save mutable configuration and catalog hash
   Owner->>Service: Publish expected draft and activation revision
-  Service->>Catalog: Revalidate exact scope, groups and bank readiness
-  Service->>PG: Immutable scoped version, active pointer and consume draft
+  Service->>Catalog: Recheck Role assignment, groups and bank readiness
+  Service->>PG: Immutable Role versions, active pointers and consume draft
   Service-->>UI: Retained authorized outcome
-  Note over Owner,Service: Expert role enforced, individual Skill assignment filtering remains incomplete
+  Note over Owner,Service: Expert activation affects assigned Roles only; same Skill uses its learning Role settings

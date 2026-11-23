@@ -57,12 +57,8 @@ public final class RequirementPathwayPlanningService {
             }
             var requirement=requirements.get(i);
             var next=RequirementPathwayGenerationService.step(row.getRequestId(),requirement,previous.kind(),previous.sourceBypassId(),fresh,official.get(requirement.proofKey()));
-            if(!previous.assessedSources().isEmpty() && next.state()!=State.FULFILLED && history!=null
-                    && history.assessed(row.getOrganizationId(),row.getLearnerId(),requirement.skillId(),requirement.knowledgeLevel().name(),requirement.skillVersion()).orElse(false)) {
-                steps.add(new Step(previous.id(),requirement,previous.kind(),previous.sourceBypassId(),State.ASSESSED_SATISFIED,
-                        "COMPATIBLE_ASSESSMENT_NO_GAP",null,next.options(),next.certificate(),previous.assessedSources()));
-                continue;
-            }
+            // Once a failed prerequisite has assigned learning, a later passing group in another
+            // assessment does not resolve that work. Compatible official evidence above does.
             // A bypass is historical resolution, never achievement or renewed mandatory learning.
             if(previous.state()==State.BYPASSED && bypass.isEmpty()) {steps.add(previous);continue;}
             var state=previous.state()==State.IN_PROGRESS && next.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:next.state();

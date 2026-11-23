@@ -10,9 +10,9 @@ sequenceDiagram
   participant Evidence as Official evidence and review store
   participant Pathway as RequirementPathway recalculation
   participant PG as Revision and work store
-  Attempt->>Outcome: MAIN and all configured prerequisite group results
+  Attempt->>Outcome: Group results; create required B work before main/veto check
   alt Main failure or all-wrong prerequisite veto
-    Outcome->>PG: Retain failed result and full-retake requirement
+    Outcome->>PG: Keep failure and required B work; full retake
   else Main passes
     alt Unachieved prerequisite B fails
       Outcome->>Pathway: Add or reuse B from actual attempt and group

@@ -1,5 +1,7 @@
 # Integration Testing Directory & Standards
 
+2026-11-23: [Baseline / Role / pathway / assessment features](REQ-001-002-041-042-assessment-pathway.md). Feature-scoped checks and explicit execution limits; Report5 deferred.
+
 2026-10-29 selected review/read C4: [29 real-adapter cases and fixtures](../system/REQ-002-041-042-workspace-integration.md#real-integration-mapping) passed within final B160 (not an additional29). Disposable PostgreSQL17.6-alpine/Neo4j5.26-community cover full review aggregate, V34→V35/checksum/legacy preservation, CAS/replay/fault recovery, drift/fencing and read/no-write behavior. Versioned owner policies are test fixtures; production owner integration remains Open. [Commands/counts/history](../system/REQ-002-041-042-workspace-integration.md#evidence-identities-and-count-accounting); no C4 test or stack rerun.
 2026-10-28 REQ-013/016 review catalog: [v0.11 teaching focus/difficulty evidence](REQ-016-teaching-focus-difficulty.md). Local data/artifact validation is separate from runtime database/API acceptance.
 

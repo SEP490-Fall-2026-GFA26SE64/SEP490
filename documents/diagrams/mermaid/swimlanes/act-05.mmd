@@ -6,7 +6,7 @@ flowchart TD
   subgraph Actor0["L&amp;D Manager"]
     direction TB
     start(("Start"))
-    config["Publish Baseline policy for Role and member Level"]
+    config["Activate Baseline per Role;<br/>selected Level picks groups"]
   end
   subgraph Actor1["Employee"]
     direction TB
@@ -15,7 +15,7 @@ flowchart TD
     confirm["Confirm exact requirement input and request pathway"]
     option{"Module or certificate provision?"}
     learn["Study accepted pinned module;<br/>complete exact content conditions"]
-    assess["Take Skill paper: MAIN and all prerequisite groups"]
+    assess["Take this Role's Skill paper:<br/>MAIN + prerequisite groups"]
     cert["Submit HTTPS link or private PDF/image"]
   end
   subgraph Actor2["System Handler"]
@@ -36,9 +36,9 @@ flowchart TD
   end
   subgraph Actor3["Expert"]
     direction TB
-    skillPolicy["Publish shared Skill-knowledge policy"]
+    skillPolicy["Activate common Skill rules<br/>for assigned Roles only"]
     review["Check choices and order;<br/>approve exact revision and hash"]
-    repair["Repair provision or reasoned scoped bypass;<br/>policy boundary remains open"]
+    repair["Repair missing provision;<br/>check modules / certificates<br/>and bank readiness"]
     certReview["Review exact certificate submission"]
     skillStart(("Start"))
   end

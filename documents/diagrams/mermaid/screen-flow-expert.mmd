@@ -76,10 +76,10 @@ flowchart LR
   classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px
 
   E_SkillPolicies["Skill Assessment Configuration"]
-  E_SkillPolicy("Skill and Knowledge Scope Draft / Publish")
-  E_Certificates("Certificate Definitions and Assigned Evidence Review")
+  E_SkillPolicy("Common Configuration Wizard")
+  E_Certificates["Certificates"]
   E_Roles --> E_SkillPolicies
-  E_SkillPolicies -->|"Choose scope"| E_SkillPolicy
+  E_SkillPolicies -->|"Create / edit"| E_SkillPolicy
   E_SkillPolicy -->|"Back"| E_SkillPolicies
-  E_Modules -->|"Certificate tab"| E_Certificates
-  E_Certificates -->|"Close"| E_Modules
+  E_Modules -->|"Menu"| E_Certificates
+  E_Certificates -->|"Menu"| E_Modules

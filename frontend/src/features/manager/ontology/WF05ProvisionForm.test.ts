@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { provisionForm, provisionPayload } from './skillProvisionForm'
-it('TC-WF05-F13: save/reopen preserves exclusive per-knowledge module OR certificate provision', () => {
+it('WF05 regression: save/reopen preserves exclusive per-knowledge module OR certificate provision', () => {
   const skill = { id: 'A', code: 'A', name: 'Skill A', moduleOnlyKnowledgeLevels: ['FOUNDATION'], certificateOnlyKnowledgeLevels: ['ADVANCED'] }
   const form = provisionForm(skill)
   expect(form.FOUNDATION.mode).toBe('MODULE_ONLY')

@@ -29,6 +29,9 @@ flowchart LR
   EMP_SubmitBaseline("Submit Baseline")
   EMP_Mastery["My Mastery"]
   EMP_Profile["Profile"]
+  EMP_RIASEC["RIASEC Assessment"]
+  EMP_Overview -->|"Start / resume RIASEC"| EMP_RIASEC
+  EMP_RIASEC -->|"Submit / cancel"| EMP_Overview
 
   EMP_Login -->|"Continue"| EMP_Overview
   EMP_Overview -->|"Upskilling"| EMP_Upskilling

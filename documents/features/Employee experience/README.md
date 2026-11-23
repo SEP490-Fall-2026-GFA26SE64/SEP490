@@ -26,7 +26,7 @@
 
 `/employee/overview?tab=riasec` mounts [RiasecExperience](../../../frontend/src/features/employee/riasec/RiasecExperience.tsx) for trusted Employee org/account, independently of Role, graph, baseline and pathway. It stays mounted after opening; hidden tabs pause polling. Owner changes remount; accepted answers live in the server draft. Standalone/learner and recognized Assessment entries redirect here.
 
-Four summary cards show assessment entry/current/history/inactive. Start requires confirmation. The saved draft supports 60 EN/VI activities, autosave, explicit editor takeover, review and confirmed submit. Server raw 0–40 scores display before AI, with keyboard/touch/hover radar and up to three Job Position comparisons/details. UI is bilingual; generated explanations remain English.
+The Overview RIASEC tab shows assessment entry, current results and history. Start or Continue opens a separate page with 60 EN/VI activities. Answers autosave; review and confirmation precede submission. Submitting returns to the RIASEC tab, where raw 0-40 scores appear before AI suggestions. Generated explanations remain English.
 
 One history dialog offers date/ID search, current/history/inactive and AI-status filters, newest/oldest ordering and counts. Confirmed View opens only active results, changing the viewed radar but not server current. Inactive rows show their 7-day recovery deadline without View. Inactive/Recover/permanent Delete have distinct confirmations; recovery never reruns AI. Confirmed New assessment/Retry AI obey server guards; only current FAILED AI retries, and success including empty output is final.
 
@@ -40,9 +40,15 @@ Direct source inspection at `2c2468b5` differs from earlier handoff prose in thr
 
 - Active RiasecRadarPanel only renders RiasecScoreRadar; comparison details show dimension names and original paired scores. A separate meaning/leading-group summary, boundary-tie disclosure and equal/zero-profile notice are absent. The six values themselves retain equality; no unique Holland code is calculated.
 - The manifest retains source/hash/translation/license/modification/validation metadata. Active RiasecExperience/RiasecAttemptPanel renders activity instructions, but does not read/render that source/adaptation notice metadata. Stored notices are not proof of a visible launch notice or validated adaptation.
-- Server GET exposes catalogAvailable, but the current frontend View type/component does not consume it. On a catalog-read failure the empty active-ID list disables Explore more with the same unavailable message used for removed/inactive positions; a dedicated catalog-outage state is not shown.
+- A position-catalog outage has its own message and retains saved scores and suggestions. Explore more remains unavailable until current positions can be checked.
 
 These are source observations, not new runtime findings or an implementation authorization. Other interaction/accessibility behavior remains limited to its recorded version of evidence.
+
+### Overview progress and evidence
+
+Overview reads the saved target, assessment history and pathway. Skills meeting target counts target Skills whose required levels are met through Baseline or official achievement. Levels met includes target levels and added prerequisites. Required pathway steps completed counts fulfilled required steps and excludes bypassed steps. A completed pathway does not mean every target level has official learning or certificate evidence.
+
+A current learning gap takes precedence over an older Baseline pass. Expanded levels distinguish pending assessment, missing prerequisites, evidence review and achievement. The pathway includes added prerequisites; its lines show learning order. Start, end and duration follow the first approved pathway timing. Missing data stays unavailable rather than becoming invented progress.
 
 ### Role pathway display — new direction
 
@@ -86,7 +92,7 @@ Submission becomes pending, not achieved. Show reviewer decision and actual reas
 
 Show waived/bypassed unmet needs separately from fulfilled requirements. Prerequisite bypass temporarily permits dependent learning; later provision relocks not-started dependents, preserves started content but waits on supplementation before new completion, and retains completed results with supplementary work. Never erase progress or silently replace another active target. After target release, carry the old bypass as parallel supplementation without gates on new-pathway work.
 
-Required-work completion or only approved bypass needs remaining releases Role/Level selection. Optional alternatives and optional review do not block release. A new target reuses compatible official evidence and carries original bypass needs as parallel supplementation without gates on its other skills. Diagnostic reuse is limited to the same unchanged request/context, not a new-target exemption; no self-declared-title exemption.
+Required-work completion or only approved bypass needs remaining releases Role/Level selection. Optional alternatives and optional review do not block release. A new target reuses compatible official evidence and carries original bypass needs as parallel supplementation without gates on its other skills. Compatible history can avoid repeated lower-level checks; no self-declared-title exemption.
 
 Independent upskill remains separate. The same module cannot be opened via skill browsing, optional-module lists, deep links or another context to evade its current pathway LOCKED state. All server admission and media/content paths must retain tenant/actor/prerequisite guards; hiding a button is insufficient. SkillLearningService now rechecks assigned/accepted module access; exact rule-exam admission is a separate server check. Full bypass/deep-link/security behavior remains unverified here.
 
@@ -255,4 +261,4 @@ This supersedes the manual selector/assignment and blank-empty-state behavior in
 ### Optional Modules for the same Skill — 2026-11-05
 
 **Pre-transition implementation:** an Employee with an authorized Module or original skill completion can study other approved, active Modules teaching that Skill within the organization. Each Module retains its own pinned content and progress; optional study does not change pathway membership/order. Completing one Module leaves the others available. Loading, empty, retry and access-denial states use real APIs. [Learning contract](../../technical/Skill-Learning-Eligibility.md).
-Current requirement alternatives additionally use exact knowledge/outcome/Skill version and accepted-access guards. Legacy same-Skill eligibility is not exam authorization; arbitrary independent assessment contexts remain incomplete.
+Current alternatives use exact Skill, knowledge level, Skill version and access checks. Pathway and independent assessments retain their own learning provenance while sharing Skill attempt history and allowance.

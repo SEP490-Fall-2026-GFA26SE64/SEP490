@@ -10,7 +10,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 
 ## Pathway in-app notifications — source update, 2026-11-18
 
-PathwayNotifications writes deduplicated owned learning_notification rows in the same PG transaction for approval, rejection, REQUIRED completion and certificate decisions. Assessment recalculation sends PATHWAY_RECALCULATED only when module/certificate provision was added; bypass-related additions use their separate semantic notice. Content names/step/provenance and an Employee pathway deep link are retained. This is not general workflow email/SMTP completion.
+Pathway events create owned in-app notices for approval, rejection, completion, certificate decisions and meaningful added provision. Assigned Experts receive Important requests for Employee pathway and certificate-evidence review, linked to the relevant screen. L&D receives in-app notices when Experts submit Modules, Questions or Certificate definitions. Decisions remain committed if delivery needs retry.
 
 V64 adds deep_link and toast_observed_at; module_id may be NULL only with a valid Employee deep link. Toast observation differs from unread/read state and does not prove exactly-once UI display. Audit/outbox/source receipts preserve actual actors/versions and retries. [Flow/storage contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18). Existing mail/audit-reader limitations remain scoped below; no new delivery/runtime result is claimed.
 
@@ -20,22 +20,22 @@ V64 adds deep_link and toast_observed_at; module_id may be NULL only with a vali
 
 | Requirement | Status | Current behavior | Remaining boundary |
 | --- | --- | --- | --- |
-| [FR-07.10](#fr-07-10) | Partial | Durable workers send registration verification, member activation and paid-order confirmation mail through shared HTML/plain templates. Delivery jobs retain retry/failure state. | Paid confirmation is not notification coverage for every payment status. Approval, role/content, assessment and pathway workflow emails are not connected. SMTP configuration and local test mail do not prove live inbox delivery. |
+| [FR-07.10](#fr-07-10) | Implemented channels with delivery limits | Account, activation and payment mail retain their existing flow. Learning mail sends pathway/certificate updates to active Employees, excluding staff. Expert/L&D review requests remain in-app. | SMTP acceptance does not prove inbox delivery. |
 | [FR-07.11](#fr-07-11) | Partial | Identity operations and selected billing/member/workspace changes write persisted audit events. Payment processing and target selection also have durable processing/event records. | A processing/outbox event is not automatically a complete administrator audit trail. Rule assessment/evidence, certificate and pathway services now record scoped audit/outbox/history. Complete event coverage and administrator audit readers remain incomplete; durable events do not prove delivery. |
 
-**Observed separation:** real backend audit records are not the data source of the current administrator/platform activity screens. Those screens use sample or browser-stored logs; Employee browser notifications are also not delivered emails.
+**Observed separation:** Important and content-review in-app requests are not emails. Employee pathway mail has its own retry worker. Broad administrator/platform audit screens retain separate limitations.
 
 **Code references:** [verification/activation mail](../../../backend/src/main/java/com/adaptlearngraph/helper/RegistrationMailDelivery.java), [registration worker](../../../backend/src/main/java/com/adaptlearngraph/services/RegistrationMailWorker.java), [activation worker](../../../backend/src/main/java/com/adaptlearngraph/services/MemberActivationMailWorker.java), [paid-confirmation worker](../../../backend/src/main/java/com/adaptlearngraph/services/PaymentConfirmationMailWorker.java), [identity audit persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JpaRegistrationStore.java), [member/workspace audit persistence](../../../backend/src/main/java/com/adaptlearngraph/repository/JpaSubscriptionWorkspaceStore.java), [payment records](../../../backend/src/main/java/com/adaptlearngraph/repository/JpaPaymentProcessingStore.java). Dated verification and live-delivery limitations remain in the [testing guide](../../testing/README.md).
 
 ## Assessment/pathway decision history boundary - 2026-11-05
 
-This narrow FR-07.10/FR-07.11 contract follows the new assessment/pathway decisions, confirmed for the affected history meanings. Rule-flow source now writes result/evidence/pathway audit/outbox records; mail delivery and broad audit readers remain separately incomplete and unverified.
+Accepted assessment, evidence, review and pathway decisions retain actual actors, times and history. In-app notices and Employee learning mail are separate channels; neither proves every background task has completed.
 
 Accepted assessment finalization, official evidence/certificate decision, scoped bypass/backfill, pathway revision and target binding/release must retain trusted organization/actor, affected learner/requirement, source/result/decision versions, reason and actual time/provenance. A baseline diagnostic, official achievement, NEED_REVIEW and bypass are distinct outcomes. Never invent reviewer identity/time or expose protected answers/private evidence in notifications.
 
 Business decisions and recoverable notification intent must remain consistent. Retry/replay cannot duplicate achievement, remediation, bypass or a target change; delivery outage remains visible/retryable without undoing the accepted decision. Notify only authorized intended recipients; a success toast/email is not proof of current learning access or completed processing.
 
-Current pathway in-app event kinds, recipient/deep-link/dedup and toast storage are implemented as described above; broader email channel coverage and general retention policy remain separately open. Existing audit/email history and failures remain preserved. [Expert decision rules](../Pathway%20review/README.md#consistency-target-binding-and-visual-continuity) and [attempt rules](../Assessment%20workflows/README.md#attempt-resume-history-and-result-contract) define the business outcomes; no general notification redesign is included.
+Notification routes distinguish Employee learning updates, assigned-Expert review and L&D content review. Repeated events do not duplicate intended business effects. SMTP failures retry independently. General audit-reader coverage and retention remain separate limitations.
 
 ## Requirements
 

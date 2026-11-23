@@ -2,13 +2,13 @@
 !pragma layout smetana
 skinparam componentStyle rectangle
 skinparam shadowing false
-title Baseline / Skill Assessment / pathway / recalculation - current local source 2026-11-18
+title Baseline / Skill Assessment / pathway / recalculation - current source 2026-11-23
 component "Scoped configuration
-L&D: org + Role/member Level baseline
-Expert: org + Skill/knowledge from assigned Roles
+L&D: one Baseline configuration per Role
+Expert: common Skill settings for assigned Roles
 Draft/version/activation; quota and retake parameters" as Config
 component "Selected Role baseline
-Only explicit MODULE_ONLY targets minus official evidence
+Required and lower levels; module + certificate Skills
 Frozen TARGET paper, timer, answers and group results
 Pass is diagnostic; no speculative prerequisite closure" as Baseline
 component "Confirm request + generation
@@ -18,7 +18,7 @@ All valid options/certificate or explicit missing provision" as Request
 component "Assigned Expert review
 Reduce unstarted options / check / reject / approve
 First approval pins UTC calendar-month deadline
-Missing-provision-only bypass; original approval basis" as Review
+Check readiness; reject or approve exact revision" as Review
 component "Approved module / certificate learning
 Exact version/content, accepted step and real progress
 Content completion is not official achievement
@@ -26,7 +26,7 @@ Certificate decision is a separate evidence source" as Learning
 component "Skill Assessment
 MAIN + complete configured prerequisite closure
 Exact mandatory quota + ordinary questions
-Module-context allowance/wait; full new retake paper" as Exam
+Skill/version allowance and wait shared across Roles" as Exam
 component "Durable outcome job
 Recalculate actual failed nonofficial prerequisites first
 MAIN_FAILED / VETO / WAITING_SUPPLEMENT / READY

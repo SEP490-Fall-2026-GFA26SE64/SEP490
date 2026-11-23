@@ -37,7 +37,7 @@ public final class RuleAssessmentController {
     @GetMapping("/skill-scope/history") public ResponseEntity<SkillHistory> skillScope(@RequestParam(required=false) String skillId,
             @RequestParam(required=false) String knowledgeLevel,@RequestParam(required=false) String skillVersion,
             @RequestParam(required=false) String moduleId,@RequestParam(required=false) Integer moduleRevision,
-            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
+            @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,@RequestParam(defaultValue="INDEPENDENT") String learningContext) {
         attempts.authorize();
         boolean bySkill=skillId!=null || knowledgeLevel!=null || skillVersion!=null;
         if(bySkill) {
@@ -45,7 +45,7 @@ public final class RuleAssessmentController {
             return ok(attempts.skillHistory(skillId,knowledgeLevel,skillVersion,page,size));
         }
         if(moduleId==null || moduleRevision==null)throw new Failure(400,"INVALID_REQUEST");
-        return ok(attempts.moduleSkillHistory(moduleId,moduleRevision,page,size));
+        return ok(attempts.moduleSkillHistory(moduleId,moduleRevision,page,size,learningContext));
     }
     @GetMapping("/{id}/result") public ResponseEntity<View> result(@PathVariable UUID id){return ok(attempts.resume(id));}
     @GetMapping("/history") public ResponseEntity<List<View>> history(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,

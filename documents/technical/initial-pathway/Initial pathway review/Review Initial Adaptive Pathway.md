@@ -1,6 +1,6 @@
 # Review Initial Requirement Pathway
 
-> **Current source reconciliation — 2026-11-18 (`2c2468b5`):** [the active ordered flow/API/schema contract](../../Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older confirmation-pending/source-gap observations here. Role-derived Skill policy editing, module-context retakes/quota papers, unstarted-option reduction with started protection, fresh missing-provision-only bypass, reject/repair/approve, first-approval UTC timing and same-transaction evidence recalculation are present in source. Legacy numeric/OC designs and original evidence retain their date/scope; no runtime verdict or finding closure is added.
+> **Current source reconciliation — 2026-11-18 (`2c2468b5`):** [the active ordered flow/API/schema contract](../../Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older confirmation-pending/source-gap observations here. Role-derived Skill policy editing, shared Skill attempts and quota papers, unstarted-option reduction with started protection, fresh missing-provision-only bypass, reject/repair/approve, first-approval UTC timing and same-transaction evidence recalculation are present in source. Legacy numeric/OC designs and original evidence retain their date/scope; no runtime verdict or finding closure is added.
 
 REQ-019-F01 and REQ-020-F01/F02; currently assigned Expert.
 
@@ -10,13 +10,13 @@ Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source imp
 
 RequirementPathwayReviewService requires current same-tenant Expert assignment before protected reads/actions. Check/save selection uses expected revision/contentHash and exact step/module/revision/contentVersion keys. It must cover editable steps, validates fresh candidates and retains started options. Current order edits only unstarted nonfulfilled/nonbypassed/nondependency-bound positions. Check is read-only; saved changes produce new immutable revision/override history and replay receipt.
 
-Approval rechecks exact valid revision, selection and actual assignment and records genuine Expert/hash/time. Automatic valid supplementation retains approval lineage; it does not invent an Expert. Missing provision remains explicit. Scoped bypass uses actual Expert/assignment/reason/history and never achievement. Current code allows bypass of unresolved REQUIRED work even with available provision; certificate decision remains separately assigned and version-bound.
+Approval checks the saved valid plan, current target and assigned Expert. Automatic valid supplementation preserves that approval and its timing. Bypass requires genuinely missing suitable module/certificate provision; available provision cannot be waived. Learner evidence is reviewed separately; approval reason is optional and rejection reason required.
 
-Confirmed on 2026-11-08: generation attaches all eligible alternatives; assigned Role Expert may remove some during review. One qualifying completed module plus passing Skill Assessment fulfils the requirement; other eligible modules remain voluntary. Code confirmation remains pending. No standalone inclusions/exclusions/neutral removal endpoint is mounted by the active rule controller.
+Generation includes eligible alternatives. Assigned Expert can reduce unstarted choices; started/completed options remain protected. One qualifying completed option and assessment can fulfil the requirement. Other alternatives remain voluntary under their own learning/access checks and the shared Skill attempt allowance.
 
 ## Ordered read, Check and preview flow
 
-Assigned queue/detail → fresh validation/candidates/provenance → read-only module-selection/check → save module-selection with Idempotency-Key and expected revision/hash → inspect exact new revision → confirmation. Bypasses/refresh are separate reasoned actions. Preview never approves or starts learning.
+Open assigned review, adjust supported choices/order, wait for autosave acknowledgement, run Check and confirm approval of the saved valid plan. Check issues focus exact Skill/knowledge for repair. Saving uncertainty retains edits for retry. Rejection preserves work and requires a reason. The current editor does not render a Bypass action.
 
 ## Storage, compatibility and implementation alignment
 

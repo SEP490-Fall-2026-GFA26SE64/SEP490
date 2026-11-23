@@ -1,0 +1,27 @@
+---
+title: "SEQ-13 - Certificate definition review and publication"
+config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariables":{"fontFamily":"Segoe UI, Arial, sans-serif","fontSize":"16px","primaryColor":"#ffffff","primaryTextColor":"#0f1729","primaryBorderColor":"#64748b","secondaryColor":"#fef3eb","tertiaryColor":"#ffffff","lineColor":"#64748b","textColor":"#0f1729","mainBkg":"#ffffff","background":"#ffffff","clusterBkg":"#ffffff","clusterBorder":"#64748b","edgeLabelBackground":"#ffffff","titleColor":"#0f1729","noteBkgColor":"#fef3eb","noteTextColor":"#0f1729","noteBorderColor":"#e6650f","actorBkg":"#fef3eb","actorBorder":"#e6650f","actorTextColor":"#0f1729","actorLineColor":"#64748b","signalColor":"#64748b","signalTextColor":"#0f1729","labelBoxBkgColor":"#ffffff","labelBoxBorderColor":"#64748b","labelTextColor":"#0f1729","loopTextColor":"#0f1729","activationBkgColor":"#fef3eb","activationBorderColor":"#e6650f","sequenceNumberColor":"#ffffff","secondaryBorderColor":"#64748b","tertiaryBorderColor":"#64748b","secondaryTextColor":"#0f1729","tertiaryTextColor":"#0f1729"},"sequence":{"actorMargin":40,"width":170,"height":56,"diagramMarginX":24,"diagramMarginY":24,"boxMargin":12,"boxTextMargin":8,"noteMargin":16,"messageMargin":38,"mirrorActors":false,"wrap":true,"wrapPadding":12,"actorFontSize":15,"messageFontSize":14,"noteFontSize":14,"actorFontFamily":"Segoe UI, Arial, sans-serif","messageFontFamily":"Segoe UI, Arial, sans-serif","noteFontFamily":"Segoe UI, Arial, sans-serif"},"themeCSS":".actor-line { stroke-width: 1px; }"}
+---
+
+sequenceDiagram
+  autonumber
+  actor Expert
+  actor Manager as L&D Manager
+  participant Service as CertificateAuthoringService
+  participant PG as PostgreSQL authoring store
+  participant Catalog as Neo4j certificate catalog
+  Expert->>Service: Import or select exact Skill and knowledge rows
+  Service->>PG: Retain owned drafts, batch receipt and events
+  Expert->>Service: Submit expected draft revision
+  Service->>PG: SUBMITTED and staff in-app review notification
+  Manager->>Service: View exact revision, then approve or reject
+  Service->>PG: Viewed acknowledgement and retained decision
+  opt Approved: PUBLISHING
+    Service->>Service: Background publishOne claims next eligible row
+    Service->>Catalog: Validate and publish with stable command identity
+    Catalog-->>Service: Published definition ID/version
+    Service->>PG: PUBLISHED event and author in-app notification
+  end
+  Note over Manager,PG: Reject requires a reason; approval reason is optional
+  Note over Service,Catalog: Retryable publication; failure stays visible as PUBLISH_FAILED
+  Note over Expert,Catalog: Existing pathways retain pinned A; new pathways use B after publication
