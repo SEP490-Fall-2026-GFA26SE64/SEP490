@@ -1,0 +1,197 @@
+{
+  "checked_on": "2026-11-22",
+  "submission": {
+    "file": "submit certificate/James_Wilson_MS-SPRING-DATA_ADVANCED_DEMO.pdf",
+    "recipient": "James Wilson",
+    "skill": "MS-SPRING-DATA",
+    "level": "ADVANCED",
+    "catalog_name": "Brightpath Spring Data JPA & Hibernate Advanced Demo Certificate",
+    "reference_url": "https://www.baeldung.com/courses/learn-hibernate-jpa-course",
+    "simulated": true,
+    "pdf_sha256": "df5f19e7c328894ecb3fd4769b656adb117e97c383a88c7c6ac2b59ddaa9f2d4"
+  },
+  "sources": [
+    {
+      "code": "MS-JAVA-CONC",
+      "name": "Java Concurrency & CompletableFuture",
+      "provider": "Packt / Coursera",
+      "title": "Concurrency in Java - Practical Multithreading - 2026",
+      "url": "https://www.coursera.org/learn/packt-concurrency-in-java-practical-multithreading-xihws",
+      "kind": "Course with completion-certificate option",
+      "summary": "Java threads, synchronization and safe concurrent execution.",
+      "note": "CompletableFuture and virtual-thread coverage is not confirmed on the course page. Supplement with the Java SE 21 API. Advanced is a Brightpath level, not provider equivalence.",
+      "extra": [
+        [
+          "Java SE 21 CompletableFuture API",
+          "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CompletableFuture.html"
+        ]
+      ]
+    },
+    {
+      "code": "MS-SPRING-DATA",
+      "name": "Spring Data JPA & Hibernate",
+      "provider": "Baeldung",
+      "title": "Learn Hibernate and JPA",
+      "url": "https://www.baeldung.com/courses/learn-hibernate-jpa-course",
+      "kind": "Course; completion certificates listed in All Access",
+      "summary": "Entity mappings, relationships, JPQL, transactions, caching and lazy/eager fetching.",
+      "note": "JPA/Hibernate learning reference; it does not verify Spring Data repository or Advanced mastery. Supplement with Spring Data query methods and the Hibernate guide for repositories, pagination, fetch plans and N+1. The supplied PDF is an internal demo fixture only.",
+      "extra": [
+        [
+          "Spring Data JPA query methods",
+          "https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html"
+        ],
+        [
+          "Hibernate ORM 6.6 User Guide",
+          "https://docs.hibernate.org/orm/6.6/userguide/html_single/"
+        ]
+      ]
+    },
+    {
+      "code": "MS-SQL-INDEX",
+      "name": "Indexing & Query Optimization",
+      "provider": "Markus Winand",
+      "title": "Use The Index, Luke",
+      "url": "https://use-the-index-luke.com/",
+      "kind": "Author-published learning reference; no certificate verified",
+      "summary": "B-tree indexes, composite indexing and query-performance reasoning, including PostgreSQL notes.",
+      "note": "Real learning reference, not a certificate-verification service. No third-party credential is asserted.",
+      "extra": []
+    },
+    {
+      "code": "MS-DB-MIGRATE",
+      "name": "Schema Migration with Flyway",
+      "provider": "Redgate University",
+      "title": "Redgate Flyway training",
+      "url": "https://www.red-gate.com/hub/university/courses/flyway/",
+      "kind": "Official training; no completion certificate verified",
+      "summary": "Flyway migrations, version control and advanced CLI / enterprise deployment workflows.",
+      "note": "Catalog includes introductory and advanced courses. No certificate entitlement or exact zero-downtime coverage is asserted.",
+      "extra": []
+    },
+    {
+      "code": "MS-API-SEC",
+      "name": "Spring Security, OAuth2 & JWT",
+      "provider": "Baeldung",
+      "title": "Learn Spring Security",
+      "url": "https://www.baeldung.com/courses/learn-spring-security-course",
+      "kind": "Course; completion certificates listed in All Access",
+      "summary": "Spring Security, OAuth2 resource servers, JWT claims and validation, and method security.",
+      "note": "Select the relevant modules. Brightpath Advanced is an internal mapping, not external accreditation.",
+      "extra": []
+    },
+    {
+      "code": "MS-JUNIT",
+      "name": "Unit Testing with JUnit 5 & Mockito",
+      "provider": "Baeldung",
+      "title": "Learn Testing with JUnit",
+      "url": "https://www.baeldung.com/courses/learn-junit-course",
+      "kind": "Course; completion certificates listed in All Access",
+      "summary": "JUnit 5 configuration, assertions and integration with Mockito and other testing libraries.",
+      "note": "Reference information only; no application tests are created or executed by this package.",
+      "extra": []
+    },
+    {
+      "code": "MS-DOCKER",
+      "name": "Containerizing Services with Docker",
+      "provider": "LearnKartS / Coursera",
+      "title": "Docker Certified Associate Preparation Specialization",
+      "url": "https://www.coursera.org/specializations/docker-certified-associate-prep",
+      "kind": "Specialization with completion certificate",
+      "summary": "Docker images, Dockerfiles, container lifecycle, networking, storage and deployment preparation.",
+      "note": "Course completion is distinct from passing the external Docker Certified Associate exam. No exam credential is asserted.",
+      "extra": []
+    },
+    {
+      "code": "MS-JAVA-OOP",
+      "name": "Java OOP & SOLID Principles",
+      "provider": "John Wiley & Sons / Coursera",
+      "title": "Java SE 21 OOP and Functional Techniques",
+      "url": "https://www.coursera.org/learn/wiley-java-se-21-oop-and-functional-techniques",
+      "kind": "Course with completion-certificate option",
+      "summary": "Java 21 object-oriented design, advanced class features, generics and functional techniques.",
+      "note": "SOLID-specific coverage is not confirmed on the course page. Related OOP learning reference; Brightpath A/B entries remain distinct fictional internal credentials.",
+      "extra": []
+    },
+    {
+      "code": "MS-JAVA-COLL",
+      "name": "Java Collections & Generics",
+      "provider": "EDUCBA / Coursera",
+      "title": "Advanced Java Programming",
+      "url": "https://www.coursera.org/learn/advanced-java-programming",
+      "kind": "Course with completion-certificate option",
+      "summary": "Type-safe generics, Lists, Sets, Queues, Maps and comparison interfaces.",
+      "note": "Provider lists Intermediate level. Brightpath Advanced is internal, not provider equivalence. Advanced skill evidence still requires Expert review.",
+      "extra": []
+    }
+  ],
+  "catalog_rows": [
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-JAVA-CONC",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Java Concurrency & CompletableFuture Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-SPRING-DATA",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Spring Data JPA & Hibernate Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-SQL-INDEX",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Indexing & Query Optimization Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-DB-MIGRATE",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Schema Migration with Flyway Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-API-SEC",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Spring Security, OAuth2 & JWT Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-JUNIT",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Unit Testing with JUnit 5 & Mockito Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-DOCKER",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Containerizing Services with Docker Advanced Demo Certificate"
+    },
+    {
+      "file": "06_Certificates_Java_Backend.xlsx",
+      "skill": "MS-JAVA-OOP",
+      "level": "ADVANCED",
+      "certificate": "Brightpath OOP Advanced Demo Evidence"
+    },
+    {
+      "file": "06a_Certificate_Conflict_OOP.xlsx",
+      "skill": "MS-JAVA-OOP",
+      "level": "ADVANCED",
+      "certificate": "Brightpath OOP Advanced Demo Evidence - Revision B"
+    },
+    {
+      "file": "06a_Certificate_Conflict_OOP.xlsx",
+      "skill": "MS-JAVA-COLL",
+      "level": "ADVANCED",
+      "certificate": "Brightpath Collections Advanced Demo Evidence"
+    }
+  ],
+  "design_reference": {
+    "faq": "https://www.baeldung.com/courses/learn-spring-data-jpa-faq",
+    "sample_image": "https://www.baeldung.com/wp-content/uploads/2020/06/LS-Certificate.jpg",
+    "sample_course": "Learn Spring",
+    "usage": "Layout inspiration only; Brightpath demo branding, no external signature or seal",
+    "checked_on": "2026-11-22"
+  }
+}

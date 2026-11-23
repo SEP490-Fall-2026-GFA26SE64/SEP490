@@ -431,7 +431,7 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 ### 14.3. Nộp Certificate và Expert duyệt
 
 1. Dùng **James Wilson** → mở yêu cầu **Spring Data JPA & Hibernate — Advanced** → **Submit certificate**.
-2. Tải bằng chứng hợp lệ hoặc nhập HTTPS link → gửi → kiểm tra trạng thái **Pending review**.
+2. Tải PDF [James Wilson — JPA Advanced](<./demo certificate/submit certificate/James_Wilson_MS-SPRING-DATA_ADVANCED_DEMO.pdf>) → gửi → kiểm tra trạng thái **Pending review**. File mô phỏng khớp `MS-SPRING-DATA`, `ADVANCED` và catalog; xem [reference và hướng dẫn](<./demo certificate/README.md>).
 3. Đăng nhập **David Thompson** → mở thông báo quan trọng → **Certificates → Evidence review**.
 4. Mở bằng chứng của James → kiểm tra certificate, Skill và mức kiến thức.
 5. Để trống lý do khi duyệt → **Approve evidence** → kiểm tra toast thành công.

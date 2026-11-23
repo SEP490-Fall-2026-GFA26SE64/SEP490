@@ -33,7 +33,7 @@ public interface OrganizationMembershipJpaRepository
             JOIN platform.organization_membership m ON m.account_id=a.account_id AND m.organization_id=o.organization_id
             JOIN platform.organization_membership_role r ON r.membership_id=m.membership_id
             WHERE a.account_id=:account AND o.organization_id=:organization AND a.active=true AND m.active=true
-              AND lower(o.code)='brightpath' AND lower(a.normalized_identifier)='proteccmee@gmail.com' AND r.role_code='EMPLOYEE'
+              AND lower(o.code)='brightpath' AND lower(a.normalized_identifier) IN ('proteccmee@gmail.com','iamdeemo1803@gmail.com') AND r.role_code='EMPLOYEE'
             """,nativeQuery=true)
     boolean autoFillEmployee(@Param("organization") UUID organization,@Param("account") UUID account);
 
