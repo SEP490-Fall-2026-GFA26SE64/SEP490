@@ -506,14 +506,20 @@ export function JobPositionsManagementPage() {
     const existingCodes = new Set(
       jobPositions.map((p) => p.code.toLowerCase().trim())
     )
-    let nextNum = 1251
-    while (
-      existingCodes.has(`15-${nextNum.toString().padStart(4, '0')}.00`) ||
-      existingCodes.has(`15-${nextNum}.00`)
-    ) {
-      nextNum++
+    const candidateCodes = ['SEC-ENG', 'AI-ENG', 'CLOUD-ENG', 'ARCH-ENG', 'DATA-ENG', 'QA-ENG']
+    let defaultCode = candidateCodes.find((c) => !existingCodes.has(c.toLowerCase()))
+    if (!defaultCode) {
+      let suffix = 2
+      while (
+        existingCodes.has(`sec-eng-${suffix}`) ||
+        existingCodes.has(`sec-eng-0${suffix}`) ||
+        existingCodes.has(`sec-eng-${String(suffix).padStart(2, '0')}`)
+      ) {
+        suffix++
+      }
+      defaultCode = `SEC-ENG-${String(suffix).padStart(2, '0')}`
     }
-    setOccCode(`15-${nextNum.toString().padStart(4, '0')}.00`)
+    setOccCode(defaultCode)
     setOccJobZone(4)
     setOccDescription('')
     setOccInterests({})
@@ -1363,7 +1369,7 @@ export function JobPositionsManagementPage() {
                     Standard Position Code <span className="text-destructive">*</span>
                   </label>
                   <Input
-                    placeholder="e.g. 15-1252.00"
+                    placeholder="e.g. SEC-ENG"
                     value={occCode}
                     onChange={(e) => setOccCode(e.target.value)}
                     required
