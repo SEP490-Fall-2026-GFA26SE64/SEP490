@@ -136,6 +136,50 @@ Thêm user lẻ bằng tay (tuỳ chọn) qua **Create User**:
 
 *(Sau bước này, David Thompson có 3 target roles trong danh sách cần cấu hình cây năng lực).*
 
+### Tạo tay thêm 1 Job Position (tuỳ chọn)
+
+Nếu muốn minh hoạ tính năng tạo thủ công chức danh công việc trong tổ chức:
+Vào **Job Positions** (`/workspace/brightpath/ld-manager/job-positions`) → bấm **Create Job Position**:
+
+| Field | Giá trị |
+| --- | --- |
+| Job position code | `SEC-ENG` |
+| Job position name | `Security & Compliance Engineer` |
+| Job zone | `4` |
+| Department | `ENG - Software Engineering` |
+| Scope & Description | `Plans, audits and enforces security measures, vulnerability assessments, secure coding, and cloud compliance.` |
+
+*(Bấm **Save Job Position** để lưu chức danh mới vào danh mục của công ty).*
+
+### Tạo tay thêm 2 Target Roles (tuỳ chọn)
+
+Nếu muốn minh hoạ L&D Manager tự tạo các vai trò mục tiêu mới và gán cấp bậc:
+Vào **Roles** (`/workspace/brightpath/ld-manager/roles`) → bấm **Create Role**:
+
+#### Role 1 – Application Security Specialist
+| Field | Giá trị |
+| --- | --- |
+| Role Code | `SEC-APP` |
+| Role Title | `Application Security Specialist` |
+| Aligned Job Position | `SEC-ENG - Security & Compliance Engineer` (hoặc `BE-ENG`) |
+| Career Track | `Professional` |
+| Role Levels | `Junior`, `Middle`, `Senior` (mặc định 3 level) |
+| Assigned Expert | `David Thompson` (tuỳ chọn) |
+| Description / Scope | `Assesses application source code security, sets up SAST/DAST pipelines, and enforces OWASP Top 10 mitigations.` |
+
+#### Role 2 – Cloud Security Specialist
+| Field | Giá trị |
+| --- | --- |
+| Role Code | `SEC-CLOUD` |
+| Role Title | `Cloud Security Specialist` |
+| Aligned Job Position | `SEC-ENG - Security & Compliance Engineer` (hoặc `DEVOPS-ENG`) |
+| Career Track | `Professional` |
+| Role Levels | `Junior`, `Middle`, `Senior` (mặc định 3 level) |
+| Assigned Expert | `David Thompson` (tuỳ chọn) |
+| Description / Scope | `Architects cloud IAM governance, audits container runtime security, and automates infrastructure compliance scanning.` |
+
+*(Bấm **Save Draft** hoặc **Save & Send to Expert** để lưu vai trò mới).*
+
 ---
 
 ## 4. Expert import competency
