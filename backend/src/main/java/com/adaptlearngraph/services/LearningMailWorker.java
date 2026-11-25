@@ -1,7 +1,7 @@
 package com.adaptlearngraph.services;
 
 
-import com.adaptlearngraph.helper.TransactionalEmail;
+import com.adaptlearngraph.helper.LearningPathwayEmail;
 import com.adaptlearngraph.helper.TransactionalMailSender;
 import com.adaptlearngraph.repository.LearningNotificationJpaRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -50,15 +50,9 @@ public final class LearningMailWorker {
                                                         java.nio.charset.StandardCharsets.UTF_8);
                         mail.send(
                                 job.recipient(),
-                                TransactionalEmail.render(
-                                        job.title(),
-                                        job.body(),
-                                        null,
-                                        job.moduleId()==null?Map.of():Map.of("Module", job.moduleId()),
-                                        "Open / Mở nội dung",
-                                        publicUrl + com.adaptlearngraph.helper.WorkspaceLinks.path(job.slug(), path),
-                                        "Sign in to review this update. / Đăng nhập để xem thông"
-                                            + " báo."),
+                                LearningPathwayEmail.render(
+                                        job.kind(), job.body(),
+                                        publicUrl + com.adaptlearngraph.helper.WorkspaceLinks.path(job.slug(), path)),
                                 "X-Learning-Event",
                                 job.id());
                         notifications.markMailSent(job.id(), job.attempts());

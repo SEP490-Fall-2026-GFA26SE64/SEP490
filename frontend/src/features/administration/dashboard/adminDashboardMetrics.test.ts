@@ -20,7 +20,7 @@ function invitation(overrides: Partial<PendingActivation> = {}): PendingActivati
 
 const terms = { name: 'Growth', description: '', priceVnd: 1, currency: 'VND', durationMonths: 1, employeeSeats: 10 }
 const now = new Date('2026-11-19T00:00:00Z')
-const period = (endsAt: string) => ({ periodId: 'p', startsAt: '2026-11-01T00:00:00Z', endsAt, terms })
+const period = (endsAt: string) => ({ periodId: 'p', startsAt: '2026-11-01T00:00:00Z', endsAt, terms, planId: null, addonSeats: 0, totalSeats: 10 })
 
 describe('adminDashboardMetrics', () => {
   it('counts only active memberships by role', () => {

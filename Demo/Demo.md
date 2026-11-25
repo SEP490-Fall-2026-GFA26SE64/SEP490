@@ -136,6 +136,50 @@ Thêm user lẻ bằng tay (tuỳ chọn) qua **Create User**:
 
 *(Sau bước này, David Thompson có 3 target roles trong danh sách cần cấu hình cây năng lực).*
 
+### Tạo tay thêm 1 Job Position (tuỳ chọn)
+
+Nếu muốn minh hoạ tính năng tạo thủ công chức danh công việc trong tổ chức:
+Vào **Job Positions** (`/workspace/brightpath/ld-manager/job-positions`) → bấm **Create Job Position**:
+
+| Field | Giá trị |
+| --- | --- |
+| Job position code | `SEC-ENG` |
+| Job position name | `Security & Compliance Engineer` |
+| Job zone | `4` |
+| Department | `ENG - Software Engineering` |
+| Scope & Description | `Plans, audits and enforces security measures, vulnerability assessments, secure coding, and cloud compliance.` |
+
+*(Bấm **Save Job Position** để lưu chức danh mới vào danh mục của công ty).*
+
+### Tạo tay thêm 2 Target Roles (tuỳ chọn)
+
+Nếu muốn minh hoạ L&D Manager tự tạo các vai trò mục tiêu mới và gán cấp bậc:
+Vào **Roles** (`/workspace/brightpath/ld-manager/roles`) → bấm **Create Role**:
+
+#### Role 1 – Application Security Specialist
+| Field | Giá trị |
+| --- | --- |
+| Role Code | `SEC-APP` |
+| Role Title | `Application Security Specialist` |
+| Aligned Job Position | `SEC-ENG - Security & Compliance Engineer` (hoặc `BE-ENG`) |
+| Career Track | `Professional` |
+| Role Levels | `Junior`, `Middle`, `Senior` (mặc định 3 level) |
+| Assigned Expert | `David Thompson` (tuỳ chọn) |
+| Description / Scope | `Assesses application source code security, sets up SAST/DAST pipelines, and enforces OWASP Top 10 mitigations.` |
+
+#### Role 2 – Cloud Security Specialist
+| Field | Giá trị |
+| --- | --- |
+| Role Code | `SEC-CLOUD` |
+| Role Title | `Cloud Security Specialist` |
+| Aligned Job Position | `SEC-ENG - Security & Compliance Engineer` (hoặc `DEVOPS-ENG`) |
+| Career Track | `Professional` |
+| Role Levels | `Junior`, `Middle`, `Senior` (mặc định 3 level) |
+| Assigned Expert | `David Thompson` (tuỳ chọn) |
+| Description / Scope | `Architects cloud IAM governance, audits container runtime security, and automates infrastructure compliance scanning.` |
+
+*(Bấm **Save Draft** hoặc **Save & Send to Expert** để lưu vai trò mới).*
+
 ---
 
 ## 4. Expert import competency
@@ -373,8 +417,8 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 1. Dùng tài khoản **Sarah Mitchell (L&D Manager)**.
 2. Vào **Baseline Config → Configurations** → giữ bộ lọc **Ready to configure**.
 3. Tại **Java Backend Developer**, bấm biểu tượng bút để cấu hình.
-4. Bước **Questions**: kiểm tra các giá trị điền sẵn; chỉnh số câu và số đúng để đạt trong giới hạn hiển thị → **Continue**.
-5. Bước **Time & retakes**: kiểm tra thời gian, số lượt và thời gian chờ; chỉnh nếu cần → **Continue**.
+4. Bước **Questions**: dùng **3 câu / 2 đúng để đạt** cho mỗi mức trong giới hạn hiển thị → **Continue**. Một cấu hình áp dụng cho mọi Level của Role; Level Employee chọn quyết định nhóm câu thực tế.
+5. Bước **Time & retakes**: dùng **60 giây/câu, 3 lượt, chờ 1 phút** → **Continue**.
 6. Bước **Review**: kiểm tra lại → **Save & Activate**.
 7. Vào tab **Active** → kiểm tra cấu hình của **Java Backend Developer**.
 8. Quay lại **Configurations** → thực hiện lại bước 3–7 cho **Node.js Backend Developer**.
@@ -384,10 +428,16 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 
 1. Đăng xuất Sarah → đăng nhập **David Thompson (Domain Expert)**.
 2. Vào **Skill Assessment → Configurations → Create configuration**.
-3. Bước **Questions**: kiểm tra tên cấu hình và số câu, số đúng để đạt, quota mandatory của từng mức; chỉnh trong giới hạn hiển thị → **Continue**.
-4. Bước **Time & retakes**: đặt **Seconds per question = 60**; kiểm tra số lượt và thời gian chờ → **Continue**.
+3. Bước **Questions**: kiểm tra tên; dùng **6 câu / 4 đúng / 1 mandatory** cho F/I/A và prerequisite nếu bank Published đã đủ theo file07 → **Continue**. Nếu thiếu câu, hoàn tất bank trước.
+4. Bước **Time & retakes**: đặt **Seconds per question = 60**, **Maximum attempts = 10**, **Wait = 0 phút** cho lượt demo này → **Continue**. Giữ all-wrong veto cho prerequisite theo cấu hình.
 5. Bước **Review**: kiểm tra lại → **Save & activate** → xác nhận kích hoạt.
 6. Vào tab **Active** → kiểm tra cấu hình đã kích hoạt.
+
+Code đã tách phần lưu và chọn cấu hình Skill Assessment theo Role. Lịch sử, số lượt đã thi và thời gian chờ hiện vẫn dùng chung cho cùng Employee + Skill + mức kiến thức + phiên bản Skill, kể cả giữa các Role. Vì vậy, cấu hình đã tách theo Role nhưng lượt thi chưa tách riêng theo Role. Chưa kiểm tra luồng này trên ứng dụng đang chạy.
+
+Expert vẫn dùng một màn hình cấu hình chung. Khi kích hoạt, BE chỉ áp dụng cấu hình cho các Role hiện được giao cho Expert đó và các Skill cần đánh giá trong những Role này. Nếu hai Role có cùng một Skill, Skill ở Role nào dùng cấu hình của Role đó. Cấu hình cũ và bài thi đã tạo vẫn được lưu; Role cần được kích hoạt cấu hình trước khi mở bài mới.
+
+Các kết quả minh họa bên dưới giả định bank/policy đúng preset và lịch sử phù hợp. Lượt thi và thời gian chờ dùng chung cho cùng Employee + Skill + mức + phiên bản, kể cả khi đổi Role hoặc mở module khác; không mở module khác để lấy lại lượt.
 
 ## 12. Employee chọn Role, làm Baseline và gửi duyệt Pathway
 
@@ -426,12 +476,12 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 2. Làm **Skill Assessment** của Transaction lần đầu → **Auto fill answer** → tự nộp bài.
 3. Xem kết quả: **Foundation đạt; Intermediate và Advanced chưa đạt**.
 4. Quay lại Pathway → xem yêu cầu **Transaction Management — Intermediate** và prerequisite **Spring Data JPA & Hibernate — Advanced** phát sinh.
-5. Kiểm tra Transaction Advanced đang **Locked** do chưa hoàn thành các yêu cầu bổ sung. Prerequisite JPA dùng **certificate**, không phải module học.
+5. Kiểm tra Transaction Advanced chưa đủ điều kiện thi mới/ghi nhận hoàn tất do còn yêu cầu bổ sung. Gói nội dung đã bắt đầu hợp lệ vẫn có thể tiếp tục đọc. JPA Advanced dùng **certificate**, không phải module học.
 
 ### 14.3. Nộp Certificate và Expert duyệt
 
 1. Dùng **James Wilson** → mở yêu cầu **Spring Data JPA & Hibernate — Advanced** → **Submit certificate**.
-2. Tải bằng chứng hợp lệ hoặc nhập HTTPS link → gửi → kiểm tra trạng thái **Pending review**.
+2. Tải PDF [James Wilson — JPA Advanced](<./demo certificate/submit certificate/James_Wilson_MS-SPRING-DATA_ADVANCED_DEMO.pdf>) → gửi → kiểm tra trạng thái **Pending review**. File mô phỏng khớp `MS-SPRING-DATA`, `ADVANCED` và catalog; xem [reference và hướng dẫn](<./demo certificate/README.md>).
 3. Đăng nhập **David Thompson** → mở thông báo quan trọng → **Certificates → Evidence review**.
 4. Mở bằng chứng của James → kiểm tra certificate, Skill và mức kiến thức.
 5. Để trống lý do khi duyệt → **Approve evidence** → kiểm tra toast thành công.
@@ -445,14 +495,14 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 5. Mở lại **Transaction Advanced** → bắt đầu lượt **Skill Assessment mới** (chờ hết thời gian giữa lượt nếu có).
 6. Bấm **Auto fill answer** → tự nộp bài → kiểm tra đạt Advanced.
 7. Kiểm tra Pathway **Completed**, các Skill đã đạt và thông báo hoàn thành.
-8. Mở hộp thư Employee **proteccmee@gmail.com** → kiểm tra email Pathway hoàn thành theo mẫu hệ thống; kiểm tra Spam nếu chưa thấy.
+8. Khi SMTP và mail worker đã được chuẩn bị, mở hộp thư Employee **proteccmee@gmail.com** để xem email hoàn thành; kiểm tra Spam nếu cần. Thông báo in-app không chứng minh email đã đến hộp thư.
 
 ## 15. Employee kiểm tra Overview và làm RIASEC
 
 1. Dùng **James Wilson (Employee)** → **Overview**.
-2. Kiểm tra hồ sơ năng lực, Skill/mức kiến thức đã đạt và trạng thái Pathway.
+2. Kiểm tra **Skills meeting target**, **Levels met**, **Required pathway steps completed**, hồ sơ năng lực và các prerequisite bổ sung. Phân biệt mức đáp ứng qua Baseline với achievement từ học/certificate; không tính bypass là hoàn tất học.
 3. Chuyển tab **RIASEC** → **Start assessment** → xác nhận bắt đầu lượt mới nếu được hỏi.
 4. Kiểm tra bài làm mở ở **trang riêng** → bấm **Auto fill answer**.
 5. Mở **Review your answers** → kiểm tra đủ **60/60 answered** → **Complete assessment** → xác nhận nộp.
 6. Kiểm tra tự quay về tab **RIASEC** → chờ AI xử lý kết quả.
-7. Xem điểm sở thích và gợi ý Job Position khi AI hoàn tất; nếu AI báo lỗi, kiểm tra cấu hình/kết nối rồi dùng **Retry AI suggestions**.
+7. Xem điểm sở thích và gợi ý khi AI hoàn tất; không yêu cầu một thứ hạng cố định. Chỉ current result có AI **FAILED** mới Retry được. Nếu endpoint chưa bật, sửa cấu hình rồi Reload; nếu không có Job Position hợp lệ, bổ sung profile trước khi Retry. Model có thể trả 0 gợi ý thành công.

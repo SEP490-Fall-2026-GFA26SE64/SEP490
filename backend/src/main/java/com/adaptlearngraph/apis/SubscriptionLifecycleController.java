@@ -1,10 +1,14 @@
 package com.adaptlearngraph.apis;
 
+import com.adaptlearngraph.dtos.SubscriptionDto.AddonSeatsRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.AddonSeatsResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberAccessRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberProfileRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.OrderRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.OrderStatusResponse;
+import com.adaptlearngraph.dtos.SubscriptionDto.SeatAddonOrderRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.SeatAddonQuoteResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.SummaryResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.SuspensionRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceResponse;
@@ -46,6 +50,18 @@ public class SubscriptionLifecycleController {
     OrderStatusResponse reconcile(@PathVariable UUID orderId) { return lifecycle.reconcile(orderId); }
     @GetMapping("/api/v1/organizations/{organizationId}/subscription")
     SummaryResponse summary(@PathVariable UUID organizationId) { return lifecycle.summary(organizationId); }
+    @GetMapping("/api/v1/organizations/{organizationId}/subscription/seat-addons/quote")
+    SeatAddonQuoteResponse seatAddonQuote(@PathVariable UUID organizationId,@RequestParam String target,@RequestParam int seats) {
+        return lifecycle.quoteSeatAddon(organizationId,target,seats);
+    }
+    @PostMapping("/api/v1/organizations/{organizationId}/subscription/seat-addons/orders")
+    OrderStatusResponse seatAddonOrder(@PathVariable UUID organizationId,@Valid @RequestBody SeatAddonOrderRequest input) {
+        return lifecycle.createSeatAddon(organizationId,input);
+    }
+    @PutMapping("/api/v1/organizations/{organizationId}/subscription/seat-addons")
+    AddonSeatsResponse addonSeats(@PathVariable UUID organizationId,@Valid @RequestBody AddonSeatsRequest input) {
+        return lifecycle.changeAddonSeats(organizationId,input);
+    }
     @PostMapping("/api/v1/payments/payos/webhook")
     void webhook(@RequestBody String payload) { payments.webhook(payload); }
     @GetMapping("/api/v1/platform/workspaces")

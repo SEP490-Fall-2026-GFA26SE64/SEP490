@@ -1,5 +1,7 @@
 # System Testing Directory & Standards
 
+2026-11-23: [Skill Assessment browser readiness](FR-06.08-skill-assessment.md). Feature-scoped checks and explicit execution limits; Report5 deferred.
+
 ## Dated adaptive checkpoint evidence
 
 2026-10-29 selected review/read C4: [real system evidence](REQ-002-041-042-workspace-integration.md#real-system-mapping-and-isolation) records **2/2 Passed**,0 failed/skipped/flaky, real session/CSRF/baseline/API/worker/persistence, isolated final4 stack on38088. Expert repair/order/Check/preview/final approval → same Employee revision5/hash/order14; real archived unresolved equal-hash repair locked after separately approved C2 guard. [Counts/failures/limits](REQ-002-041-042-workspace-integration.md#c4-review-evidence-synchronization--2026-10-29). Native browser drag Not run, E04–E06/protected execution deferred, production owners Open; old build/manual evidence below remains historical. C4 did not start services or rerun tests; generic shared8088 commands below are not this run's harness.

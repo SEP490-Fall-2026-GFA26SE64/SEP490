@@ -30,14 +30,17 @@ class WF05PathwayPersistenceTest {
         snapshot=new RulePathwayCatalog.Snapshot("catalog-v1",List.of(need),Map.of(need.key(),List.of(m1,m2)),Map.of());
         when(catalog.resolve(any(),any(),anyString(),anyList())).thenAnswer(i->snapshot);
         when(catalog.providers(any(),any(),anyString(),anyList(),anySet())).thenAnswer(i->snapshot);
+        // This catalog fixture contains unchanged approved certificate definitions.
+        // Preserve the supplied snapshot at the retention port, rather than Mockito's null default.
+        when(catalog.retainCertificates(any(),any(),any(),any())).thenAnswer(i->i.getArgument(1));
         var receipts=new JpaInitialReceipts(db.bean(InitialPathwayReceiptJpaRepository.class));
         admission=new RequirementPathwayAdmissionService(()->actor,org->a.roles,a.selections,catalog,rules,data,db.bean(PathwayRequirementSnapshotJpaRepository.class),clock,
-            db.bean(RuleAssessmentOutcomeJpaRepository.class),receipts,revisions,f.json);
+            db.bean(RuleAssessmentOutcomeJpaRepository.class),receipts,revisions,f.json).history(db.bean(RuleAssessmentContextJpaRepository.class));
         generation=new RequirementPathwayGenerationService(data,rules,admission,revisions,a.selections,clock,tx,
             new RequirementPathwayGenerationService.Settings(Duration.ofSeconds(10),3,Duration.ofMillis(100)));
         assignments=mock(ReviewAssignments.class);when(assignments.require(any(),any())).thenAnswer(i->{if(!((Actor)i.getArgument(0)).accountId().equals(f.otherActor))throw new Failure(403,"FORBIDDEN");return new Assignment("ROLE-X1","v1",f.otherActor);});
         var validation=new RequirementPathwayValidationService(admission,revisions,rules,catalog);
-        var planning=new RequirementPathwayPlanningService(catalog,rules,admission,revisions,f.json);
+        var planning=new RequirementPathwayPlanningService(catalog,rules,admission,revisions,f.json).history(db.bean(RuleAssessmentContextJpaRepository.class));
         review=new RequirementPathwayReviewService(()->actor,assignments,a.selections,rules,data,admission,revisions,validation,catalog,receipts,clock,planning);
     }
     void confirm() throws Exception {actor=new Actor(a.f.org,a.f.actor,Role.EMPLOYEE);var p=admission.preview("R1","L1");assertThat(p.baselineRequired()).isFalse();
@@ -52,16 +55,16 @@ class WF05PathwayPersistenceTest {
         assertThat(row().getGenerationStatus()).isEqualTo("SUCCEEDED");}
     void expert(){actor=new Actor(a.f.org,a.f.otherActor,Role.DOMAIN_EXPERT);}
     RequirementPathwayReviewService.Expected expected(){var r=row();return new RequirementPathwayReviewService.Expected(r.getCurrentRevision(),r.getContentHash());}
-    @Test @DisplayName("TC-WF05-F07 persistence: confirm is frozen/idempotent, queue generates all alternatives without initial prerequisites")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F07 - Generate roots and all eligible alternatives")
     void generate() throws Exception {generated();var r=row();var plan=revisions.read(r);assertThat(r.getReviewStatus()).isEqualTo("AWAITING_EXPERT_REVIEW");
         assertThat(plan.steps()).hasSize(1);assertThat(plan.dependencies()).isEmpty();assertThat(plan.steps().getFirst().options()).containsExactly(m1,m2);
         assertThat(admission.decode(r).input().required()).containsExactly(need);assertThat(a.selections.targetLocked(a.current)).isTrue();}
-    @Test @DisplayName("TC-WF05-F05/S03 persistence: pending generation binds target; same-target selection remains a no-op")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-S03 - Mandatory request work locks the target")
     void pendingLocksTarget() throws Exception {confirm();assertThatThrownBy(()->a.flow.choose("R2","L2",a.selection.selectionId(),UUID.randomUUID().toString())).hasMessageContaining("TARGET_ROLE_LEVEL_LOCKED");
         assertThatThrownBy(()->a.flow.choose("R1","L1-other",a.selection.selectionId(),UUID.randomUUID().toString())).hasMessageContaining("TARGET_ROLE_LEVEL_LOCKED");
         assertThat(a.flow.choose("R1","L1",a.selection.selectionId(),UUID.randomUUID().toString()).selectionId()).isEqualTo(a.selection.selectionId());
         assertThat(row().getCurrentRevision()).isNull();}
-    @Test @DisplayName("TC-WF05-F08 persistence: assigned reduction records revision; empty alternatives keep root and block approval")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F08 - Assigned Expert edits alternatives and retains roots")
     void alternativeReduction() throws Exception {generated();expert();var root=revisions.read(row()).steps().getFirst();
         var command=new RequirementPathwayReviewService.Selection(expected(),List.of(new RequirementPathwayReviewService.StepSelection(root.id(),List.of(new RequirementPathwayReviewService.ModuleKey(m1.moduleId(),m1.moduleRevision(),m1.contentVersion())))),null);
         review.saveSelection(request,UUID.randomUUID().toString(),command);assertThat(revisions.read(row()).steps().getFirst().options()).containsExactly(m1);
@@ -69,13 +72,13 @@ class WF05PathwayPersistenceTest {
         review.saveSelection(request,UUID.randomUUID().toString(),empty);var plan=revisions.read(row());assertThat(plan.steps()).hasSize(1);assertThat(plan.steps().getFirst().state()).isEqualTo(State.NEEDS_EXPERT_ACTION);
         assertThatThrownBy(()->review.approve(request,UUID.randomUUID().toString(),expected())).hasMessageContaining("PATHWAY_VALIDATION_REQUIRED");
         actor=new Actor(a.f.org,a.f.actor,Role.DOMAIN_EXPERT);assertThatThrownBy(()->review.saveSelection(request,UUID.randomUUID().toString(),empty)).hasMessageContaining("FORBIDDEN");}
-    @Test @DisplayName("TC-WF05-F09 persistence: current approval only, bypass denies available provision")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F09 - Approve only the current pathway revision")
     void currentApproval() throws Exception {generated();expert();var root=revisions.read(row()).steps().getFirst();
         assertThatThrownBy(()->review.bypass(request,UUID.randomUUID().toString(),new RequirementPathwayReviewService.Bypass(expected(),root.id(),"Not actually missing"))).hasMessageContaining("REQUIREMENT_BYPASS_NOT_ALLOWED");
         assertThatThrownBy(()->review.approve(request,UUID.randomUUID().toString(),new RequirementPathwayReviewService.Expected(99,"0".repeat(64)))).hasMessageContaining("STALE_PATHWAY_REVISION");
         review.approve(request,UUID.randomUUID().toString(),expected());assertThat(row().getReviewStatus()).isEqualTo("APPROVED");
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.initial_pathway_approval WHERE request_id=?",Integer.class,request)).isEqualTo(1);}
-    @Test @DisplayName("TC-WF05-F09/S04 persistence: genuinely missing provision permits reasoned bypass without achievement")
+    @Test @DisplayName("WF05 regression: persistence: genuinely missing provision permits reasoned bypass without achievement")
     void missingProvisionBypass() throws Exception {
         snapshot=new RulePathwayCatalog.Snapshot("missing-v1",List.of(need),Map.of(),Map.of());generated();expert();var root=revisions.read(row()).steps().getFirst();
         assertThat(root.state()).isEqualTo(State.NEEDS_EXPERT_ACTION);
@@ -88,7 +91,7 @@ class WF05PathwayPersistenceTest {
         assertThat(a.flow.choose("R2","L2",a.selection.selectionId(),UUID.randomUUID().toString()).levelId()).isEqualTo("L2");
         assertThat(rules.own(a.f.org,a.f.actor,request).orElseThrow().getArchivedAt()).isNotNull();
     }
-    @Test @DisplayName("TC-WF05-S04 persistence: failed generation rolls back projection and authorized retry preserves input/run history")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-S04 - Retry generation preserving input and history")
     void failedGenerationRetry() throws Exception {
         confirm();String frozen=row().getFrozenInput();var failing=spy(revisions);var db=WF05PolicyPersistenceTest.db;
         doAnswer(i->{RequirementPathwayJpaRepository.Row r=i.getArgument(0);if(r.getRequestId().equals(request))throw new IllegalStateException("WF05 injected commit failure");return i.callRealMethod();})
@@ -103,7 +106,7 @@ class WF05PathwayPersistenceTest {
         assertThat(row().getGenerationStatus()).isEqualTo("SUCCEEDED");assertThat(row().getFrozenInput()).isEqualTo(frozen);
         assertThat(WF05PolicyPersistenceTest.sql.queryForList("SELECT generation_status FROM platform.initial_pathway_run WHERE request_id=? ORDER BY finished_at",String.class,request)).containsExactly("FAILED_RETRYABLE","SUCCEEDED");
     }
-    @Test @DisplayName("TC-WF05-F08 persistence: a started option cannot be excluded and accepted revision remains unchanged")
+    @Test @DisplayName("WF05 regression: persistence: a started option cannot be excluded and accepted revision remains unchanged")
     void startedOptionProtected() throws Exception {
         generated();var root=revisions.read(row()).steps().getFirst();var sql=WF05PolicyPersistenceTest.sql;
         sql.update("INSERT INTO platform.module_authoring(organization_id,module_id,document) VALUES (?,?,'{}'::jsonb)",a.f.org.toString(),m1.moduleId());

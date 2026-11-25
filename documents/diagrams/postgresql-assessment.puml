@@ -4,7 +4,7 @@ left to right direction
 hide empty members
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title Baseline and Skill Assessment - selected workspace source through V64 / 2026-11-18
+title Baseline and Skill Assessment - selected workspace source / 2026-11-23
 entity "assessment_rule_policy_draft" as assessment_rule_policy_draft {
   uuid organization_id <<PK>>
   text purpose <<PK>>
@@ -78,7 +78,7 @@ entity "rule_assessment_attempt" as rule_assessment_attempt {
   uuid organization_id
   uuid learner_id
   text purpose
-  uuid selection_id
+  uuid selection_id "NULLABLE independent context; V71"
   uuid policy_id
   text state
   timestamptz deadline_at
@@ -185,4 +185,15 @@ legend bottom
   Policy draft -> publication is a workflow, not an invented SQL FK.
   Answers/scores freeze before outcome jobs; baseline is diagnostic, never official evidence.
 endlegend
+note bottom of assessment_rule_scoped_activation
+  Baseline key = organization + Role; selected Level chooses paper groups.
+  Skill drafts/history = Expert; activation and derived paper policy = Role.
+  Same Skill in different Roles uses separate policy pointers; no role_id column is added.
+end note
+note bottom of rule_assessment_attempt
+  V71: nullable selection_id + revision 0 for INDEPENDENT_SKILL context.
+  V72: learner account FK retained. V73: owned predecessor, validated Skill scope.
+  Used attempts/history/wait still share Employee + Skill + level + version across Roles.
+  Role is frozen inside context_snapshot. V84 is not implemented.
+end note
 @enduml

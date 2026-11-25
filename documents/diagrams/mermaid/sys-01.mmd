@@ -15,12 +15,12 @@ flowchart TD
       SDD_SYS_01_Catalog["Catalog / learning Role reads<br/>and selection"]
       SDD_SYS_01_Assessment["Scoped Baseline and Skill policies,<br/>frozen rule papers, diagnostics<br/>and official evidence"]
       SDD_SYS_01_Workers["Durable workers Payment, email,<br/>rule expiry, outcomes and refresh"]
-      SDD_SYS_01_Target["Requirement pathway and certificates<br/>implemented in local source;<br/>AI guidance and ROI remain target"]
+      SDD_SYS_01_Target["Requirement pathway and certificates<br/>implemented in local source;<br/>opt-in RIASEC; ROI remains target"]
     end
-    SDD_SYS_01_PG[("PostgreSQL 17.6 platform schema<br/>Source-defined extensions through V62")]
+    SDD_SYS_01_PG[("PostgreSQL 17.6 platform schema<br/>Source-defined extensions through V83")]
     SDD_SYS_01_Neo[("Neo4j 5.26 catalog only;<br/>Role, member Level, Skill, Module and Certificate")]
     SDD_SYS_01_Minio[("Private learning and certificate assets")]
-    SDD_SYS_01_LLM["Local LLM inference<br/>Model/version not selected in<br/>repo Planned"]
+    SDD_SYS_01_LLM["Local Ollama inference<br/>qwen3:4b-instruct-2507<br/>Opt-in RIASEC explanations"]
     SDD_SYS_01_Migrate["One-shot migration process<br/>Flyway; no automatic graph<br/>reseed"]
   end
   SDD_SYS_01_Pay["payOS merchant API"]

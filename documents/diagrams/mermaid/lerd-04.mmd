@@ -95,3 +95,49 @@ erDiagram
   }
   certificate_submission ||--|| certificate_submission_attachment : "one evidence form FK"
   certificate_submission ||--o| certificate_submission_decision : "same submission revision owner FK"
+
+  %% V79 certificate definition authoring; distinct from learner certificate submissions.
+  certificate_authoring {
+    uuid id PK
+    uuid organization_id
+    uuid author_id
+    bigint revision
+    text skill_id
+    text knowledge_level
+    text skill_name
+    jsonb input
+    text state
+    uuid reviewer_id "NULLABLE"
+    text reason
+    text definition_id "NULLABLE"
+    timestamptz created_at
+    timestamptz updated_at
+    integer attempts
+    timestamptz next_attempt
+  }
+  certificate_authoring_batch {
+    uuid organization_id PK
+    uuid actor_id PK
+    uuid key PK
+    text hash
+    jsonb ids
+  }
+  certificate_authoring_view {
+    uuid organization_id
+    uuid draft_id PK, FK
+    bigint revision PK
+    uuid reviewer_id PK
+    timestamptz viewed_at
+  }
+  certificate_authoring_event {
+    uuid id PK
+    uuid organization_id
+    uuid draft_id FK
+    bigint revision
+    uuid actor_id
+    text action
+    jsonb snapshot
+    timestamptz occurred_at
+  }
+  certificate_authoring ||--o{ certificate_authoring_view : "draft FK; exact revision viewed"
+  certificate_authoring ||--o{ certificate_authoring_event : "draft FK; retained event"

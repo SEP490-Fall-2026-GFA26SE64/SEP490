@@ -159,7 +159,8 @@ public class SubscriptionConfiguration {
                                 "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/platform/subscription-plans/*",
                                 "/api/v1/platform/workspaces/*/suspension","/api/v1/organizations/*/subscription/members/*",
-                                "/api/v1/organizations/*/subscription/members/*/profile").permitAll()
+                                "/api/v1/organizations/*/subscription/members/*/profile",
+                                "/api/v1/organizations/*/subscription/seat-addons").permitAll()
                         .anyRequest().denyAll())
                 .csrf(csrf->csrf.ignoringRequestMatchers("/api/v1/payments/payos/webhook", "/api/v1/platform/benchmark", "/api/v1/platform/benchmark/**"))
                 .exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, exception) -> {

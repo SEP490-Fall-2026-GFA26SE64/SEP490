@@ -24,6 +24,9 @@ public class SubscriptionEntity {
     private Long revision;
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+    /** Add-on seats kept at the next same-plan renewal; changed only through conditional JPQL updates. */
+    @Column(name = "desired_addon_seats")
+    private Integer desiredAddonSeats;
 
     protected SubscriptionEntity() {
     }
@@ -38,4 +41,5 @@ public class SubscriptionEntity {
     public UUID getOrganizationId() { return organizationId; }
     public Long getRevision() { return revision; }
     public Instant getCreatedAt() { return createdAt; }
+    public Integer getDesiredAddonSeats() { return desiredAddonSeats; }
 }

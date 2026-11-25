@@ -16,6 +16,7 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | [FR-01.03](#fr-01-03) | API-backed slice | Purchase orders, payOS checkout, order-specific results, reconciliation and replacement/retry flows use backend state and persisted order snapshots. | Retry/replacement eligibility depends on the existing order outcome; unresolved provider state is not treated as an unpaid terminal result. |
 | [FR-02.02](#fr-02-02) | Partial | Platform Administrators edit existing plan name, description, price, duration and seat limit; a new version is saved without changing purchased terms. Stale versions are checked. | Currency is displayed read-only in the UI and the backend rejects non-VND values. The source's currency-update capability is therefore constrained, not fully delivered. |
 | [FR-03.06](#fr-03-06) | API-backed slice | System Administrators view current/scheduled paid periods, allocated/used seats and payment history, select a plan and pay for renewal. | This is the connected billing slice, not cancellation, refunds, invoices or all organization administration. |
+| [FR-03.07](#fr-03-07) | API-backed slice (approved extension) | Organization Administrators buy 1–50 extra Employee seats for the current paid period at a prorated price. The seats carry over to same-plan renewals and can be reduced from the next renewal. A paid scheduled period gets a separate shortfall payment. | Local/dev verified with the test payment double; live payOS not accepted. No refunds or mid-period seat removal. |
 | [FR-07.02](#fr-07-02) | API-backed slice | The payOS adapter creates/queries payment links and verifies webhooks. Durable jobs record observations, validate the order and apply paid outcomes idempotently. | External credentials/provider availability are prerequisites. Browser callbacks alone cannot authorize payment application; live-provider acceptance remains separate. |
 | [FR-07.04](#fr-07-04) | API-backed slice | Stored paid periods and seat counts drive purchase/renewal state, serialized Employee-seat admission and request-time workspace access, including suspension and administrator recovery access. | Entitlement checks do not replace the missing catalog-specific trusted actor/assignment integration described in [cross-domain boundaries](../README.md#cross-domain-boundaries). |
 
@@ -93,7 +94,23 @@ Each record below corresponds to one source bullet. Unspecified fields are inten
 | 8. Postconditions |  |
 | 9. Acceptance Criteria |  |
 
-<a id="fr-07-02"></a>
+<a id="fr-03-07"></a>
+
+### FR-03.07: Purchase additional Employee seats
+
+Approved scope extension (2026-11-19); not a Version 2 source bullet.
+
+| Field | Description |
+| --- | --- |
+| 1. Requirement ID | FR-03.07 |
+| 2. Requirement Name | Purchase additional Employee seats |
+| 3. Description | The Organization Administrator shall buy a few extra Employee seats without changing plan, keep them on later same-plan renewals and reduce them for the next renewal. |
+| 4. Actor | Organization (System) Administrator of the same organization |
+| 5. Preconditions | The current paid period is ACTIVE and has not ended. No renewal or seat payment is unresolved. |
+| 6. Main Flow | On `/admin/subscription`, **Additional Employee seats** shows plan seats, additional seats and the total. The administrator enters 1–50 seats and gets a quote. The price is `ceil(plan price / plan seats)` per seat, prorated by the time left in the period and rounded up to whole VND (at least 1 VND). The administrator then pays through the existing payment flow. A verified payment raises the allocated seats and admission limit once and sends an "Additional Employee seats" confirmation email. |
+| 7. Alternative / Exception Flows | Invalid quantity → inline error, 400. Another organization or a non-administrator → 403. A stale expected add-on value → 409. A pending renewal or seat order blocks new seat purchases and renewals until it is resolved. A reduction that would leave fewer seats than active Employees is rejected. If a paid period is already scheduled, an increase covers only the current period; a shortfall banner offers a fixed-quantity SHORTFALL payment at the full per-seat price for the scheduled period. Until it is paid, admission stays at the scheduled ceiling. |
+| 8. Postconditions | Add-on seats persist until reduced. A reduction takes effect at the next renewal, with no refund. Same-plan renewals include the add-ons at the full per-seat price. Renewing to a different plan resets add-ons to 0. Applied add-ons and order price snapshots are immutable. SEAT_ADDON orders appear in payment history. |
+| 9. Acceptance Criteria | Dated evidence: [unit](../../testing/unit/FR-03-07-subscription-seat-addon-20261119.md), [integration](../../testing/integration/FR-03-07-subscription-seat-addon-20261119.md), [system](../../testing/system/FR-03-07-subscription-seat-addon-20261119.md). |
 
 ### FR-07.02: Process subscription payments
 

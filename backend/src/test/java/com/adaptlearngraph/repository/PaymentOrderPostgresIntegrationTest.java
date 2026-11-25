@@ -7,6 +7,7 @@ import com.adaptlearngraph.services.PaymentConfirmationMailWorker;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.adaptlearngraph.repository.PaymentOrderStore.Command;
+import com.adaptlearngraph.repository.PaymentOrderStore.SeatAddonCommand;
 import com.adaptlearngraph.repository.SubscriptionIdentity.Context;
 import com.adaptlearngraph.helper.PaymentGateway.Observation;
 import com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Actor;
@@ -687,6 +688,160 @@ class PaymentOrderPostgresIntegrationTest {
         } finally {
             pool.shutdownNow();
         }
+    }
+
+    @Test
+    void currentSeatAddonRaisesCapacityAndSamePlanRenewalCarriesTheSeats() {
+        var context=provisioned();
+        UUID org=context.actor().organizationId();
+        var quote=orders.quoteSeatAddon(context,org,"CURRENT",3,NOW.plusSeconds(60));
+        assertEquals("INCREASE",quote.kind());
+        assertEquals(245,quote.perSeatVnd());
+        assertTrue(quote.amountVnd()>0 && quote.amountVnd()<=735);
+        var addon=orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",3,quote.amountVnd()),NOW.plusSeconds(61));
+        assertEquals("SEAT_ADDON",addon.kind());
+        assertEquals(3,addon.terms().employeeSeats());
+        assertEquals(quote.amountVnd(),addon.terms().priceVnd());
+        pay(addon,NOW.plusSeconds(62));
+        assertEquals("APPLIED",orders.applicationState(addon.orderId()));
+        var summary=workspaces.summary(org,NOW.plusSeconds(63));
+        assertEquals(20,summary.current().terms().employeeSeats());
+        assertEquals(3,summary.current().addonSeats());
+        assertEquals(23,summary.allocatedSeats());
+        assertEquals(23,summary.admissionLimit());
+        assertEquals(3,summary.desiredAddonSeats());
+        assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM platform.subscription_seat_addon WHERE order_id=?",Integer.class,addon.orderId()));
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->orders.create(context,
+                new Command(org,PLAN,VERSION,UUID.randomUUID(),null,0),NOW.plusSeconds(64))).code());
+        var renewal=orders.create(context,new Command(org,PLAN,VERSION,UUID.randomUUID(),null,3),NOW.plusSeconds(65));
+        assertEquals(23,renewal.terms().employeeSeats());
+        assertEquals(4_900+735,renewal.terms().priceVnd());
+        assertEquals(3,renewal.addonSeats());
+        assertEquals(735,renewal.addonAmountVnd());
+        pay(renewal,NOW.plusSeconds(66));
+        var renewed=workspaces.summary(org,NOW.plusSeconds(67));
+        assertEquals(20,renewed.scheduled().terms().employeeSeats());
+        assertEquals(3,renewed.scheduled().addonSeats());
+        assertEquals(0,renewed.scheduledShortfall());
+        assertEquals(23,renewed.admissionLimit());
+    }
+
+    @Test
+    void seatAddonGuardsRejectInvalidStaleDuplicateAndUnauthorizedRequests() {
+        var context=provisioned();
+        UUID org=context.actor().organizationId();
+        assertEquals("INCREASE",orders.quoteSeatAddon(context,org,"CURRENT",1,NOW.plusMillis(1)).kind());
+        assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->
+                orders.quoteSeatAddon(context,org,"CURRENT",0,NOW.plusSeconds(1))).code());
+        assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->
+                orders.quoteSeatAddon(context,org,"CURRENT",51,NOW.plusSeconds(1))).code());
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
+                orders.quoteSeatAddon(context,org,"SCHEDULED",1,NOW.plusSeconds(1))).code());
+        var employee=new Context(new Actor(context.actor().accountId(),org,true,true,
+                Set.of(com.adaptlearngraph.entities.domain.SubscriptionAccessPolicy.Role.EMPLOYEE),true),null);
+        assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->orders.createSeatAddon(employee,
+                new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",1,10_000L),NOW.plusSeconds(1))).code());
+        var foreign=provisioned();
+        assertEquals(SubscriptionFailure.Code.FORBIDDEN,assertThrows(SubscriptionFailure.class,()->orders.createSeatAddon(foreign,
+                new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",1,10_000L),NOW.plusSeconds(1))).code());
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->orders.createSeatAddon(context,
+                new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",2,1L),NOW.plusSeconds(1))).code());
+        UUID key=UUID.randomUUID();
+        var pending=orders.createSeatAddon(context,new SeatAddonCommand(org,key,"CURRENT",2,10_000L),NOW.plusSeconds(2));
+        assertEquals(pending.orderId(),orders.createSeatAddon(context,new SeatAddonCommand(org,key,"CURRENT",2,10_000L),NOW.plusSeconds(3)).orderId());
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->orders.createSeatAddon(context,
+                new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",1,10_000L),NOW.plusSeconds(4))).code());
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->orders.create(context,
+                new Command(org,PLAN,VERSION,UUID.randomUUID(),null),NOW.plusSeconds(4))).code());
+        assertTrue(workspaces.summary(org,NOW.plusSeconds(5)).seatChangeBlocked());
+        processing.record(observation(pending,"EXPIRED",0L,null,"QUERY"),NOW.plusSeconds(1803));
+        var retry=orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",1,10_000L),NOW.plusSeconds(1804));
+        assertEquals(pending.intentId(),retry.intentId());
+        assertEquals(2,retry.attempt());
+    }
+
+    @Test
+    void reductionAppliesAtRenewalWithinUsedSeatsAndADifferentPlanResetsAddons() {
+        var context=provisioned();
+        UUID org=context.actor().organizationId();
+        var quote=orders.quoteSeatAddon(context,org,"CURRENT",2,NOW.plusSeconds(1));
+        pay(orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",2,quote.amountVnd()),NOW.plusSeconds(2)),NOW.plusSeconds(3));
+        for(int i=0;i<21;i++) employee(org,true);
+        assertEquals(SubscriptionFailure.Code.CONFLICT,assertThrows(SubscriptionFailure.class,()->
+                orders.changeDesiredAddonSeats(context,org,1,0,NOW.plusSeconds(4))).code());
+        assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->
+                orders.changeDesiredAddonSeats(context,org,3,2,NOW.plusSeconds(4))).code());
+        assertEquals(SubscriptionFailure.Code.CAPACITY_EXCEEDED,assertThrows(SubscriptionFailure.class,()->
+                orders.changeDesiredAddonSeats(context,org,0,2,NOW.plusSeconds(4))).code());
+        assertEquals(1,orders.changeDesiredAddonSeats(context,org,1,2,NOW.plusSeconds(5)));
+        var summary=workspaces.summary(org,NOW.plusSeconds(6));
+        assertEquals(1,summary.desiredAddonSeats());
+        assertEquals(22,summary.admissionLimit());
+        assertEquals(1,orders.create(context,new Command(org,PLAN,VERSION,UUID.randomUUID(),null,1),NOW.plusSeconds(7)).addonSeats());
+
+        var other=provisioned();
+        UUID otherOrg=other.actor().organizationId(),plan=UUID.randomUUID(),version=UUID.randomUUID();
+        transactions.executeWithoutResult(tx->{
+            jdbc.update("INSERT INTO platform.subscription_plan VALUES (?,?,?)",plan,"test-"+plan,version);
+            jdbc.update("""
+                    INSERT INTO platform.subscription_plan_version(version_id,plan_id,revision,name,description,
+                      price_vnd,currency,duration_months,employee_seats,created_at,creation_source)
+                    VALUES (?,?,1,'Test larger plan','Isolated test terms',9800,'VND',1,40,now(),'SYSTEM')
+                    """,version,plan);
+        });
+        var otherQuote=orders.quoteSeatAddon(other,otherOrg,"CURRENT",2,NOW.plusSeconds(1));
+        pay(orders.createSeatAddon(other,new SeatAddonCommand(otherOrg,UUID.randomUUID(),"CURRENT",2,otherQuote.amountVnd()),NOW.plusSeconds(2)),NOW.plusSeconds(3));
+        var changed=orders.create(other,new Command(otherOrg,plan,version,UUID.randomUUID(),null,0),NOW.plusSeconds(4));
+        assertEquals(0,changed.addonSeats());
+        assertEquals(40,changed.terms().employeeSeats());
+        pay(changed,NOW.plusSeconds(5));
+        var after=workspaces.summary(otherOrg,NOW.plusSeconds(6));
+        assertEquals(0,after.desiredAddonSeats());
+        assertEquals(0,after.scheduled().addonSeats());
+        assertEquals(22,after.admissionLimit());
+    }
+
+    @Test
+    void currentIncreaseWithAScheduledPeriodNeedsAFullPriceShortfallPayment() {
+        var context=provisioned();
+        UUID org=context.actor().organizationId();
+        pay(orders.create(context,new Command(org,PLAN,VERSION,UUID.randomUUID(),null),NOW.plusSeconds(1)),NOW.plusSeconds(2));
+        var quote=orders.quoteSeatAddon(context,org,"CURRENT",2,NOW.plusSeconds(3));
+        pay(orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",2,quote.amountVnd()),NOW.plusSeconds(4)),NOW.plusSeconds(5));
+        var summary=workspaces.summary(org,NOW.plusSeconds(6));
+        assertEquals(22,summary.allocatedSeats());
+        assertEquals(2,summary.scheduledShortfall());
+        assertEquals(20,summary.admissionLimit());
+        assertEquals(SubscriptionFailure.Code.INVALID_INPUT,assertThrows(SubscriptionFailure.class,()->
+                orders.quoteSeatAddon(context,org,"SCHEDULED",1,NOW.plusSeconds(7))).code());
+        var shortfall=orders.quoteSeatAddon(context,org,"SCHEDULED",2,NOW.plusSeconds(7));
+        assertEquals("SHORTFALL",shortfall.kind());
+        assertEquals(490,shortfall.amountVnd());
+        assertEquals(summary.scheduled().periodId(),shortfall.periodId());
+        pay(orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"SCHEDULED",2,490L),NOW.plusSeconds(8)),NOW.plusSeconds(9));
+        var after=workspaces.summary(org,NOW.plusSeconds(10));
+        assertEquals(2,after.scheduled().addonSeats());
+        assertEquals(0,after.scheduledShortfall());
+        assertEquals(2,after.desiredAddonSeats());
+        assertEquals(22,after.admissionLimit());
+    }
+
+    @Test
+    void databaseRejectsMutatingAppliedSeatAddonsAndTheirOrderSnapshots() {
+        var context=provisioned();
+        UUID org=context.actor().organizationId();
+        var quote=orders.quoteSeatAddon(context,org,"CURRENT",1,NOW.plusSeconds(1));
+        var addon=orders.createSeatAddon(context,new SeatAddonCommand(org,UUID.randomUUID(),"CURRENT",1,quote.amountVnd()),NOW.plusSeconds(2));
+        pay(addon,NOW.plusSeconds(3));
+        assertThrows(org.springframework.dao.DataAccessException.class,()->
+                jdbc.update("UPDATE platform.subscription_seat_addon SET seats=5 WHERE order_id=?",addon.orderId()));
+        assertThrows(org.springframework.dao.DataAccessException.class,()->
+                jdbc.update("UPDATE platform.payment_order SET addon_seats=5 WHERE order_id=?",addon.orderId()));
+    }
+
+    private static void pay(PaymentOrder order,Instant at) {
+        processing.record(observation(order,"PAID",order.terms().priceVnd(),"VND","WEBHOOK"),at);
+        processing.apply(order.orderId(),at);
     }
 
     private static Context provisioned() {

@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="3379" viewBox="0 0 2300 3379" font-family="Segoe UI,Arial,sans-serif"><defs><marker id="arr" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9" fill="#334155"/></marker></defs><rect width="100%" height="100%" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="3529" viewBox="0 0 2300 3529" font-family="Segoe UI,Arial,sans-serif"><defs><marker id="arr" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9" fill="#334155"/></marker></defs><rect width="100%" height="100%" fill="#fff"/>
 <text x="50" y="45" font-size="28" font-weight="650" fill="#0f172a">Baseline / Skill Assessment — scoped policies, frozen papers and exact evidence</text>
-<text x="50" y="80" font-size="17" font-weight="400" fill="#475569">Selected physical columns through workspace V64 / source 2c2468b5 / 2026-11-18. No live schema capture.</text>
+<text x="50" y="80" font-size="17" font-weight="400" fill="#475569">Selected physical columns / workspace source 2026-11-23. Not a live schema capture.</text>
 <rect x="50" y="140" width="620" height="326" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
 <rect x="50" y="140" width="620" height="48" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
 <text x="65" y="171" font-size="21" font-weight="650" fill="#0f172a">assessment_rule_policy_draft</text>
@@ -58,7 +58,7 @@
 <text x="1585" y="728" font-size="17" font-weight="400" fill="#0f172a">organization_id: uuid</text>
 <text x="1585" y="754" font-size="17" font-weight="400" fill="#0f172a">learner_id: uuid</text>
 <text x="1585" y="780" font-size="17" font-weight="400" fill="#0f172a">purpose: text</text>
-<text x="1585" y="806" font-size="17" font-weight="400" fill="#0f172a">selection_id: uuid</text>
+<text x="1585" y="806" font-size="17" font-weight="400" fill="#0f172a">selection_id: uuid NULLABLE for independent context</text>
 <text x="1585" y="832" font-size="17" font-weight="400" fill="#0f172a">policy_id: uuid</text>
 <text x="1585" y="858" font-size="17" font-weight="400" fill="#0f172a">state: text</text>
 <text x="1585" y="884" font-size="17" font-weight="400" fill="#0f172a">deadline_at: timestamptz</text>
@@ -209,4 +209,4 @@
 <text x="50" y="3152" font-size="17" font-weight="400" fill="#475569">New Skill policies: explicit mandatoryCount; exactly quota mandatory + remaining ordinary. Baseline mandatory/veto conditions are disabled.</text>
 <text x="50" y="3181" font-size="17" font-weight="400" fill="#475569">Legacy null quota / OC columns remain readable. V63 item→Skill-version binding is append-only; no reinterpretation of frozen papers.</text>
 <text x="50" y="3210" font-size="17" font-weight="400" fill="#475569">Official evidence accepts only genuine module-assessment/certificate sources; baseline and bypass do not award achievement.</text>
-</svg>
+<g data-addition="current-source-notes"><text x="34" y="3413" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Baseline: Role policy; selected Level chooses groups. Skill: Expert draft/history, Role activation.</text><text x="34" y="3441" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">Skill policy pointers are separate per Role; Role identity stays in frozen context JSON, not a new column.</text><text x="34" y="3469" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">V71 independent context: selection_id NULL, selection_revision 0. V72 preserves learner-account ownership.</text><text x="34" y="3497" font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#475569">V73 validates owned predecessors and shared Skill scope; counts/history/wait remain shared across Roles.</text></g></svg>

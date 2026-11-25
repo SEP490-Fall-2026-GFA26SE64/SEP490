@@ -36,11 +36,15 @@ stateDiagram-v2
     needs --> studying : Start accepted option
     studying --> fulfilled : Exact official evidence accepted
     action --> bypassed : Authorized scoped decision with reason
-    needs --> bypassed : Source permits unresolved REQUIRED waiver
-    studying --> bypassed : Source permits unresolved REQUIRED waiver
+    needs --> bypassed : Only if fresh suitable provision is absent
+    studying --> bypassed : Only if fresh suitable provision is absent
   }
+  note right of Review
+    Rejection retains REJECTED and the proposal
+    Repair returns to exact-revision review
+  end note
   note right of Step
     PARALLEL_SUPPLEMENT never gates new target
     No blocking REQUIRED steps releases target
-    Bypass policy boundary remains unresolved
+    Bypass requires missing provision and reason
   end note

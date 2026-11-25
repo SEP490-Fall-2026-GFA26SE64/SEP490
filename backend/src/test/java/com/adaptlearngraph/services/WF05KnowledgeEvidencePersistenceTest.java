@@ -11,7 +11,7 @@ import org.junit.jupiter.api.*;
 class WF05KnowledgeEvidencePersistenceTest {
     @BeforeAll static void start(){WF05PolicyPersistenceTest.start();}
     @AfterAll static void stop(){WF05PolicyPersistenceTest.stop();}
-    @Test @DisplayName("TC-WF05-F06 persistence: only owned exact Skill/knowledge/version evidence exempts baseline; provenance retained")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F06 - Reuse only owned compatible official evidence")
     void exactEvidenceExemption() throws Exception {
         var f=new WF05PolicyPersistenceTest();f.setup();var k=new WF05KnowledgeContextTest();k.setup();
         k.actor=new RoleBaselineFlow.Actor(f.org,f.actor);when(k.selections.current(k.actor)).thenReturn(Optional.of(k.selected));

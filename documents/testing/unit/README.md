@@ -1,5 +1,7 @@
 # Unit Testing Directory & Standards
 
+2026-11-23: [Skill Assessment unit/context/provision](FR-06.08-skill-assessment.md). Feature-scoped checks and explicit execution limits; Report5 deferred.
+
 2026-10-29 selected review/read C4: [unit/component/API-security mapping](../system/REQ-002-041-042-workspace-integration.md#unit-component-and-api-security-mapping) and [recorded commands](../system/REQ-002-041-042-workspace-integration.md#recorded-commands) reuse the existing scoped evidence document. B includes92 C3 non-integration cases (66 domain/application/codec +26 API/security/activation/actor bridge) and39 regression; F49 includes44 C3+5 regression. Real integration29 is indexed separately and is already part of B160. Mock ports/session/HTTP/owner hooks are not real-adapter evidence. C4 only synchronized documents; no tests rerun.
 ## Current Scope Alignment
 

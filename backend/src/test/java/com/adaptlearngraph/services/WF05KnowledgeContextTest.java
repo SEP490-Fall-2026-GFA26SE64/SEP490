@@ -52,14 +52,14 @@ class WF05KnowledgeContextTest {
                 .isInstanceOfSatisfying(InitialPathwayPorts.Failure.class,f->{assertThat(f.status()).isEqualTo(422);assertThat(f.code()).isEqualTo("ROLE_REQUIREMENTS_NOT_CONFIGURED");});
         verifyNoInteractions(graph,evidence,modules);
     }
-    @Test @DisplayName("TC-WF05-F06 context: only current-version official proof exempts exact baseline requirement")
+    @Test @DisplayName("WF05 regression: context: only current-version official proof exempts exact baseline requirement")
     void exemptions(){var official=mock(RuleAssessmentContextJpaRepository.Official.class);var id=UUID.randomUUID();when(official.getId()).thenReturn(id);
         when(evidence.official(actor.organizationId(),actor.learnerId(),"A","FOUNDATION","v1")).thenReturn(List.of(official));
         var command=start(Purpose.BASELINE,null);var result=contexts.resolve(actor,command);assertThat(result.groups()).extracting(n->n.requirement().skillId()).containsExactly("B");
         when(evidence.official(actor.organizationId(),actor.learnerId(),"A","FOUNDATION","v1")).thenReturn(List.of());
         when(evidence.official(actor.organizationId(),actor.learnerId(),"A","FOUNDATION","old-v0")).thenReturn(List.of(official));
         assertThat(contexts.resolve(actor,command).groups()).extracting(n->n.requirement().skillId()).containsExactly("A","B");}
-    @Test @DisplayName("TC-WF05-F10 context: exact completed option required and equivalent modules have independent retry contexts")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F10 - Assessment requires exact accepted module completion")
     void exactOption(){var completed=mock(RuleAssessmentContextJpaRepository.CompletedOption.class);
         when(completed.getSkillId()).thenReturn("A");when(completed.getKnowledgeLevel()).thenReturn("FOUNDATION");when(completed.getRequirementSnapshot()).thenReturn("{\"skillVersion\":\"v1\"}");
         when(completed.getRequestId()).thenReturn(UUID.randomUUID());when(completed.getPathwayRevision()).thenReturn(1L);when(completed.getContentVersion()).thenReturn("content-v1");when(completed.getKind()).thenReturn("REQUIRED");
@@ -67,6 +67,7 @@ class WF05KnowledgeContextTest {
         var one=contexts.resolve(actor,start(Purpose.SKILL_ASSESSMENT,"A1"));assertThat(one.groups()).extracting(RuleAssessmentAttemptService.Need::role).containsExactly(GroupRole.MAIN,GroupRole.PREREQUISITE);
         assertThatThrownBy(()->contexts.resolve(actor,start(Purpose.SKILL_ASSESSMENT,"A2"))).hasMessageContaining("EXACT_LEARNING_COMPLETION_REQUIRED");
         when(evidence.completedOption(actor.organizationId(),actor.learnerId(),selected.selectionId(),1,step,"A2",1)).thenReturn(Optional.of(completed));
+        // Completion provenance differs; retry history is shared by Skill/knowledge/version.
         assertThat(contexts.resolve(actor,start(Purpose.SKILL_ASSESSMENT,"A2")).contextKey()).isNotEqualTo(one.contextKey());
         verify(evidence,never()).official(any(),any(),anyString(),anyString(),anyString());}
 }

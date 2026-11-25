@@ -6,13 +6,13 @@ Source checkpoint: HEAD `61d334c`, 2026-11-07. Confirmed contract and source imp
 
 ## Goal and position
 
-L&D owns BASELINE per organization+Role+actual member Level. Expert owns SKILL_ASSESSMENT per organization+Skill+knowledge, shared across equivalent modules. Directory resolves real catalog scopes and flags missing member-Level identities, filtering/counting before pagination. Confirmed sort is draft first, then unconfigured, then other states; draft-first ordering is confirmed as of 2026-11-08.
+L&D configures Baseline per organization and Role; selected Level determines Employee groups. Expert manages Skill Assessment within assigned Role/Skill authority. The common editor activates settings only for the Expert's currently assigned Roles. The same Skill uses separate settings in different Roles.
 
-One draft and one active pointer may coexist per exact scope. Configuration includes exact groups, count/requiredCorrectCount, timing/maxAttempts/wait, and Skill mandatory/veto rules. Baseline uses common count/pass settings by knowledge level with mandatory/veto false. No numeric mastery/SE/k/model promotion is needed by the rule flow. Missing approved bank/outcome coverage cannot be paper-filled from another group.
+Draft and active settings can coexist. Configure question/passing counts, seconds per question, attempts and wait. Skill Assessment adds mandatory quotas and prerequisite rules. Required questions must be Published and sufficient; missing bank blocks the affected operation.
 
 ## Ordered reads and writes
 
-Reauthorize trusted role/entitlement; resolve exact catalog scope/hash; serialize org+purpose policy writes; check/replay command; create/save exact draft; validate coverage/bounds before publish; insert immutable version, atomically replace scoped activation and consume draft. V62 numbering is per exact scope; baseline editor/complete/abandon preserve saved partial/history. Existing attempts retain original pins.
+Recheck membership, entitlement and assignment. Save draft keeps progress. Save & Activate saves then activates that revision; retry repeats only the failed stage. Conflicting changes require reload; existing versions and papers remain intact.
 
 ## API and UI
 

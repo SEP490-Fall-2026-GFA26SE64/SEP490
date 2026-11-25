@@ -26,6 +26,8 @@ public class PaymentApplicationEntity {
     private String state;
     @Column(name = "period_id")
     private UUID periodId;
+    @Column(name = "seat_addon_id")
+    private UUID seatAddonId;
     @Column(name = "applied_at")
     private Instant appliedAt;
     @Column(name = "failure_code")
@@ -41,6 +43,7 @@ public class PaymentApplicationEntity {
     public UUID getIntentId() { return intentId; }
     public String getState() { return state; }
     public UUID getPeriodId() { return periodId; }
+    public UUID getSeatAddonId() { return seatAddonId; }
     public Instant getAppliedAt() { return appliedAt; }
     public String getFailureCode() { return failureCode; }
     public Instant getUpdatedAt() { return updatedAt; }

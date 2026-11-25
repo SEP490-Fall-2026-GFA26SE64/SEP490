@@ -15,7 +15,7 @@ sequenceDiagram
   API->>Attempts: Trusted actor, retry key and expected context
   Attempts->>PG: Learner lock, replay and resumable-attempt check
   alt New admission
-    Attempts->>Catalog: Active scoped policy, readiness and exact completion
+    Attempts->>Catalog: Role policy, required bank and exact completion
     Catalog-->>Attempts: All frozen TARGET or MAIN plus prerequisite groups
     Attempts->>PG: Persist full paper, option order and server deadline
   end
@@ -31,4 +31,4 @@ sequenceDiagram
   Note over Attempts,PG: finishReason SUBMITTED or DEADLINE, unanswered equals zero
   PG-->>Worker: Durable finalized event
   Worker->>PG: Idempotent diagnostics or evidence, review and supplementation
-  Note over Worker,PG: Waiting for required B is pending work, not scoring failure
+  Note over Worker,PG: Skill history, used attempts and waits remain shared across Roles for the same Skill, level and version

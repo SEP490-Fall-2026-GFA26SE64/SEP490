@@ -9,7 +9,7 @@ import { readModuleHistory } from './baselineApi'
 import { usePathwayAssessmentStates } from './usePathwayAssessmentStates'
 vi.mock('./baselineApi', async original => ({ ...await original<typeof import('./baselineApi')>(), readModuleHistory: vi.fn() }))
 afterEach(cleanup)
-it('TC-WF05-F10: a fulfilled requirement does not transfer A1 assessment pass to completed A2', async () => {
+it('WF05 regression: a fulfilled requirement does not transfer A1 assessment pass to completed A2', async () => {
   const step: RuleStep = { id: 'STEP-A', requirement: { skillId: 'A', skillName: 'A', knowledgeLevel: 'FOUNDATION', skillVersion: 'v1', outcomeCodes: [], provision: 'MODULE_ONLY' }, kind: 'REQUIRED', state: 'FULFILLED', reason: 'OFFICIAL_EVIDENCE_ACCEPTED', fulfilledEvidenceId: 'EVIDENCE', certificate: null, learningLocked: false,
     options: ['A1', 'A2'].map(moduleId => ({ moduleId, moduleRevision: 1, contentVersion: 'v1', title: moduleId, startedAt: '2026-11-16T00:00:00Z', completedAt: '2026-11-16T00:01:00Z' })) }
   const pathway: RulePathway = { requestId: 'REQUEST', selectionId: 'SELECTION', selectionRevision: 1, roleId: 'R', roleName: 'R', levelId: 'L', levelName: 'L', generationStatus: 'SUCCEEDED', reviewStatus: 'APPROVED', reasonCode: null, revision: 1, contentHash: 'a'.repeat(64), archived: false, targetReleased: true, steps: [step], dependencies: [] }

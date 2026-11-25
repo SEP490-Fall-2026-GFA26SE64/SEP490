@@ -25,6 +25,8 @@ class WF05PolicyPersistenceTest {
     final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     @BeforeAll static void start(){
         String url=System.getenv("WF05_JDBC_URL");
+        if(Boolean.getBoolean("bm04.wf05") && url!=null && !url.isBlank())
+            throw new IllegalStateException("BM04 requires disposable Testcontainers; remove WF05_JDBC_URL before running this profile");
         if(url==null || url.isBlank()) {
             isolated=new org.testcontainers.containers.PostgreSQLContainer<>("postgres:17.6-alpine")
                     .withDatabaseName("wf05_p1").withUsername("wf05").withPassword("wf05-isolated");
@@ -64,7 +66,7 @@ class WF05PolicyPersistenceTest {
         new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),w.draft().id(),w.draft().revision(),scope.catalogHash(),config(scope.purpose())));}
     ScopedAssessmentPolicyService.Workspace publish(Scope scope,ScopedAssessmentPolicyService.Workspace w){return service.activate(scope.purpose(),scope.key(),
         new ScopedAssessmentPolicyService.Activate(UUID.randomUUID(),w.draft().id(),w.draft().revision(),w.activationRevision(),scope.catalogHash()));}
-    @Test @DisplayName("TC-WF05-F01 persistence: exact Role-Level policy saved, published and read back; other scope unchanged")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F01 - Activate the Role baseline policy")
     void baselinePublication(){var d=draft(baseline);var published=publish(baseline,save(baseline,d));var reopened=service.read(Purpose.BASELINE,baseline.key(),0,20);
         assertThat(reopened.active().id()).isEqualTo(published.active().id());assertThat(reopened.active().configuration()).isEqualTo(config(Purpose.BASELINE));
         assertThat(reopened.activationRevision()).isEqualTo(1);assertThat(service.read(Purpose.BASELINE,other.key(),0,20).active()).isNull();
@@ -81,7 +83,7 @@ class WF05PolicyPersistenceTest {
         assertThat(service.directory(Purpose.BASELINE,"","","","WORKLIST",0,20).rows()).extracting(row->row.scope().key()).doesNotContain(baseline.key());
         assertThat(service.read(Purpose.BASELINE,baseline.key(),0,20).active().id()).isEqualTo(active.active().id());
     }
-    @Test @DisplayName("TC-WF05-S01 persistence: incomplete and insufficient-bank drafts cannot replace immutable active version")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-S01 - Invalid publication preserves the active policy")
     void invalidPublicationRetainsPrevious(){var first=publish(baseline,save(baseline,draft(baseline)));
         var second=service.create(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),first.activationRevision()));
         var partial=service.saveEditor(Purpose.BASELINE,baseline.key(),new ScopedAssessmentPolicyService.SaveEditor(UUID.randomUUID(),second.draft().id(),second.draft().revision(),baseline.catalogHash(),
@@ -90,7 +92,7 @@ class WF05PolicyPersistenceTest {
         var ready=save(baseline,partial);when(bank.availableCount(any(),anyString(),anyString(),anyString())).thenReturn(0);
         assertThatThrownBy(()->publish(baseline,ready)).hasMessageContaining("REQUIRED_GROUP_BANK_EMPTY");
         var after=service.read(Purpose.BASELINE,baseline.key(),0,20);assertThat(after.active().id()).isEqualTo(first.active().id());assertThat(after.totalVersions()).isEqualTo(1);assertThat(after.draft()).isNotNull();}
-    @Test @DisplayName("TC-WF05-F14 persistence: two authorized editors share one policy and drafts sort before unconfigured scopes")
+    @Test @DisplayName("WF05 regression: persistence: two authorized editors share one policy and drafts sort before unconfigured scopes")
     void sharedSkillScope(){current=as(actor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);var d=draft(skill);
         current=as(otherActor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);assertThat(service.read(Purpose.SKILL_ASSESSMENT,skill.key(),0,20).draft().id()).isEqualTo(d.draft().id());
         var rows=service.directory(Purpose.SKILL_ASSESSMENT,"","","","",0,20).rows();assertThat(rows.getFirst().scope().key()).isEqualTo(skill.key());
@@ -98,7 +100,7 @@ class WF05PolicyPersistenceTest {
         when(catalog.discoverForEditor(eq(org),eq(Purpose.SKILL_ASSESSMENT),eq(actor))).thenReturn(new Discovery(List.of(),List.of()));
         assertThatThrownBy(()->service.read(Purpose.SKILL_ASSESSMENT,skill.key(),0,20)).hasMessageContaining("CONFIGURATION_SCOPE_NOT_FOUND");
         assertThatThrownBy(()->service.create(Purpose.SKILL_ASSESSMENT,skill.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),1))).hasMessageContaining("CONFIGURATION_SCOPE_NOT_FOUND");}
-    @Test @DisplayName("TC-WF05-F14 persistence: insufficient Skill bank prevents publication while preserving the draft")
+    @Test @DisplayName("WF05 regression: persistence: insufficient Skill bank prevents publication while preserving the draft")
     void insufficientSkillBank(){current=as(actor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);var ready=save(skill,draft(skill));
         when(bank.eligible(any(),anyString(),anyString(),anyString(),anyInt())).thenReturn(List.of());
         assertThatThrownBy(()->publish(skill,ready)).hasMessageContaining("INSUFFICIENT_APPROVED_GROUP_BANK");

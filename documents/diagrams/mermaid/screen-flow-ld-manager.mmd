@@ -20,7 +20,7 @@ flowchart LR
   L_RoleEdit("Edit Role")
   L_Publication("Role Publication")
   L_Baselines["Baseline List"]
-  L_Choose("Role and Member Level Scope")
+  L_Choose("Role Scope")
   L_Disable("Abandon Saved Baseline Draft")
   L_Config["Baseline Configuration"]
   L_Preview("Draft Completion and Bank Readiness")
@@ -31,6 +31,9 @@ flowchart LR
   L_Matrix["Team Matrix"]
   L_Outcomes["Learning Outcomes"]
   L_Profile["Profile"]
+  L_Certificates["Certificates"]
+  L_JobPositions -->|"Certificates"| L_Certificates
+  L_Certificates -->|"Sidebar: Job Positions"| L_JobPositions
 
   L_Login -->|"Continue"| L_JobPositions
   L_JobPositions -->|"Create / edit job position"| L_JobPositionForm
@@ -45,7 +48,7 @@ flowchart LR
   L_Roles -->|"Publication action"| L_Publication
   L_Publication -->|"Confirm / close"| L_Roles
   L_JobPositions --> L_Baselines
-  L_Baselines -->|"Choose Role and Level"| L_Choose
+  L_Baselines -->|"Choose Role"| L_Choose
   L_Choose -->|"Select"| L_Config
   L_Choose -->|"Cancel"| L_Baselines
   L_Baselines -->|"Manage"| L_Config
@@ -69,7 +72,7 @@ flowchart LR
 
   %% Sidebar actions are available from every WorkspaceLayout page; the diagram uses the default landing page as the hub.
   %% /ld-manager/baseline-config redirects to the baseline directory, not a separate configuration page.
-  %% Draft and blueprint/version query parameters select inline states of the same Job Position configuration page.
+  %% Draft and blueprint/version query parameters select inline states of the same Role configuration page.
   %% /ld-manager/dashboard and /ld-manager/learning-outcomes render the same Dashboard component.
   %% /ld-manager/users redirects to System Administrator user management; it does not grant L&D access.
   classDef default fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1px

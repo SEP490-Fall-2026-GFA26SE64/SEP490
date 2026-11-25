@@ -59,8 +59,12 @@ public final class PaymentConfirmationMailWorker {
             details.put("Order", Long.toString(job.code()));
             details.put("Subscription", job.plan());
             details.put("Amount received", String.format(java.util.Locale.US, "%,d VND", job.amount()));
-            details.put("Purchased period", job.months() + " calendar month(s)");
-            details.put("Employee seats", Integer.toString(job.seats()));
+            if ("SEAT_ADDON".equals(job.kind())) {
+                details.put("Additional Employee seats", Integer.toString(job.seats()));
+            } else {
+                details.put("Purchased period", job.months() + " calendar month(s)");
+                details.put("Employee seats", Integer.toString(job.seats()));
+            }
             details.put("Payment confirmed", DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm z", java.util.Locale.ENGLISH)
                     .withZone(ZoneId.of("Asia/Ho_Chi_Minh")).format(job.confirmed()));
             String route = "PURCHASE".equals(job.kind()) ? "/guest/payment-result"

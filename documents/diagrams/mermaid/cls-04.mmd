@@ -5,6 +5,8 @@ config: {"theme":"base","fontFamily":"Segoe UI, Arial, sans-serif","themeVariabl
 
 classDiagram
   direction TB
+  class SharedSkillAssessmentController
+  class SharedSkillAssessmentService
   class AssessmentPolicyController
   class ScopedAssessmentPolicyService
   class AssessmentPolicyCatalog
@@ -21,6 +23,10 @@ classDiagram
     select()
     score()
   }
+  SharedSkillAssessmentController --> SharedSkillAssessmentService
+  SharedSkillAssessmentService --> AssessmentPolicyCatalog
+  SharedSkillAssessmentService --> ScopedAssessmentPolicyJpaRepository
+  RuleAssessmentAttemptService --> SharedSkillAssessmentService
   AssessmentPolicyController --> ScopedAssessmentPolicyService
   ScopedAssessmentPolicyService --> AssessmentPolicyCatalog
   ScopedAssessmentPolicyService --> ScopedAssessmentPolicyJpaRepository

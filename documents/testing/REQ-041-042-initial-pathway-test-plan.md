@@ -236,3 +236,45 @@ Sources: [original policy storage](../technical/baseline/Adaptive%20Baseline%20D
 | MG08 / MG02/04–06, MA10 | Main-only composition without .tools fixture/override; independent own org inputs vs missing publication/model/semantic/readiness/content/assignment; worker retry with stored org; wrong tenant/revoked Expert | Supported sources selected only by trusted scope through existing ports/core; no LOCAL-DEMO/TechNova default or synthetic success. Missing owner inputs explicit unavailable; no fake release/review/approval/PASS. Positive real baseline→gap→explicit generation→assigned review→own approved view only if all actual prerequisites are declared/satisfied; learning remains excluded | Real PostgreSQL/Neo4j adapter/isolation/recovery and later isolated full system journey |
 
 Use independently reviewed OrgA/OrgB expected fixtures/policies/source versions; equal names/IDs or main seed output grant no authority. Report each prerequisite owner/version and missing reason; denial passing does not pass MG08's positive journey. Capture original policy provenance across stored attempt/result/evidence/profile hash/frozen input/request/revision, worker fences and own safe read, with no-state-change reads and retained history. Evidence format remains acceptance→file/method→command→actor/org/fixture/hash→expected/actual→date/environment/count/artifact. **Confirmed:** original evidence/tenant/safe-absence targets. **Proposed:** source wiring/provenance schema assertions. **Open:** real owners/C3 proof. **Rejected:** reopening closed review, overriding owner CRUD, fabricated readiness or learning grants.
+
+## Current feature verification ? 23 November 2026
+
+These cases follow the feature, not a demo scenario. Committed IDs are retained for traceability. Their recorded result is the single 26-case local run on 23 November (18 feature +1 backend workflow +7 state, 0 failures/errors/skips); regression and supporting checks are not added to that commitment count. Older sections retain historical evidence only.
+
+### Evidence and scope
+
+Java21/JUnit/Surefire and disposable PostgreSQL17.6 Testcontainers through V83. Catalog/identity/assignment and some external ports are controlled fixtures, not full deployed-system verification. E01 is a backend workflow, not browser E2E. RIASEC uses a deterministic HTTP model response, not live-model quality. No CI or NFR result is inferred. Report5 remains deferred.
+
+[Layer-specific execution notes](integration/REQ-001-002-041-042-assessment-pathway.md).
+
+### TC-WF05-F07 — Generate alternatives
+
+- **Preconditions/data:** Submitted baseline; unmet requirement; two eligible modules.
+- **Steps:** Preview; confirm; replay command; run generation worker.
+- **Expected:** Idempotent request; awaiting review; both alternatives retained; no invented initial prerequisites.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PathwayPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PathwayPersistenceTest.java), method `generate`.
+
+### TC-WF05-F08 — Expert reduction
+
+- **Preconditions/data:** Generated proposal; assigned and unassigned Experts.
+- **Steps:** Keep one module; remove all; try approval; try another Expert.
+- **Expected:** Revision reflects edits; required root remains NEEDS_EXPERT_ACTION; approval and unauthorized edit denied.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PathwayPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PathwayPersistenceTest.java), method `alternativeReduction`.
+
+### TC-WF05-F09 — Current approval
+
+- **Preconditions/data:** Assigned Expert; valid provision.
+- **Steps:** Try bypass; try stale revision; approve current revision.
+- **Expected:** Available provision cannot be bypassed; stale denied; one approval and APPROVED state.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PathwayPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PathwayPersistenceTest.java), method `currentApproval`.
+
+### TC-WF05-S04 — Generation retry
+
+- **Preconditions/data:** Confirmed request; injected publish failure for that request.
+- **Steps:** Run failing worker; inspect rollback; retry; run normal worker.
+- **Expected:** FAILED_RETRYABLE without projection; then SUCCEEDED; same frozen input and both run histories retained.
+- **Actual:** PASS; all assertions in the mapped method passed in the full run above.
+- **Automation:** [WF05PathwayPersistenceTest.java](../../backend/src/test/java/com/adaptlearngraph/services/WF05PathwayPersistenceTest.java), method `failedGenerationRetry`.

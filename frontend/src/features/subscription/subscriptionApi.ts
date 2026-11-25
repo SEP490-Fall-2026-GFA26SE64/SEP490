@@ -21,13 +21,21 @@ export interface Order {
   orderId: string; terms: Terms; paymentStatus: string; checkoutUrl: string | null
   providerOrderCode: number; confirmedAt: string | null
   createdAt: string; expiresAt: string; failureCode: string | null; observedPaidAmount: number | null
+  kind: string | null; addonSeats: number; addonAmountVnd: number; seatAddonKind: string | null
 }
 export interface Setup { organizationId: string | null; state: string; failureCode: string | null }
 export interface Status { order: Order | null; applicationState: string; workspace: Setup | null }
-export interface Period { periodId: string; startsAt: string; endsAt: string; terms: Terms }
+/** `terms` is the plan part; `addonSeats` are additional Employee seats paid for the same period. */
+export interface Period { periodId: string; startsAt: string; endsAt: string; terms: Terms; planId: string | null; addonSeats: number; totalSeats: number }
 export interface Summary {
   organizationId: string; organizationName: string; workspaceStatus: string; subscriptionStatus: string; current: Period | null
   scheduled: Period | null; usedSeats: number; allocatedSeats: number; admissionLimit: number; paymentHistory: Order[]
+  desiredAddonSeats: number; scheduledShortfall: number; renewalPlanId: string | null; seatChangeBlocked: boolean
+}
+export type SeatAddonTarget = 'CURRENT' | 'SCHEDULED'
+export interface SeatAddonQuote {
+  target: SeatAddonTarget; kind: string; periodId: string; planName: string; startsAt: string; endsAt: string
+  seats: number; perSeatVnd: number; amountVnd: number
 }
 export interface Workspace {
   organizationId: string; name: string; status: string; setupState: string
@@ -122,7 +130,9 @@ function parseOrder(value: unknown): Order {
   return { orderId: text(v.orderId), terms: parseTerms(v.terms), paymentStatus: text(v.paymentStatus), checkoutUrl,
     providerOrderCode: number(v.providerOrderCode), confirmedAt: nullable(v.confirmedAt, text),
     createdAt: text(v.createdAt), expiresAt: text(v.expiresAt), failureCode: nullable(v.failureCode, text),
-    observedPaidAmount: nullable(v.observedPaidAmount, number) }
+    observedPaidAmount: nullable(v.observedPaidAmount, number), kind: optional(v.kind, text),
+    addonSeats: optional(v.addonSeats, number) ?? 0, addonAmountVnd: optional(v.addonAmountVnd, number) ?? 0,
+    seatAddonKind: optional(v.seatAddonKind, text) }
 }
 function parseSetup(value: unknown): Setup {
   const v = object(value)
@@ -134,13 +144,25 @@ export function parseStatus(value: unknown): Status {
 }
 function parsePeriod(value: unknown): Period {
   const v = object(value)
-  return { periodId: text(v.periodId), startsAt: text(v.startsAt), endsAt: text(v.endsAt), terms: parseTerms(v.terms) }
+  const terms = parseTerms(v.terms)
+  const addonSeats = optional(v.addonSeats, number) ?? 0
+  return { periodId: text(v.periodId), startsAt: text(v.startsAt), endsAt: text(v.endsAt), terms,
+    planId: optional(v.planId, text), addonSeats, totalSeats: optional(v.totalSeats, number) ?? terms.employeeSeats + addonSeats }
 }
 function parseSummary(value: unknown): Summary {
   const v = object(value)
   return { organizationId: text(v.organizationId), organizationName: text(v.organizationName), workspaceStatus: text(v.workspaceStatus), subscriptionStatus: text(v.subscriptionStatus),
     current: nullable(v.current, parsePeriod), scheduled: nullable(v.scheduled, parsePeriod), usedSeats: number(v.usedSeats),
-    allocatedSeats: number(v.allocatedSeats), admissionLimit: number(v.admissionLimit), paymentHistory: list(v.paymentHistory, parseOrder) }
+    allocatedSeats: number(v.allocatedSeats), admissionLimit: number(v.admissionLimit), paymentHistory: list(v.paymentHistory, parseOrder),
+    desiredAddonSeats: optional(v.desiredAddonSeats, number) ?? 0, scheduledShortfall: optional(v.scheduledShortfall, number) ?? 0,
+    renewalPlanId: optional(v.renewalPlanId, text), seatChangeBlocked: optional(v.seatChangeBlocked, boolean) ?? false }
+}
+function parseSeatAddonQuote(value: unknown): SeatAddonQuote {
+  const v = object(value)
+  const target = text(v.target)
+  if (target !== 'CURRENT' && target !== 'SCHEDULED') throw new Error('Invalid seat target.')
+  return { target, kind: text(v.kind), periodId: text(v.periodId), planName: text(v.planName), startsAt: text(v.startsAt),
+    endsAt: text(v.endsAt), seats: number(v.seats), perSeatVnd: number(v.perSeatVnd), amountVnd: number(v.amountVnd) }
 }
 async function read(response: Response): Promise<unknown> {
   if (response.ok && (response.status === 204 || response.headers.get('content-length') === '0')) return null
@@ -204,8 +226,21 @@ export async function getStatus(base: string, orderId?: string): Promise<Status>
   return parseStatus(await request(orderId ? `/api/v1/${base.includes('/registration/') ? 'registration/' : ''}subscription/orders/${encodeURIComponent(orderId)}` :
     base.includes('/registration/') ? `${base}/current` : `${base}/current-order`))
 }
-export async function createOrder(base: string, plan: Plan, idempotencyKey: string, replacesOrderId?: string): Promise<Status> {
-  return parseStatus(await request(`${base}/orders`, 'POST', { planId: plan.planId, expectedVersionId: plan.versionId, idempotencyKey, replacesOrderId }))
+export async function createOrder(base: string, plan: Plan, idempotencyKey: string, replacesOrderId?: string, expectedAddonSeats?: number): Promise<Status> {
+  return parseStatus(await request(`${base}/orders`, 'POST', { planId: plan.planId, expectedVersionId: plan.versionId, idempotencyKey, replacesOrderId, expectedAddonSeats }))
+}
+export async function getSeatAddonQuote(organization: string, target: SeatAddonTarget, seats: number): Promise<SeatAddonQuote> {
+  const query = new URLSearchParams({ target, seats: String(seats) })
+  return parseSeatAddonQuote(await request(`/api/v1/organizations/${organization}/subscription/seat-addons/quote?${query}`))
+}
+export async function createSeatAddonOrder(organization: string, quote: SeatAddonQuote, idempotencyKey: string): Promise<Status> {
+  return parseStatus(await request(`/api/v1/organizations/${organization}/subscription/seat-addons/orders`, 'POST',
+    { idempotencyKey, seats: quote.seats, target: quote.target, expectedAmountVnd: quote.amountVnd }))
+}
+export async function changeAddonSeats(organization: string, desiredAddonSeats: number, expectedDesiredAddonSeats: number): Promise<number> {
+  const value = object(await request(`/api/v1/organizations/${organization}/subscription/seat-addons`, 'PUT',
+    { desiredAddonSeats, expectedDesiredAddonSeats }))
+  return number(value.desiredAddonSeats)
 }
 export async function reconcileOrder(guest: boolean, orderId: string): Promise<Status> {
   return parseStatus(await request(`/api/v1/${guest ? 'registration/' : ''}subscription/orders/${encodeURIComponent(orderId)}/reconcile`, 'POST'))

@@ -1,8 +1,10 @@
 # Capstone Project Report
 
-> **Baseline/pathway source reconciliation 2026-11-18 (`2c2468b5`):** [current contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) records implemented Role-derived policy editing, quota-based Skill papers/module retry contexts, Expert reduce/reject/approve, first-approval timing, same-transaction evidence recalculation and durable provision refresh. [Assessment](../documents/diagrams/postgresql-assessment.svg)/[pathway](../documents/diagrams/postgresql-pathway.svg)/[ordered flow](../documents/diagrams/baseline-pathway-flow.svg) are current selected source views through workspace V64. Older physical DB-xx captures/JSON/target diagrams remain dated references; their lack of later columns is not a current absence claim. Original test evidence and runtime acceptance limits are unchanged.
+> Current source separates Skill Assessment configuration by Role. The unchanged Expert editor activates common settings for currently assigned Roles; a shared Skill uses its learning Role's configuration. Attempt history, used attempts and waiting periods still share the same Employee + Skill + knowledge level + Skill version across Roles and modules. Configuration isolation is implemented; full attempt isolation by Role is not. Existing papers retain their original settings. Runtime behavior has not been verified.
 
-> **RIASEC reconciliation 2026-11-18 (`2c2468b5`):** [current architecture](../documents/ARCHITECTURE.md#riasec-personal-exploration)/[features](../documents/features/README.md#riasec-current-implementation--2026-11-18) describe the local opt-in flow. Workspace V72 owns drafts/results/durable AI jobs; Neo4j owns integer 0–40 position profiles. [Storage](../documents/diagrams/riasec-storage.svg)/[runtime](../documents/diagrams/riasec-flow.svg) images are current source definitions, not new live captures. Other inventories/target diagrams keep their original scope. Latest history UI has build/static evidence only; no runtime acceptance is added.
+> **Learning-flow text alignment, 2026-11-23:** Current text covers Role Baseline, shared Skill settings/history, certificate authoring/review/publication and evidence, Overview/RIASEC and later source schema additions. Relevant diagrams and schema views are aligned with current source while retaining existing presentation and connectors; no applied database or runtime result is claimed.
+
+> **RIASEC reconciliation 2026-11-18 (`2c2468b5`):** [current architecture](../documents/ARCHITECTURE.md#riasec-personal-exploration)/[features](../documents/features/README.md#riasec-current-implementation--2026-11-18) describe the local opt-in flow. Workspace V74 owns drafts/results/durable AI jobs; Neo4j owns integer 0–40 position profiles. [Storage](../documents/diagrams/riasec-storage.svg)/[runtime](../documents/diagrams/riasec-flow.svg) images are current source definitions, not new live captures. Other inventories/target diagrams keep their original scope. Latest history UI has build/static evidence only; no runtime acceptance is added.
 
 ## Report 4 - Software Design Document
 
@@ -115,7 +117,7 @@ Current local source includes private content/progress, rule assessments/exact e
 | 03 | Organization and Workspace Service | Handles organization onboarding, workspace provisioning, departments, members and organization administration. |
 | 04 | Subscription and Payment Service | Handles subscription plans, purchases, renewals, payment verification, seat allocation and entitlement enforcement. |
 | 05 | Competency Catalog Service | Manages job position, target-role, level, competency, skill and prerequisite relationships. |
-| 06 | Learning Content and Approval Service | Handles learning modules, materials, teaching mappings and offering submission/approval. |
+| 06 | Learning Content and Approval Service | Module/content and certificate definition submission, L&D review and recoverable publication; learner evidence review is separate. |
 | 07 | Assessment and Mastery Service | Handles baseline/module assessments, question selection, scoring, RIASEC and mastery estimation. |
 | 08 | Guidance and Adaptive Pathways Service | Coordinates role suggestions, gap-based pathway generation, Expert review and pathway updates. |
 | 09 | Development Reporting and ROI Service | Provides competency and learning-outcome reports, training-cost/benefit recording and ROI analysis. |
@@ -140,7 +142,7 @@ The eight Service names describe logical functional groups, not independently de
 | Role/skill/prerequisite/teaching relationships | Neo4j | Stable string IDs and versioned snapshot context; tenant/review eligibility must be checked by trusted adapters. |
 | Question content, answer keys, attempts and results | Assessment / PostgreSQL | Immutable pins and safe DTO projections; correct answers are not ordinary Employee fields. |
 | Diagnostics and official profile | PostgreSQL rule results + skill_knowledge_evidence/review | Baseline group diagnostics are not ACHIEVED; only qualified learning+assessment or assigned certificate approval creates exact official evidence. No numeric gap/IRT fallback. |
-| Module metadata, ordering and approval | Existing module authoring/content / PostgreSQL | Responsible Expert and L&D review immutable revisions; retryable graph projection releases exact single-Skill/knowledge/outcome content. Graph contentUri alone grants no access. |
+| Module metadata, ordering and approval | Existing module authoring/content / PostgreSQL | Responsible Expert and L&D review immutable revisions; retryable graph projection releases exact single-Skill/knowledge/version content. Graph contentUri alone grants no access. |
 | Content objects | Existing private asset adapter/MinIO | Store object locator/version in relational metadata; authorize before object access. |
 | AI explanations | Riasec worker/client and platform.riasec_result | Persist model/prompt and immutable recommendation profile/comparison snapshots; no mastery writes. |
 | Pathway versions and Expert overrides | RequirementPathway services / PostgreSQL | Initial exact approval, automatic successor revisions/approval basis, source dedup, bypass and carried parallel provenance retain history; runtime branches remain unverified here. |
@@ -158,7 +160,7 @@ PostgreSQL transactions cannot atomically commit arbitrary Neo4j, MinIO or exter
 | YouTube | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using YouTube oEmbed and IFrame Player API. External service version is not pinned. Existing local evidence is not a new live-provider or production acceptance run. |
 | Vimeo | Approved external lesson-video verification and embedded playback | Approved video URL/ID, fixed-endpoint oEmbed request and browser-player requests/events; no learner assessment answers or mastery profile are intentionally sent. | Implemented verifier/player source using Vimeo oEmbed and Player API. External service version is not pinned; live Vimeo acceptance remains limited by the recorded provider restriction. |
 | MinIO, self-hosted | Internal private learning content/file storage | Authorized object bytes, organization-scoped object locator and metadata; no authentication password or raw payment secret. | Implemented [private asset adapter](../backend/src/main/java/com/adaptlearngraph/repository/PrivateLearningAssets.java); Java SDK **8.5.17** in the backend POM. Content APIs are local-profile-gated; the production Compose does not supply a MinIO service. Source presence does not certify production delivery. |
-| Local LLM, self-hosted | RIASEC Job Position exploration | Six raw 0–40 Employee scores plus active same-org position IDs/metadata/profiles only; no competency/Role/Skill/history input. | Internal Ollama `/api/chat`, `qwen3:4b-instruct-2507-q4_K_M`; supplied IDs/ranks/English explanations validated and original scores copied server-side. |
+| Local LLM, self-hosted | RIASEC Job Position exploration | Candidate IDs and six interest scores plus the Employee six scores; no account identity, position text or learning history for ranking. | Internal Ollama with the configured qwen3 model; results retain prompt riasec-match-v7-profile-only and original comparison scores. |
 | GitHub | Source control and target CI/CD | Repository commits, pull-request metadata and proposed build/test artifacts; no runtime learner data is required. | Repository platform confirmed; Actions workflows and deployed registry are not evidenced. Secret material must never be committed or emitted in logs. |
 | O*NET / ESCO / SFIA / UK Government Digital and Data source materials | Offline ontology provenance/review | Dataset retrieval and citation, not runtime learner submissions. | O*NET 31.0 and SFIA 9 are documented dataset sources. Local ontology mappings are proposals, not official equivalence or license certification. |
 | Authentication provider | Authentication | No external identity-provider exchange required by current code; credentials are processed by the application. | Built-in Spring Security/session implementation, not a verified Auth0/Firebase/Keycloak integration. |
@@ -197,7 +199,7 @@ For JavaScript dependencies, “manifest” is the declared range and “locked�
 | Offline data tools | Python | Interpreter version not specified | Dataset validation/import/generation scripts, not a separate Python business backend. Python launcher was unavailable in this documentation session; Node was used for read-only metadata validation. |
 | Mobile | Native mobile framework | Not applicable | Web application only; responsive browser acceptance is proposed in SRS. |
 | Private storage | MinIO | Java SDK **8.5.17**; server deployment is environment-specific | Private asset adapter exists; production storage setup and acceptance remain separate. |
-| Local RIASEC inference | Ollama | `qwen3:4b-instruct-2507-q4_K_M`; prompt `riasec-match-v6-interests-only` | Source/local sample; demo 2 CPU/5 GiB. General quality/member performance unmeasured. |
+| Local RIASEC inference | Ollama | `qwen3:4b-instruct-2507-q4_K_M`; prompt `riasec-match-v7-profile-only` | Source/local sample; demo 2 CPU/5 GiB. General quality/member performance unmeasured. |
 
 Evidence: [frontend manifest](../frontend/package.json), [lockfile](../frontend/package-lock.json), [backend POM](../backend/pom.xml), [frontend Dockerfile](../frontend/Dockerfile), [backend Dockerfile](../backend/Dockerfile), [development Compose](../compose.dev.yml) and [production Compose](../compose.prod.yml).
 
@@ -245,7 +247,7 @@ Separate **AI used by the product** from **AI used during development**.
 | AI assistant using Copilot SDK in VS Code | This Review 2 requirements/design documentation, local source inspection and documentation consistency checks | Used for this task. The underlying model identifier/version is not recorded as verifiable repository metadata and is therefore **not declared as a guessed model**. | Team review/sign-off remains pending. Local source/schema was not sent to a public diagram renderer or external research service during this task. |
 | Repository agent/skill customizations | Intended specification, design, implementation, testing and review workflows | Customization files exist, but they do not prove which tool/model actually produced each historical change. A per-stage usage log is not evidenced. | Proposed log records tool, model/version, date, stage, output, human reviewer and verification. Existence of a skill is not proof of execution. |
 | Specific historical coding/testing/review models | Code generation, test generation and review | **Not evidenced**; team must supply the real tool/model list if required for final submission. No claim of Claude/GPT/Gemini use is inferred from filenames or optional instructions. | Do not fabricate model names, test outcomes or human approvals. |
-| Locally hosted language model | Local RIASEC Job Position exploration | Internal Ollama; `qwen3:4b-instruct-2507-q4_K_M`, prompt `riasec-match-v6-interests-only`. | Six raw Employee scores and active same-org position profiles only; validated IDs/ranks/English explanations, server-copied evidence, explicit failure/retry. No Role/Skill/history input. |
+| Locally hosted language model | Local RIASEC Job Position exploration | Internal Ollama; `qwen3:4b-instruct-2507-q4_K_M`, prompt `riasec-match-v7-profile-only`. | Six raw Employee scores and active same-org position profiles only; validated IDs/ranks/English explanations, server-copied evidence, explicit failure/retry. No Role/Skill/history input. |
 | AI-assisted ontology/content preparation | Dataset design/content scaffolding | Catalog contains authored review materials; precise historical model provenance is not evidenced. All current v0.11 definitions remain `NEEDS_EXPERT_REVIEW`. | Do not label generated scaffolds as expert-approved courses or use missing reviewer identities/timestamps. |
 
 Before final institutional submission, the team should complete an AI usage register with factual model/version and stage information. This report supplies every required declaration field while visibly retaining “not evidenced” where no factual value is available.
@@ -326,7 +328,7 @@ The existing [postgresql-schema-catalog.json](../documents/diagrams/postgresql-s
 
 | File / directory | Purpose and execution boundary |
 | --- | --- |
-| [db/migration](../backend/src/main/resources/db/migration) | Canonical source lineage now reaches V62. Workspace and Module histories have different preserved prefixes; use the exact installed lineage, not the historical ledger below, to select a directory. |
+| [db/migration](../backend/src/main/resources/db/migration) | Source migration lineage reaches V83. Use the installed canonical/workspace/module lineage; source files are not evidence that a running database has applied them. |
 | [application.yml](../backend/src/main/resources/application.yml) | Flyway location, JDBC/Neo4j/session settings and Hibernate `ddl-auto: validate`. |
 | [compose.dev.yml](../compose.dev.yml), [compose.prod.yml](../compose.prod.yml) | Run schema migration before API startup; distinct profile behavior. |
 | [Generate-PostgresqlDiagrams.ps1](../documents/diagrams/Generate-PostgresqlDiagrams.ps1) | Existing diagram-generation tooling; inspect its environment/lineage before use. |
@@ -399,6 +401,21 @@ Source HEAD `61d334c`; no claim of applied migrations or new checksum validation
 
 Composite tenant FKs, immutable triggers, native row/advisory locks and application revision/hash checks are defined in source. They are not fresh runtime/security evidence. Refer to the [current field/key/API mapping](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#4-postgresql-schema-mapping) for exact owners/types/nullability; the diagrams show selected source-defined columns and do not replace complete migration definitions.
 
+#### Current source supplement for demo steps 8-15
+
+The retained physical dictionary is historical. Later source migrations add the following responsibilities; this text update does not apply migrations or replace that capture.
+
+| Source versions | Learning-flow responsibility |
+| --- | --- |
+| V63-V64 | Skill-version question matching without Outcome Codes, mandatory counts, pathway timing and notification links. |
+| V71-V73, V75 | Independent learning context, learner ownership, shared Skill attempt history/predecessors and repaired attempt guards. |
+| V74 | RIASEC drafts, results, durable AI state and retained suggestions. |
+| V77 | Compatible assessment history used when checking lower knowledge levels. |
+| V79 | Certificate authoring records, submission batches, exact-revision review acknowledgement and event history. |
+| V80-V82 | Certificate/content/request notification targets and optional approval notes with required rejection reasons. |
+
+V78 request-related tables remain historical source foundations; their presence does not imply a current question-request screen. Assessment/pathway figures now include the relevant current source additions and retain their selected scope; historical DB captures remain unchanged.
+
 ### 2.2 Logical database design
 
 LERD-01/02/04 now show selected current source-defined policy, paper/evidence and requirement-pathway tables with actual composite identities. LERD-03 remains the cross-store logical catalog view; LERD-05/06 retain authoring aggregates with current completion and source-bank mappings. These are documentation views, not live DB exports or exhaustive dictionaries. The historical dictionary in section 2.3 retains its dated scope.
@@ -439,7 +456,7 @@ LERD-01/02/04 now show selected current source-defined policy, paper/evidence an
 - For the approved baseline target (ST-14), Employee explicitly submits and the pinned L&D pass rule determines PASSED / FAILED. Validity is separate from attainment: valid failed results can initialize a Needs supplementation profile; invalid results cannot initialize a valid profile. ACT-05's Results valid decision is not a pass/fail gate. Current runtime deadline/IRT behavior below is an implementation inventory, not this target contract.
 - AssessmentAnswer uses the composite presented-item reference (attempt_id, position). SkillResult belongs to that same attempt; invalid results and missing data are not Met or a fabricated numerical zero.
 - Profile status is Met only when all applicable mandatory requirements are met; otherwise valid unmet results are Needs supplementation. No valid profile is created from an invalid baseline. Profile revisions preserve original results and distinguish diagnostic baseline sources from accepted learning/certificate evidence.
-- StepOption binds exactly one provision: module_id + module_version OR certificate_id + certificate_version. Module alternatives must match the exact skill/knowledge/outcomes and approved content. Certificate submissions retain private evidence references; pending/rejected decisions do not award achievement.
+- StepOption binds exactly one provision: module_id + module_version OR certificate_id + certificate_version. Module alternatives must match the exact Skill, knowledge level, Skill version and approved content. Certificate submissions retain private evidence references; pending/rejected decisions do not award achievement.
 - PathwayReview records a real Expert decision on an exact revision/hash. Automatic recalculation uses change_origin and approval_basis_revision_id; it must not fabricate a new Expert approval. A newly discovered missing-provision gap needs a scoped bypass decision, not repeat approval of every adaptation.
 - Bypass requires absence of both eligible module and certificate provision, a genuine Expert/reason/time and preserved source step. It remains Needs supplementation. Any non-bypassed blocking requirement keeps Role and Level locked, including pending generation/review and processing errors. Completion or bypass-only releases target change; a running attempt still blocks replacement. Historical selection/profile/pathway data remains queryable.
 - No-learning-required closes the request without creating an artificial learning task. Other generation errors remain bound to the same target for repair/retry. New target selection returns to its matching Active baseline config; old baseline results are not silently treated as a new assessment.
@@ -5856,6 +5873,20 @@ This class diagram and SEQ-05 trace the current implementation, not proposed wor
 
 ![SEQ-06 - Required offering lifecycle and retrieval (planned)](../documents/diagrams/mermaid/seq-06.png)
 
+#### Certificate definitions and learner evidence
+
+Expert imports definitions through file check, duplicate/conflict resolution, review and confirmed submission. Identical definitions are skipped; changing a pending definition creates a new revision. L&D acknowledges the exact revision and approves or rejects it. Batch review supports up to 100 definitions.
+
+Approval moves a definition through PUBLISHING to PUBLISHED, or a visible PUBLISH_FAILED state needing correction/retry. PostgreSQL retains authoring and review history; Neo4j receives the published definition and active Skill assignment. A replacement applies to pathways created after publication. Existing pathways and evidence submissions keep their original definition.
+
+Employee evidence is one HTTPS link or a private PDF/image. The assigned Expert approves or rejects the exact submission. Approval reason is optional; rejection requires a reason. Only approved evidence creates official achievement and triggers pathway updates.
+
+[Mermaid source: SEQ-13](../documents/diagrams/mermaid/seq-13.mmd)
+
+![SEQ-13 - Certificate definition review and publication](../documents/diagrams/mermaid/seq-13.png)
+
+SEQ-13 complements module approval: the Expert submits certificate definitions, L&D reviews the exact revision and publication runs with bounded retries. New pathways use the published definition; existing pathways retain their pinned version. This is separate from Employee certificate evidence review in ACT-05.
+
 #### 3.3.4 Catalog and content lifecycle state machines
 
 [Mermaid source: ST-09](../documents/diagrams/mermaid/st-09.mmd)
@@ -5904,12 +5935,16 @@ This class diagram and SEQ-05 trace the current implementation, not proposed wor
 
 | Class / contract | Current responsibility |
 | --- | --- |
-| ScopedAssessmentPolicyService / Neo4jAssessmentPolicyCatalog | Trusted L&D Role–Level or Expert Skill–knowledge discovery, one draft/active, exact catalog groups/bank readiness, publication, abandoned history and scope-local version labels. |
-| BaselinePolicyEditor | Partial three-step editor; uniform count/pass per knowledge level; baseline mandatory/veto false; complete-and-activate atomically validates current submitted snapshot. |
+| ScopedAssessmentPolicyService / Neo4jAssessmentPolicyCatalog | L&D configures Baseline per Role; selected Level determines Employee requirements. Assigned-Role discovery limits scoped Skill configuration. Drafts, active versions and history remain separate. |
+| BaselinePolicyEditor | Three-step question/timing/review editor. Save & Activate saves the draft and activates the saved revision with retry of the failed stage. Missing required questions block activation/start. |
 | CurrentRoleKnowledgeCatalog / RuleAssessmentContextJpaRepository | Current selection, target groups or exact accepted completed option, compatible official exemptions, full prerequisite closure for Skill paper and context fingerprint revalidation. |
 | RuleAssessmentAttemptService / RuleAssessment | Sample/freeze once, safe read/resume, expected-revision answers, submit/deadline finalization and group scoring. Every retake is full; no prior group carry-over or IRT pins. |
 | RuleAssessmentOutcomeService / RuleAssessmentDecision | Consume finalized groups idempotently; separate main fail/veto/waiting supplement/ready, preserve NEED_REVIEW without revocation, and award exact qualifying official evidence. |
 | WorkspaceBaselineConfiguration | Local-only trusted workspace wiring and deadline/outcome scheduler. Retained legacy factories without @Bean are not active rule fallbacks. |
+
+SharedSkillAssessmentService keeps each Expert's common draft and configuration history separately. Activation binds those question, timing and retake settings to each currently assigned Role. New papers resolve settings through the trusted learning Role. Two Roles containing the same Skill use separate policy pointers. Existing configurations and frozen papers are preserved; a Role needs an explicit activation before using the new configuration scope.
+
+Baseline checks each target Skill through its required level, including certificate-mode Skills. Skill Assessment includes lower main-Skill levels and cross-Skill prerequisites, read at Advanced. Attempts, allowance, waits and history are shared by Employee, Skill, knowledge level and Skill version across modules; module provenance and its learning-completion check remain separate.
 
 #### 3.4.2 Draft, preview and activation sequence
 
@@ -5919,13 +5954,13 @@ This class diagram and SEQ-05 trace the current implementation, not proposed wor
 
 **Diagram notes (SEQ-07):**
 
-- ScopedAssessmentPolicyService owns Role-Level/Skill-knowledge draft publication with exact bank/catalog checks, immutable versions and a scoped activation pointer. Saving a draft is distinct from publication.
+- Baseline is configured per Role. Skill Assessment uses shared settings and retains a concrete policy for each new paper. The unchanged common editor activates configuration only for currently assigned Roles. Each Role has separate settings even when Skills overlap. Existing sequence participants and connectors are retained; labels now describe Role-specific activation.
 
 #### 3.4.3 Start, answer and finalize sequence
 
 [Mermaid source: SEQ-08](../documents/diagrams/mermaid/seq-08.mmd)
 
-![SEQ-08 - Pinned Employee baseline](../documents/diagrams/mermaid/seq-08.png)
+![SEQ-08 - Frozen Baseline and Role-configured Skill paper](../documents/diagrams/mermaid/seq-08.png)
 
 SEQ-08 now shows the full frozen group paper, revision-checked answers, submit/server deadline finalization and separate durable effects. Protected answer keys are absent from Employee projections; pending supplementation is not another scoring failure.
 
@@ -5978,15 +6013,15 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 
 **Diagram notes (CLS-05):**
 
-- Current composition uses ports/adapters around RoleBaselineFlow. CLS-05 retains planned names and numeric/profile assumptions; current requirement services are listed below. Figure is only partly aligned and was not changed.
+- CLS-05 retains the pathway and learner certificate-evidence owners. CLS-04 adds shared Role configuration; SEQ-13 and the extended pathway schema show certificate-definition review and publication separately.
 
 | Class / responsibility | Current specification |
 | --- | --- |
 | RoleBaselineFlow / CurrentRoleSelectionStore | Real session/tenant Role+member Level, expected selection and replay; targetBound checked before archive/write under learner lock, then selection/audit/outbox atomically. |
 | RequirementPathwayAdmissionService | Read-only preview, exact selection/input-hash confirmation, immutable requirement snapshot and pending request; explicit retry preserves total history and binding. |
 | RequirementPathwayGenerationService | Bounded claim/lease/fencing generation with exact needs/options and no numeric optimizer or initial prerequisite expansion. |
-| RequirementPathwayReviewService / ValidationService | Actual assigned queue/check/save/approval/bypass/refresh; exact revision/hash and live provider checks. Eligible-unstarted option exclusion is a confirmed-policy mismatch. |
-| RequirementPathwayAccess | Accepted exact option/Skill-version/knowledge/outcome/content and established dependency gates. Authentic started pins may continue; content alone never awards achievement. |
+| RequirementPathwayReviewService / ValidationService | Assigned review, Check, autosave acknowledgement, approval/rejection and fresh missing-provision-only bypass. Expert may exclude unstarted alternatives; started/completed options remain protected. |
+| RequirementPathwayAccess | Accepted exact option/Skill-version/knowledge/content and established dependency gates. Authentic started pins may continue; content alone never awards achievement. |
 | RequirementPathwayRecalculationService / PlanningService / RefreshService | Actual failed-group supplementation, compatible evidence/provision refresh, event dedup and immutable successor revisions with real approval basis. B discovered earlier still needs actual B learning/evidence after an A retake passes B. |
 | CertificateSubmissionService / CertificateReviewService | Exact immutable definition/submission, one private evidence form, actual assigned approve/reject/reason, once-only official evidence/outbox and private downloads. |
 | RuleKnowledgeProfileService | Separate diagnostics, official exact evidence and NEED_REVIEW; no numeric gap subtraction. |
@@ -6006,9 +6041,9 @@ Legacy `assessment_assignment` has ACTIVE/REVOKED/CLOSED and legacy blueprint wo
 
 [Mermaid source: SEQ-10](../documents/diagrams/mermaid/seq-10.mmd)
 
-![SEQ-10 - Planned intelligence pipeline with human confirmation](../documents/diagrams/mermaid/seq-10.png)
+![SEQ-10 - Rule evidence and pathway adaptation](../documents/diagrams/mermaid/seq-10.png)
 
-SEQ-10 is a retained planned intelligence pipeline: current rule adaptation does not invoke LLM/knowledge tracing, and certificate/failed-group supplementation/parallel provenance is absent from the figure. It is not a current runtime sequence. Logical actor-to-DB arrows stand for authorized use cases, not direct browser database access. Module learning/progress uses the reusable API/use-case/port pattern and private retrieval sequence in section 3.3; no separate unauthorized content path is implied.
+SEQ-10 depicts rule-based evidence and pathway adaptation, not an LLM learning pipeline. Current processing first records actual failed prerequisite needs, including when MAIN fails. It preserves discovered learning dependencies and requires a new qualifying assessment after missing learning/evidence is completed. The first message now identifies required B work before main/veto checks; existing branch connectors are retained.
 
 #### 3.5.4 Selection, profile and pathway lifecycle state machines
 
@@ -6018,7 +6053,7 @@ SEQ-10 is a retained planned intelligence pipeline: current rule adaptation does
 
 **Diagram notes (ST-17):**
 
-- The updated figure includes targetBound before archive, official-evidence exemptions and non-gating carried bypass work. Missing-suitable-provision-only bypass is now confirmed; server enforcement remains for code confirmation.
+- Role and Level remain bound during unfinished required work. Server bypass checks require genuinely missing suitable provision. Parallel carried work does not gate the next target.
 
 [Mermaid source: ST-18](../documents/diagrams/mermaid/st-18.mmd)
 
@@ -6034,7 +6069,7 @@ SEQ-10 is a retained planned intelligence pipeline: current rule adaptation does
 
 **Diagram notes (ST-19):**
 
-- The updated figure separates request generation, exact Expert review and requirement-step state. Valid successors retain approval basis; parallel supplements cannot gate a new target. Earlier source allowed broader unresolved REQUIRED bypass; confirmed policy permits only missing suitable provision. Code confirmation and corresponding figure-annotation alignment remain pending.
+- Request generation, Expert review and requirement completion are separate. Review includes rejection and repair. Valid updates retain the initial approval and timing; bypass requires a fresh absence of suitable provision. The figure now states the fresh missing-provision guard and separately notes retained REJECTED review status.
 
 A pathway successor may be produced automatically after valid updated skill evidence; preserve genuine initial approval lineage. Implementation and physical state mapping remain outside this diagram-only revision.
 
@@ -6101,6 +6136,8 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | `TransactionalMailSender`, `TransactionalEmail` | Shared sender/frame and plaintext alternative reused for transactional messages. |
 | `audit_event` | Append-only actual action/outcome trace; read contracts must apply platform/workspace privacy scope. |
 
+Assigned Experts receive Important in-app pathway and certificate-evidence requests with review links. L&D receives in-app Module/Question/Certificate definition submission notices. Staff requests are not mailed. LearningMailWorker sends semantic pathway/certificate updates only to active non-staff Employees; SMTP failures retry without undoing decisions. Inbox delivery has not been established by source inspection.
+
 #### 3.7.2 Notification and failure recovery sequence
 
 [Mermaid source: SEQ-12](../documents/diagrams/mermaid/seq-12.mmd)
@@ -6148,7 +6185,7 @@ Actual financial record approval/locking/retention is not specified by Version 2
 | Processing job / email delivery work | ST-21 | Handler-dependent durable state machine. |
 | Independent skill learning | ST-23 | Target business states corresponding to ACT-07; not persisted enums or a completed assessment integration. |
 | Plan version, provider observation, attempt response/result, audit/outbox event, command receipt | Immutable/versioned facts rather than independent status lifecycle | Created from an authorized event, retained for history/replay; correction creates a new version/event where the contract allows it. No artificial state machine is added. |
-| RIASEC result/AI | Draft plus QUEUED/PROCESSING/SUCCEEDED/FAILED and nullable deleted_at; V72 | One draft per owner, stable submit receipt, newest active current,7-day inactive/recovery and inactive-only permanent delete. Only current FAILED AI retries; successful empty output is final. Finance remains separate. |
+| RIASEC result/AI | Draft plus QUEUED/PROCESSING/SUCCEEDED/FAILED and nullable deleted_at; V74 | One draft per owner, stable submit receipt, newest active current,7-day inactive/recovery and inactive-only permanent delete. Only current FAILED AI retries; successful empty output is final. Finance remains separate. |
 
 ### 3.8 API and Error Contract Cross-Reference
 
@@ -6172,7 +6209,7 @@ This is a route-family inventory, not a replacement for controller DTO contracts
 | Attempt `/{attemptId}/answers`, `/submit`, `/result`, plus `/history` | Answers, finalization and own results | Idempotency/revision/ownership; answer-key/internal-parameter filtering. |
 | Legacy organization target-role/skill/prerequisite routes | Retained older authoring model | Explicit property gates; not default current-ontology write support. |
 | `/api/v1/system/status`, `/actuator/health` | Technical state | Health is not full readiness/acceptance and exposes no detailed secrets. |
-| Existing module/content/certificate; planned AI/ROI/broad audit APIs | Distinguish current rule/content owners from remaining product scope | Do not assign fictitious implemented endpoints; design/approve contracts before code. |
+| Existing module/content/certificate and RIASEC APIs; remaining ROI/broad audit scope | Dedicated certificate definition import/review/publication differs from learner evidence review. RIASEC has its own persisted assessment/AI routes. | Keep runtime evidence separate from source implementation. |
 
 **Error behavior:** authentication/authorization, invalid input, stale revisions, idempotency conflicts, dependency unavailability and domain readiness are distinct. Preserve actual domain error codes/HTTP mappings per controller. Existing registration uses structured failures and field-specific feedback; baseline/selection also exposes operation-specific code contracts. Detailed error text is safe and actionable, without stack traces or secrets. See SRS application messages for current versus proposed wording.
 

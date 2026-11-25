@@ -114,7 +114,7 @@ function parseAttempt(value: unknown): BaselineAttempt {
 }
 
 export interface SkillAssessmentScope { skillId: string; knowledgeLevel: 'FOUNDATION' | 'INTERMEDIATE' | 'ADVANCED'; skillVersion: string }
-export type SkillScopeLocator = SkillAssessmentScope | { moduleId: string; moduleRevision: number }
+export type SkillScopeLocator = SkillAssessmentScope | { moduleId: string; moduleRevision: number; learningContext?: 'ROLE' | 'INDEPENDENT' }
 export interface SkillAttemptSummary {
   id: string; target: AssessmentTarget & { roleName: string }; state: AttemptState; startedAt: string; deadlineAt: string
   finishedAt: string | null; finishReason: string | null; previousAttemptId: string | null
@@ -136,7 +136,7 @@ function skillSummary(value: unknown): SkillAttemptSummary {
 export function readSkillScope(locator: SkillScopeLocator, signal?: AbortSignal, page = 0): Promise<SkillScopeHistory> {
   const params = new URLSearchParams({ page: String(page), size: '20' })
   if ('skillId' in locator) { params.set('skillId', locator.skillId); params.set('knowledgeLevel', locator.knowledgeLevel); params.set('skillVersion', locator.skillVersion) }
-  else { params.set('moduleId', locator.moduleId); params.set('moduleRevision', String(locator.moduleRevision)) }
+  else { params.set('moduleId', locator.moduleId); params.set('moduleRevision', String(locator.moduleRevision)); if (locator.learningContext) params.set('learningContext', locator.learningContext) }
   return request('/skill-scope/history?' + params, value => {
     const r = object(value), scope = object(r.scope), knowledgeLevel = text(scope.knowledgeLevel)
     if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(knowledgeLevel)) throw Error()

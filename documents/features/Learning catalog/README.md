@@ -40,33 +40,39 @@ L&D Learning Content groups Modules and Approvals under one sidebar entry and st
 
 Each module teaches exactly one skill at one knowledge level (FOUNDATION / INTERMEDIATE / ADVANCED), with explicit outcomes and normal content/version/publication/access metadata. Multiple modules are interchangeable only when Expert validates equivalent minimum outcomes. Same skill identity alone is insufficient. Preserve responsible-Expert ownership, immutable content review, ordered lessons, private assets and independent progress.
 
-Expert defines prerequisites by exact skill/knowledge/outcomes and dependency meaning. These drive real learning gates and assessment groups; display order is not a prerequisite. Reject self-dependencies, duplicates, cycles and stale/foreign references; missing mappings remain unresolved. Numeric minimum mastery, teachingFocus and module difficulty do not determine readiness or alternatives in this flow. MAIN/PREREQUISITE is a role within an assessment, not a fixed module/question type.
+Experts define Skill prerequisites with ownership and cycle checks. Direct Skill-to-Skill prerequisites need no level selection. Current readers assess prerequisite Skills at Advanced and include lower main-Skill levels. Actual missing results establish learning dependencies; display order alone does not. Older level-specific fields remain compatibility data.
 
 ### Provision modes and certificate definitions
 
 | Organization + skill + knowledge level | Allowed provision | Missing provision |
 | --- | --- | --- |
-| MODULE_ONLY | All approved, active, accessible modules meeting equivalent outcomes form alternatives. One completed module plus successful assessment and required completion conditions satisfies the requirement. | No eligible module gives NEEDS_EXPERT_ACTION. |
+| MODULE_ONLY | All approved, active, accessible modules matching the exact Skill, knowledge level and Skill version form alternatives. One completed module plus successful assessment and required completion conditions satisfies the requirement. | No eligible module gives NEEDS_EXPERT_ACTION. |
 | CERTIFICATE_ONLY | One assigned accepted certificate definition. Employee submits evidence; authorized Expert approval establishes exact official achievement. | No definition gives NEEDS_EXPERT_ACTION. |
 
 Modes are mutually exclusive. Provisioned CERTIFICATE_ONLY has exactly one assigned certificate definition, not a list of alternatives or a module fallback. Absence remains unmet until provisioned or explicitly bypassed for the learner. Explicit mode changes preserve evidence, progress and history; treatment of active work/validity remains open for define C2.
 
 ### Expert Add certificate
 
-The applicable existing Expert catalog surface must support an **Add certificate** tab listing skills with knowledge levels. **Add** on the intended skill–level opens entry of the required certificate, including a mandatory reference URL. The definition identifies the accepted certificate and exact skill/knowledge/outcome scope; organization, author and version are trusted server values. Reject missing URL, invalid/foreign references and conflicting MODULE_ONLY/existing certificate provision.
+On the dedicated Certificates page, Expert chooses a Skill and certificate-only knowledge level, enters the definition and mandatory HTTPS reference URL, reviews it and submits it to L&D. The definition identifies an exact Skill/knowledge/version; saving it does not approve learner evidence. Invalid ownership, mode conflicts and missing URLs block submission.
 
-The catalog definition/reference URL differs from Employee evidence. Saving it awards no achievement and approves no learner submission. Current source places certificate catalog/review tabs in the Expert module workspace. CertificateCatalogRepository uses REQUIRES_CERTIFICATE, locks/rechecks the owned Skill and exact version, validates HTTPS and retains definition history. Learner approval is separately assigned and persisted in PostgreSQL; full runtime acceptance remains unverified. Reuse current list/actions/dialogs/forms and navigation patterns.
+Certificate definitions and Employee evidence have separate workflows. Expert and L&D use dedicated Certificates pages. Expert creates/imports definitions, reviews selected content and submits it. L&D reviews the exact revision and approves or rejects it. Approval starts publication; only successful publication makes it available for new pathways. Failed publication needs correction/retry. Creating or publishing a definition awards no learner achievement.
+
+### Certificate import, review and replacement
+
+Import follows Upload, Check & resolve, then Review & submit. Identical definitions are skipped. Changed content on the same Skill and level requires choosing the existing or imported version. Include/Exclude controls submission. Replacing a pending definition creates a new revision for L&D. Expert confirms review of all selected definitions.
+
+L&D acknowledges the exact submitted revision before approval. Batch review supports up to 100 definitions. Rejection requires a reason; approval may leave it empty. Publication can be pending or need retry. An approved replacement applies to pathways created after publication; existing pathways and submissions keep their original definition. Replacement may create a new definition identity rather than increase a version on one node.
 
 ### Authoring, publication and later provision
 
-1. Reauthorize organization/Expert ownership or assignment; read current skill/knowledge/outcome/provision revision.
+1. Reauthorize organization/Expert ownership or assignment; read current Skill/knowledge/version and provision revision.
 2. Author module/content for MODULE_ONLY or the assigned certificate definition for CERTIFICATE_ONLY; validate scope/mode. Retain module submit/L&D publication safeguards.
 3. Keep immutable versions and actual author/reviewer history. Output eligible provision and missing/blocked reasons; clients cannot supply approval or learner achievement.
 4. Later provision triggers scoped [recalculation/backfill](../Adaptive%20engine/README.md#recalculation-bypass-and-later-provision), preserving started/completed work. Never automatically approve evidence or convert bypass to ACHIEVED.
 
 [Employee evidence](../Employee%20experience/README.md#certificate-evidence-and-review) supports link OR PDF OR picture with private authorized access. [Expert decisions](../Pathway%20review/README.md#certificate-and-missing-provision-decisions) handle approval/rejection and scoped bypass.
 
-Keep current Module workspace, shared components, tokens, fonts, sizes, spacing, density and responsive EN/VI. Detailed UI/data binding needs user review in define C2. Current mapping uses Skill version + exact knowledge + outcome coverage, exclusive provision and immutable definition/submission snapshots. One HTTPS link or PDF/PNG/JPEG up to 10 MiB (subject to tighter platform limits) is supported in source. General expiry/revocation is excluded; arbitrary active mode transitions and full runtime acceptance are not established.
+Keep current Module workspace, shared components, tokens, fonts, sizes, spacing, density and responsive EN/VI. Detailed UI/data binding needs user review in define C2. Current mapping uses Skill version and exact knowledge, exclusive provision and immutable definition/submission snapshots. One HTTPS link or PDF/PNG/JPEG up to 10 MiB (subject to tighter platform limits) is supported in source. General expiry/revocation is excluded; arbitrary active mode transitions and full runtime acceptance are not established.
 
 <a id="fr-04-06"></a>
 
@@ -111,7 +117,7 @@ Keep current Module workspace, shared components, tokens, fonts, sizes, spacing,
 | 3. Description | The Expert shall manage skill–knowledge prerequisite requirements, outcomes and dependency semantics for learning and assessment groups. |
 | 4. Actor | Expert |
 | 5. Preconditions | Trusted authorized Expert; same-organization exact requirement references and current revision. |
-| 6. Main Flow | Define dependent/prerequisite skill/knowledge/outcomes; validate acyclic references; save traceable version. |
+| 6. Main Flow | Define dependent and prerequisite Skills; validate acyclic references; save traceable version. |
 | 7. Alternative / Exception Flows | Reject self/cyclic/duplicate/stale references; missing mapping/provision remains unresolved, not a numeric default/pass. |
 | 8. Postconditions | Dependencies are available to consumers without rewriting official evidence/attempts. |
 | 9. Acceptance Criteria | Only actual dependencies gate learning; numeric mastery and screen order do not define prerequisites. |
@@ -124,9 +130,9 @@ Keep current Module workspace, shared components, tokens, fonts, sizes, spacing,
 | --- | --- |
 | 1. Requirement ID | FR-05.05 |
 | 2. Requirement Name | Manage learning modules |
-| 3. Description | The Expert shall author/import modules and content for exactly one skill at one knowledge level/outcome scope, and manage exclusive module/certificate provision as defined above. |
+| 3. Description | The Expert shall author/import modules and content for exactly one skill at one knowledge level and Skill version, and manage exclusive module/certificate provision as defined above. |
 | 4. Actor | Expert |
-| 5. Preconditions | Trusted responsible Expert; valid skill/knowledge/outcome mapping, provision mode and revision. |
+| 5. Preconditions | Trusted responsible Expert; valid Skill/knowledge/version mapping, provision mode and revision. |
 | 6. Main Flow | Choose scope; author/import content or Add certificate with mandatory reference URL; follow applicable review/publication. |
 | 7. Alternative / Exception Flows | Incomplete drafts do not supply requirements; wrong scope/mode conflict or missing provision remains explicit. |
 | 8. Postconditions | Versioned provision preserves prior evidence/progress; authoring awards no achievement. |
@@ -254,7 +260,7 @@ FR-05.05 now requires exactly one Skill for each authored/imported Module; a Ski
 
 The Module editor presents Skill selection before learning content so the Expert chooses the teaching target before composing lessons.
 
-The current Module payload/projection adds knowledgeLevel, skillVersion and outcomeCodes to the single-Skill rule; new documents omit price under V61. Exact completion is recorded in a sidecar and checked by rule exam admission. Optional same-Skill study remains constrained by accepted module access, rather than granting every same-Skill provider. Certificate flow source exists separately; the older dataset audit/results above retain their historical scope.
+Current Module matching uses knowledge level and Skill version for the taught Skill; Outcome Codes are no longer selection rules. Content completion is recorded separately from official assessment/certificate achievement. Optional study still requires authorized access.
 
 ### Module directory and staff preview layout
 

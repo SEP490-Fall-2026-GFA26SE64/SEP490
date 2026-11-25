@@ -40,6 +40,7 @@ class DemoResetApiIntegrationTest {
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.6-alpine");
     private static final Neo4jContainer<?> NEO4J = new Neo4jContainer<>("neo4j:5.26-community").withAdminPassword("demo-reset-test");
     private static final UUID TECHNOVA = DevelopmentWorkspaceAccountBootstrap.TECHNOVA_ORG_ID;
+    private static final UUID SEEDED = com.adaptlearngraph.config.DemoOrganizationsSeedBootstrap.DETAILED_ORG_ID;
     static { POSTGRES.start(); NEO4J.start(); }
 
     @LocalServerPort private int port;
@@ -79,6 +80,11 @@ class DemoResetApiIntegrationTest {
         account(seedAdmin, TECHNOVA, "seed-admin");
         account(platformAdmin, null, "platform-admin");
         jdbc.update("INSERT INTO platform.account_role(account_id, role_code) VALUES (?, 'PLATFORM_ADMINISTRATOR')", platformAdmin);
+        jdbc.update("INSERT INTO platform.organization(organization_id, code, name) VALUES (?, 'SEED-LOTUS', 'Lotus Digital Solutions') ON CONFLICT DO NOTHING", SEEDED);
+        jdbc.update("""
+                INSERT INTO platform.department_reference(department_id, organization_id, name, active)
+                SELECT ?, ?, 'Engineering', true WHERE NOT EXISTS (SELECT 1 FROM platform.department_reference WHERE organization_id = ?)
+                """, UUID.randomUUID(), SEEDED, SEEDED);
 
         jdbc.update("INSERT INTO platform.organization(organization_id, code, name) VALUES (?, ?, 'Sao Mai Software JSC')", demoOrg, "SAOMAI-" + demoOrg.toString().substring(0, 8).toUpperCase());
         account(demoAdmin, demoOrg, "demo-admin");
@@ -113,6 +119,7 @@ class DemoResetApiIntegrationTest {
 
         try (var session = neo4j.session()) {
             session.run("CREATE (:Competency {organizationId:$keep, code:'KEEP'})", java.util.Map.of("keep", TECHNOVA.toString())).consume();
+            session.run("MERGE (:Department {organizationId:$keep, code:'SEEDED'})", java.util.Map.of("keep", SEEDED.toString())).consume();
             session.run("CREATE (:Competency {organizationId:$org, code:'COMP-JAVA-CORE'})-[:REQUIRES]->(:MicroSkill {organizationId:$org, code:'MS-JAVA-OOP'})",
                     java.util.Map.of("org", demoOrg.toString())).consume();
         }
@@ -138,10 +145,12 @@ class DemoResetApiIntegrationTest {
         assertThat(count("SELECT count(*) FROM platform.audit_event WHERE actor_id = ?", demoAdmin)).isZero();
         assertThat(count("SELECT count(*) FROM platform.account WHERE account_id IN (?, ?)", demoAdmin, pendingAccount)).isZero();
         assertThat(count("SELECT count(*) FROM platform.organization WHERE organization_id = ?", TECHNOVA)).isOne();
+        assertThat(count("SELECT count(*) FROM platform.organization WHERE organization_id = ?", SEEDED)).isOne();
+        assertThat(count("SELECT count(*) FROM platform.department_reference WHERE organization_id = ?", SEEDED)).isOne();
         assertThat(count("SELECT count(*) FROM platform.account WHERE account_id IN (?, ?)", seedAdmin, platformAdmin)).isEqualTo(2);
         try (var session = neo4j.session()) {
             assertThat(session.run("MATCH (n) RETURN collect(n.organizationId) AS orgs").single().get("orgs").asList())
-                    .containsOnly(TECHNOVA.toString());
+                    .containsOnly(TECHNOVA.toString(), SEEDED.toString());
         }
 
         var again = json.readTree(reset().body());

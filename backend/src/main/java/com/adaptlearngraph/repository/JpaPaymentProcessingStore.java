@@ -171,6 +171,10 @@ public final class JpaPaymentProcessingStore implements PaymentProcessingStore {
                 if (organization == null) organization = provision(order, now);
                 UUID subscription = data.subscriptions().subscriptionOf(organization)
                         .orElseThrow(() -> new org.springframework.dao.EmptyResultDataAccessException(1));
+                if ("SEAT_ADDON".equals(order.kind())) {
+                    applySeatAddon(order, subscription, now);
+                    return;
+                }
                 if (data.memberships().usedSeats(organization) > order.terms().employeeSeats()) {
                     data.intents().waitForCapacity(order.intentId(), now);
                     application(order, "WAITING_CAPACITY", null, null, "CAPACITY_REMEDIATION_REQUIRED", now);
@@ -190,6 +194,8 @@ public final class JpaPaymentProcessingStore implements PaymentProcessingStore {
                         anniversary, now));
                 application(order, "APPLIED", period, now, null, now);
                 data.intents().applied(order.intentId(), orderId, now);
+                // A renewal keeps exactly the add-on seats it paid for; a different plan therefore resets them to zero.
+                if ("RENEWAL".equals(order.kind())) data.subscriptions().updateDesiredAddonSeats(subscription, order.addonSeats());
                 data.subscriptions().bumpRevision(subscription);
                 data.orders().clearFailure(orderId);
                 data.workspaces().markReadyIfCatalogCopied(organization, now);
@@ -228,8 +234,30 @@ public final class JpaPaymentProcessingStore implements PaymentProcessingStore {
         return organization;
     }
 
+    /** Adds the paid seats to their target period; an increase of the current period is also kept for later renewals. */
+    private void applySeatAddon(PaymentOrder order, UUID subscription, Instant now) {
+        data.subscriptions().lockOfOrganization(order.organizationId());
+        var target = data.subscriptions().paidPeriod(subscription, order.targetPeriodId()).orElse(null);
+        if (target == null || !target.endsAt().isAfter(now)) {
+            exception(order, "SEAT_ADDON_PERIOD_ENDED", now);
+            return;
+        }
+        UUID addon = UUID.randomUUID();
+        int seats = order.terms().employeeSeats();
+        data.subscriptions().insertSeatAddon(addon, subscription, target.periodId(), order.orderId(), seats, now);
+        data.applications().upsert(UUID.randomUUID(), order.orderId(), order.intentId(), "APPLIED", null, addon, now, null, now);
+        data.intents().applied(order.intentId(), order.orderId(), now);
+        if ("INCREASE".equals(order.seatAddonKind())) {
+            data.subscriptions().updateDesiredAddonSeats(subscription, data.subscriptions().desiredAddonSeats(subscription).orElse(0) + seats);
+        }
+        data.subscriptions().bumpRevision(subscription);
+        data.orders().clearFailure(order.orderId());
+        audit(order.ownerAccountId(), "DEV_BYPASSED".equals(order.paymentStatus())
+                ? "SUBSCRIPTION_SEAT_ADDON_DEVELOPMENT_APPLIED" : "SUBSCRIPTION_SEAT_ADDON_APPLIED", order.orderId(), "SUCCEEDED", now);
+    }
+
     private void application(PaymentOrder order, String state, UUID period, Instant applied, String failure, Instant now) {
-        data.applications().upsert(UUID.randomUUID(), order.orderId(), order.intentId(), state, period, applied, failure, now);
+        data.applications().upsert(UUID.randomUUID(), order.orderId(), order.intentId(), state, period, null, applied, failure, now);
     }
 
     private PaymentOrder lock(PaymentOrder order) {

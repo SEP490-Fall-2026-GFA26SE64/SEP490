@@ -7,19 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../shared/component
 import { Button } from '../../shared/components/ui/Button'
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from '../../shared/components/ui/Dialog'
 import { createOrder, getPlans, type Plan, type Status } from './subscriptionApi'
+import { renewalAddon, type RenewalAddon } from './seatAddon'
 import { Failure, Loading } from "./SubscriptionFeedback";
 import { useCopy } from "./SubscriptionFeedback.helpers";
 
-export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disabled = false }:
-  { base: string; principal: string; replacesOrderId?: string; onCreated?: (status: Status) => void; disabled?: boolean }) {
+export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disabled = false, addon }:
+  { base: string; principal: string; replacesOrderId?: string; onCreated?: (status: Status) => void; disabled?: boolean; addon?: RenewalAddon }) {
   const c = useCopy()
   const navigate = useNavigate()
   const plans = useQuery({ queryKey: ['subscription-plans', principal, base], queryFn: () => getPlans(`${base}/plans`), staleTime: 0 })
   const [selection, setSelection] = useState<{ plan: Plan; key: string } | null>(null)
+  const selectedAddon = selection ? renewalAddon(selection.plan, addon) : null
   const create = useMutation({
     mutationFn: async () => {
       if (!selection) throw new Error('Select a plan first.')
-      const result = await createOrder(base, selection.plan, selection.key, replacesOrderId)
+      const result = await createOrder(base, selection.plan, selection.key, replacesOrderId, selectedAddon?.seats)
       if (!result.order) throw new Error(c('The service did not return a payment order. Refresh the status before retrying.', 'Dịch vụ chưa trả về đơn thanh toán. Kiểm tra trạng thái trước khi thử lại.'))
       return result
     },
@@ -62,6 +64,12 @@ export function PlanCatalog({ base, principal, replacesOrderId, onCreated, disab
             <p className="text-subsection font-semibold">{selection.plan.terms.name}</p>
             <p className="text-body-sm text-muted-foreground">{selection.plan.terms.durationMonths} {c(selection.plan.terms.durationMonths === 1 ? 'month' : 'months', 'tháng')} · {selection.plan.terms.employeeSeats} {c('employee accounts', 'tài khoản nhân viên')}</p>
             <Heading level={3} size="section" className="border-t border-border pt-3">{selection.plan.terms.priceVnd.toLocaleString('vi-VN')} VND</Heading>
+            {selectedAddon && selectedAddon.seats > 0 && <div className="space-y-1 border-t border-border pt-3 text-body-sm" data-testid="renewal-addon">
+              <p className="flex justify-between gap-3"><span>+{selectedAddon.seats} {c('additional seat(s)', 'chỗ mua thêm')}</span><span className="tabular-nums">{selectedAddon.amountVnd.toLocaleString('vi-VN')} VND</span></p>
+              <p className="flex justify-between gap-3 font-semibold"><span>{c('Renewal total', 'Tổng gia hạn')}</span><span className="tabular-nums">{(selection.plan.terms.priceVnd + selectedAddon.amountVnd).toLocaleString('vi-VN')} VND</span></p>
+            </div>}
+            {addon && addon.seats > 0 && selectedAddon?.seats === 0 && <p className="border-t border-border pt-3 text-caption text-muted-foreground">
+              {c(`Changing plan resets your ${addon.seats} additional seat(s) to 0.`, `Đổi gói sẽ đặt lại ${addon.seats} chỗ mua thêm về 0.`)}</p>}
           </div>
           <p>{c('If payment is required, the payOS checkout expires in 30 minutes. Follow its bank transfer instructions.', 'Nếu cần thanh toán, đơn payOS hết hạn sau 30 phút. Làm theo hướng dẫn chuyển khoản tại trang thanh toán.')}</p>
           {create.isError && <Failure error={create.error} retry={() => { setSelection(null); create.reset(); void plans.refetch() }} />}

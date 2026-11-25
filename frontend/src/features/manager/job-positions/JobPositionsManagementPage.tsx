@@ -46,7 +46,6 @@ import {
   fetchJobPositions,
 } from '../../../shared/api/jobPositionApi'
 import { workspaceFetch } from '../../../shared/api/workspaceFetch'
-import { resolveJobPositionForRole } from '../data/ldManagerMockData'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 
@@ -507,14 +506,20 @@ export function JobPositionsManagementPage() {
     const existingCodes = new Set(
       jobPositions.map((p) => p.code.toLowerCase().trim())
     )
-    let nextNum = 1251
-    while (
-      existingCodes.has(`15-${nextNum.toString().padStart(4, '0')}.00`) ||
-      existingCodes.has(`15-${nextNum}.00`)
-    ) {
-      nextNum++
+    const candidateCodes = ['SEC-ENG', 'AI-ENG', 'CLOUD-ENG', 'ARCH-ENG', 'DATA-ENG', 'QA-ENG']
+    let defaultCode = candidateCodes.find((c) => !existingCodes.has(c.toLowerCase()))
+    if (!defaultCode) {
+      let suffix = 2
+      while (
+        existingCodes.has(`sec-eng-${suffix}`) ||
+        existingCodes.has(`sec-eng-0${suffix}`) ||
+        existingCodes.has(`sec-eng-${String(suffix).padStart(2, '0')}`)
+      ) {
+        suffix++
+      }
+      defaultCode = `SEC-ENG-${String(suffix).padStart(2, '0')}`
     }
-    setOccCode(`15-${nextNum.toString().padStart(4, '0')}.00`)
+    setOccCode(defaultCode)
     setOccJobZone(4)
     setOccDescription('')
     setOccInterests({})
@@ -625,7 +630,7 @@ export function JobPositionsManagementPage() {
     } finally { setSavingJob(false) }
   }
 
-  // Check whether a job position has any non-unpublished target roles assigned to it
+  // Check whether a job position has any active / published target roles assigned to it
   const getActiveTargetRolesForJobPosition = React.useCallback(
     async (occ: JobPositionRecord): Promise<string[]> => {
       const normalizeOccCode = (c?: string) =>
@@ -649,7 +654,12 @@ export function JobPositionsManagementPage() {
       } catch {}
 
       const currentActiveComp = getActiveCompany()
-      const storeRoles = currentActiveComp?.targetRoles || []
+      const compId = currentActiveComp?.id
+      const isSameOrg =
+        compId &&
+        (compId === orgId ||
+          (orgId === 'e0000000-0000-0000-0000-000000000001' && compId === 'comp-technova'))
+      const storeRoles = isSameOrg ? currentActiveComp?.targetRoles || [] : []
 
       let backendRoles: Record<string, unknown>[] = []
       try {
@@ -670,7 +680,7 @@ export function JobPositionsManagementPage() {
       const seenLineageCodes = new Set<string>()
 
       for (const r of backendRoles) {
-        const rawStatus = String(r.status || '').toLowerCase()
+        const rawStatus = String(r.status || '').toLowerCase().trim()
         if (rawStatus === 'superseded') continue
 
         const rCode = String(r.code || '').trim().toUpperCase()
@@ -685,26 +695,33 @@ export function JobPositionsManagementPage() {
             (tr.code?.toUpperCase() === rCode && String(tr.version || '1.0') === rVersion),
         )
 
+        const rawFamilyCode =
+          typeof r.familyCode === 'string' &&
+          r.familyCode &&
+          r.familyCode !== 'SOFTWARE_ENGINEERING'
+            ? r.familyCode.trim()
+            : undefined
+
         const explicitJobPositionCode =
           typeof r.jobPositionCode === 'string' && r.jobPositionCode
             ? r.jobPositionCode
-            : meta?.jobPositionCode || storeRole?.jobPositionCode
+            : meta?.jobPositionCode || storeRole?.jobPositionCode || rawFamilyCode
 
-        const resolvedOcc = resolveJobPositionForRole(
-          {
-            code: rCode,
-            title: rTitle,
-            familyCode: String(r.familyCode || ''),
-            jobPositionCode: explicitJobPositionCode,
-          },
-          orgId,
-        )
-        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+        if (!explicitJobPositionCode) {
+          // A role without explicit job position assignment is not assigned to this job position
+          continue
+        }
+
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode)
 
         if (effectiveOccCode === targetOccCode) {
           seenLineageCodes.add(`${rCode}::${rVersion}`)
-          const isUnpublished = rawStatus === 'unpublished'
-          if (!isUnpublished) {
+          const isPublishedOrActive =
+            rawStatus === 'published' ||
+            rawStatus === 'active' ||
+            meta?.status === 'published' ||
+            storeRole?.status === 'published'
+          if (isPublishedOrActive) {
             activeRoleTitles.push(`${rTitle} (${rCode})`)
           }
         }
@@ -723,22 +740,19 @@ export function JobPositionsManagementPage() {
         }
 
         const meta = metaMap[srCode] || metaMap[sr.id]
-        const explicitJobPositionCode = sr.jobPositionCode || meta?.jobPositionCode
-        const resolvedOcc = resolveJobPositionForRole(
-          {
-            code: srCode,
-            title: sr.title,
-            familyCode: sr.familyCode,
-            jobPositionCode: explicitJobPositionCode,
-          },
-          orgId,
-        )
-        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode || resolvedOcc.code)
+        const explicitJobPositionCode =
+          sr.jobPositionCode || meta?.jobPositionCode || sr.familyCode
+        if (!explicitJobPositionCode) {
+          continue
+        }
+
+        const effectiveOccCode = normalizeOccCode(explicitJobPositionCode)
 
         if (effectiveOccCode === targetOccCode) {
-          const isUnpublished =
-            meta?.status === 'unpublished' || sr.status === 'unpublished'
-          if (!isUnpublished) {
+          const isPublishedOrActive =
+            sr.status === 'published' ||
+            meta?.status === 'published'
+          if (isPublishedOrActive) {
             activeRoleTitles.push(`${sr.title} (${srCode})`)
           }
         }
@@ -754,7 +768,7 @@ export function JobPositionsManagementPage() {
     if (activeRoles.length > 0) {
       toast({
         title: 'Cannot Deactivate Job Position',
-        description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+        description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it: ${activeRoles.slice(0, 3).join(', ')}${activeRoles.length > 3 ? ` (+${activeRoles.length - 3} more)` : ''}. Please unpublish all associated target roles before deactivating.`,
         variant: 'destructive',
       })
       return
@@ -770,7 +784,7 @@ export function JobPositionsManagementPage() {
       if (activeRoles.length > 0) {
         toast({
           title: 'Cannot Deactivate Job Position',
-          description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it. Please unpublish all associated target roles before deactivating.`,
+          description: `${occ.name} (${occ.code}) still has active target role(s) assigned to it: ${activeRoles.slice(0, 3).join(', ')}${activeRoles.length > 3 ? ` (+${activeRoles.length - 3} more)` : ''}. Please unpublish all associated target roles before deactivating.`,
           variant: 'destructive',
         })
         return
@@ -782,9 +796,15 @@ export function JobPositionsManagementPage() {
         code: occ.code,
         name: occ.name,
         status: nextStatus === 'active' ? 'ACTIVE' : 'INACTIVE',
+      }).catch((err) => {
+        console.warn('Backend updateJobPosition warning:', err)
       })
       setAndSaveJobPositions((prev) =>
-        prev.map((o) => (o.id === occ.id ? { ...o, status: nextStatus } : o))
+        prev.map((o) =>
+          o.id === occ.id || (o.code && occ.code && o.code.toUpperCase() === occ.code.toUpperCase())
+            ? { ...o, status: nextStatus }
+            : o
+        )
       )
       toast({
         title: nextStatus === 'active' ? 'Job Position Activated' : 'Job Position Deactivated',
@@ -1349,7 +1369,7 @@ export function JobPositionsManagementPage() {
                     Standard Position Code <span className="text-destructive">*</span>
                   </label>
                   <Input
-                    placeholder="e.g. 15-1252.00"
+                    placeholder="e.g. SEC-ENG"
                     value={occCode}
                     onChange={(e) => setOccCode(e.target.value)}
                     required

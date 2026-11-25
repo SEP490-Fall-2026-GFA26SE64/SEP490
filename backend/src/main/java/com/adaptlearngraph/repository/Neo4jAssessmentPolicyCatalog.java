@@ -47,27 +47,35 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     @Override public List<Scope> scopes(UUID organization,Purpose purpose){return discover(organization,purpose).scopes();}
     @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
         if(purpose==Purpose.BASELINE)return managedBaseline(organization,expert);
-        var owners=graph.read(5,tx->{
-            var rows=tx.records("""
-                    MATCH (r:TargetRole {organizationId:$org,assignedExpertId:$expert})-[h:HAS_LEVEL]->(l:Level)
-                    MATCH (l)-[q:REQUIRES_SKILL|HAS_COMPETENCY]->(target)
-                    OPTIONAL MATCH (target)-[membership:HAS_SKILL]->(member:MicroSkill {organizationId:$org})
-                    WHERE membership.status='ACTIVE' AND (membership.organizationId IS NULL OR membership.organizationId=$org)
-                    WITH r,h,l,q,coalesce(member,target) AS s
-                    WHERE NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
-                      AND (h.organizationId IS NULL OR h.organizationId=$org)
-                      AND (l.organizationId IS NULL OR l.organizationId=$org)
-                      AND q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
-                      AND s:MicroSkill AND s.organizationId=$org AND s.status='ACTIVE'
-                    RETURN DISTINCT s.id AS id ORDER BY id LIMIT 10001
-                    """,Map.of("org",organization.toString(),"expert",expert.toString()));
-            if(rows.size()>10000)throw capacity();
-            return rows.stream().map(row->row.get("id").asString()).collect(java.util.stream.Collectors.toSet());
-        });
+        var owners=roleSkills(organization,expert).values().stream().flatMap(Set::stream).collect(java.util.stream.Collectors.toSet());
+        if(owners.size()>10000)throw capacity();
         if(owners.isEmpty())return new Discovery(List.of(),List.of());
         var discovery=discover(organization,purpose);
         return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
                 discovery.issues().stream().filter(issue->owners.contains(issue.ownerId())).toList());
+    }
+    @Override public Map<String,Set<String>> roleSkills(UUID organization,UUID expert) {
+        var params=new HashMap<String,Object>();params.put("org",organization.toString());params.put("expert",expert==null?null:expert.toString());
+        return graph.read(5,tx->{
+            var rows=tx.records("""
+                    MATCH (r:TargetRole {organizationId:$org})-[h:HAS_LEVEL]->(l:Level)
+                    MATCH (l)-[q:REQUIRES_SKILL|HAS_COMPETENCY]->(target)
+                    OPTIONAL MATCH (target)-[membership:HAS_SKILL]->(member:MicroSkill {organizationId:$org})
+                    WHERE membership.status='ACTIVE' AND (membership.organizationId IS NULL OR membership.organizationId=$org)
+                    WITH r,h,l,q,coalesce(member,target) AS s
+                    WHERE ($expert IS NULL OR r.assignedExpertId=$expert) AND NOT r.status IN ['ARCHIVED','DELETED','INACTIVE','SUPERSEDED'] AND h.status='ACTIVE' AND l.status='ACTIVE'
+                      AND (h.organizationId IS NULL OR h.organizationId=$org)
+                      AND (l.organizationId IS NULL OR l.organizationId=$org)
+                      AND q.status='ACTIVE' AND (q.organizationId IS NULL OR q.organizationId=$org)
+                      AND s:MicroSkill AND s.organizationId=$org AND s.status='ACTIVE'
+                    RETURN DISTINCT r.id AS role,s.id AS id ORDER BY role,id LIMIT 50001
+                    """,params);
+            if(rows.size()>50000)throw capacity();
+            var result=new TreeMap<String,Set<String>>();
+            for(var row:rows)result.computeIfAbsent(row.get("role").asString(),id->new TreeSet<>()).add(row.get("id").asString());
+            var frozen=new TreeMap<String,Set<String>>();result.forEach((role,skills)->frozen.put(role,Set.copyOf(skills)));
+            return Collections.unmodifiableMap(frozen);
+        });
     }
     private record Snapshot(List<org.neo4j.driver.Record> skills,List<org.neo4j.driver.Record> missing,
                             List<org.neo4j.driver.Record> roles,List<org.neo4j.driver.Record> prerequisites) {}

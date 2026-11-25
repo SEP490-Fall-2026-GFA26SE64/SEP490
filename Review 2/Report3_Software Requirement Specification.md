@@ -1,6 +1,6 @@
 # Capstone Project Report
 
-> **Baseline/pathway source reconciliation 2026-11-18 (`2c2468b5`):** [current contract](../documents/technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) records implemented Role-derived policy editing, quota-based Skill papers/module retry contexts, Expert reduce/reject/approve, first-approval timing, same-transaction evidence recalculation and durable provision refresh. [Assessment](../documents/diagrams/postgresql-assessment.svg)/[pathway](../documents/diagrams/postgresql-pathway.svg)/[ordered flow](../documents/diagrams/baseline-pathway-flow.svg) are current selected source views through workspace V64. Older physical DB-xx captures/JSON/target diagrams remain dated references; their lack of later columns is not a current absence claim. Original test evidence and runtime acceptance limits are unchanged.
+> **Learning-flow text alignment, 2026-11-23:** Current text covers Role Baseline, shared Skill Assessment/history, certificate catalog publication and evidence review, Overview and RIASEC. Relevant activity, sequence, state and schema views are aligned with current source; prior colors, shapes and connectors are preserved. Runtime acceptance is not claimed.
 
 > **RIASEC reconciliation 2026-11-18 (`2c2468b5`):** optional local Employee flow now persists 60 EN/VI responses/raw 0–40 scores, autosave/takeover, current/history and 7-day inactive/recovery/permanent deletion at `/employee/overview?tab=riasec`. Internal AI directly selects up to 3 active same-org Job Positions; no cosine/Department-only ranking/chat/Expert guidance-review gate. [Current contracts](../documents/features/README.md#riasec-current-implementation--2026-11-18) supersede older RIASEC prototype descriptions. Latest history UI has build/static evidence only; unrelated dated limitations remain.
 
@@ -117,7 +117,7 @@
 
 ### 1.1 Product purpose and scope
 
-Adapt-Learn-Graph is a subscription-based, multi-organization web platform for corporate learning and development. It connects job-role requirements, competencies, micro-skills, assessment evidence and learning offerings. Employees identify gaps against a chosen target role, follow an Expert-reviewed initial learning pathway, and receive requirement-pathway updates from accepted group assessment results and compatible official evidence. The current flow separates baseline diagnostics from official achievement and uses explicit Skill/knowledge/outcomes rather than numeric mastery subtraction. They may also learn individual skills independently of their role pathway.
+Adapt-Learn-Graph is a subscription-based, multi-organization web platform for corporate learning and development. It connects job-role requirements, competencies, micro-skills, assessment evidence and learning offerings. Employees identify gaps against a chosen target role, follow an Expert-reviewed initial learning pathway, and receive requirement-pathway updates from accepted group assessment results and compatible official evidence. The current flow separates baseline diagnostics from official achievement and uses explicit Skill and knowledge requirements rather than numeric mastery subtraction. They may also learn individual skills independently of their role pathway.
 
 The product addresses static course sequences, disconnected assessment and learning data, weak semantic mapping, unnecessary training on already-mastered skills, and insufficient evidence for development investment. A knowledge graph represents competency relationships; private employee evidence, workflow state and commercial records have separate ownership. RIASEC represents interests, not demonstrated competence. AI guidance supports an Employee's decision; it does not make that decision or establish mastery.
 
@@ -156,7 +156,7 @@ This is the required product context, not a claim that every exchange is current
 | Onboarding and billing | Registration includes an optional starter catalog; payOS supplies checkout, verified notifications and status responses. Adapter source is not proof of a real payment. | [Registration graph picker](../frontend/src/features/guest/GuestCatalogPicker.tsx), [payment adapter](../backend/src/main/java/com/adaptlearngraph/helper/PayOsPaymentGateway.java). |
 | Platform organizations | Directory, administrators, paid coverage and suspend/reactivate are connected. Organization detail updates remain a Version 2 target; the current directory is read-only for profile fields. | [Platform administration boundary](../documents/features/Platform%20administration/README.md#current-implementation), [lifecycle API](../backend/src/main/java/com/adaptlearngraph/apis/SubscriptionLifecycleController.java). |
 | Catalog, content and Question Bank | JobPosition/Role-Level requirements, module/content submission and Question Bank responsibilities/review are separate exchanges. Question Bank endpoints are profile-gated; answer-bearing staff drafts are not sent to Employees. | [Question Bank API](../backend/src/main/java/com/adaptlearngraph/apis/QuestionBankController.java), [Question Bank rules](../documents/features/Assessment%20workflows/README.md#implemented-question-bank-subset--2026-10-30). |
-| Employee learning and evidence | Role-Level selection, gap review, pathway requests, learning progress and content-issue reporting are represented. Certificate evidence/review remains an approved target model, not an implemented certificate-submission API. | [Role/gap handoff](../frontend/src/features/employee/target-roles/InitialRoleGapDialog.tsx), [learning API](../backend/src/main/java/com/adaptlearngraph/apis/LearningContentController.java), [target logical model](Report4_Software%20Design%20Document.md#22-logical-database-design). |
+| Employee learning and evidence | Role/Level selection, pathway review, real learning progress and certificate submission/review have implemented local source. Full runtime acceptance remains separate. | [Employee experience](../documents/features/Employee%20experience/README.md), [Pathway review](../documents/features/Pathway%20review/README.md). |
 | Email provider | Configurable SMTP sends transactional mail; SMTP acceptance is not inbox delivery. Video-provider exchanges are intentionally outside this context view, without removing their implementation or changing the SDD service declaration. | [Mail adapter](../backend/src/main/java/com/adaptlearngraph/helper/TransactionalMailSender.java), [third-party declaration](Report4_Software%20Design%20Document.md#113-third-party-services-declaration). |
 | Internal services and remaining targets | React/Spring Boot, PostgreSQL, Neo4j, private assets and background jobs are internal. Local LLM guidance, complete RIASEC/skill-assessment integration, adaptive updates and actual ROI reporting remain subject to their recorded implementation gaps. No external AI, HR/payroll, certificate issuer or course marketplace is invented as a runtime integration. | [Architecture and implementation boundaries](../documents/ARCHITECTURE.md), [private asset adapter](../backend/src/main/java/com/adaptlearngraph/repository/PrivateLearningAssets.java), [Version 2](../documents/FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md). |
 
@@ -173,7 +173,7 @@ This is the required product context, not a claim that every exchange is current
 | Reporting/audit | Actual development, financial inputs and scoped audit views | Some durable events exist; connected ROI/cost-benefit ledger and broad audit dashboards are not evidenced. |
 | Deployment | On-premises Compose, Nginx and CI/CD | Development Compose and a Caddy-based production-shaped configuration exist. Nginx, staging and GitHub Actions delivery are planned, not evidenced. |
 
-Evidence precedence is Version 2 for intended scope, later approved decisions for detailed policy, current source/migrations for implementation, and dated test records for only the behavior actually tested. In particular, old many-to-many review datasets are historical; current Modules teach exactly one Skill/knowledge with exact outcome coverage and multiple eligible alternatives per requirement. No dataset or migration file proves applied DB state.
+Evidence precedence is Version 2 for intended scope, later approved decisions for detailed policy, current source/migrations for implementation, and dated test records for only the behavior actually tested. In particular, old many-to-many review datasets are historical; current Modules teach exactly one Skill/knowledge with exact Skill/knowledge/version matching and multiple eligible alternatives per requirement. No dataset or migration file proves applied DB state.
 
 ## 2. User Requirements
 
@@ -245,13 +245,13 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 ![ACT-05 - Role-Level Baseline, Profile and Adaptive Learning - Swimlane](../documents/diagrams/mermaid/swimlanes/act-05.png)
 
-**ACT-05 scope:** the source-defined figure predates the 2026-11-08 decisions. Confirmed policy permits Expert option reduction, restricts bypass to missing suitable provision, derives Skill-policy editing from Role assignments and separates module retry allowance/wait under one policy. Figure/source annotations need alignment after the next code-confirmation session; this prose update does not certify current implementation.
+**ACT-05 scope:** Baseline configuration is per Role; selected Level determines assessment groups. The unchanged Expert editor applies Skill configuration to assigned Roles, including separate settings for a Skill shared by two Roles. New papers keep their settings. Used attempts, history and waits still share Employee + Skill + knowledge level + version across Roles and modules. Review, learning, certificate evidence and actual failed-prerequisite supplementation retain their existing flow. This source-defined diagram is not runtime acceptance.
 
 [Mermaid source: ACT-07](../documents/diagrams/mermaid/swimlanes/act-07.mmd)
 
-![ACT-07 - Independent skill learning (target) - Swimlane](../documents/diagrams/mermaid/swimlanes/act-07.png)
+![ACT-07 - Independent skill learning - Swimlane](../documents/diagrams/mermaid/swimlanes/act-07.png)
 
-**Diagram scope (ACT-07):** This is a target independent-learning journey, not a claim that the full context/assessment workflow is implemented. The current reader persists authorized lesson/video progress; the independent-skill surface is not yet a complete persisted learning context. Content completion alone does not establish assessment success or mastery. Valid assessment evidence and the separate independent-learning integration are required before competency/progress updates; the selected Role pathway must remain unchanged. ST-23 in the SDD describes the corresponding target business states, not a new database enum.
+**Diagram scope (ACT-07):** Current source has an independent learning context and assessment admission based on the exact authorized module revision and completion. Content completion alone awards no achievement; the qualifying assessment and evidence conditions still apply. Independent learning preserves the selected Role pathway. ST-23 shows these business stages, not a new database enum; runtime acceptance remains unverified.
 
 [Mermaid source: ACT-08](../documents/diagrams/mermaid/swimlanes/act-08.mmd)
 
@@ -343,7 +343,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 60 | Unpublish Target Role | L&D Manager | Remove a role’s current availability while preserving previous configurations and learner-selection history. | `UC0404Action3`; [FR-04.04](#fr-04-04); specializes `UC0404` |
 | 61 | Return Role Configuration for Revision | L&D Manager | Send a submitted configuration back to its Expert with actionable revision feedback. | `UC0404Action4`; [FR-04.04](#fr-04-04); specializes `UC0404` |
 | 62 | Manage baseline assessment configuration | L&D Manager | Configure baseline competency coverage, question selection and scoring rules. | `UC0405`; [FR-04.05](#fr-04-05) |
-| 63 | Configure Baseline Competency Coverage | L&D Manager | Choose the permitted Job Position competency/skill coverage for baseline assessment. | `UC0405Action1`; [FR-04.05](#fr-04-05); specializes `UC0405` |
+| 63 | Configure Baseline Competency Coverage | L&D Manager | Review the required Skills across a Role; the selected Level determines each Employee paper. | UC0405Action1; [FR-04.05](#fr-04-05) |
 | 64 | Configure Baseline Question Selection | L&D Manager | Save feasible baseline selection rules and question/time bounds without changing released attempt versions. | `UC0405Action2`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 65 | Configure Baseline Scoring Rules | L&D Manager | Define validated baseline evaluation rules under the applicable versioned policy. | `UC0405Action3`; [FR-04.05](#fr-04-05); specializes `UC0405` |
 | 66 | Approve learning offerings | L&D Manager | Review a submitted module and learning-content bundle, then approve or return it for revision. | `UC0406`; [FR-04.06](#fr-04-06) |
@@ -374,7 +374,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | 91 | Update Learning Content | Expert | Revise module content while retaining content-version identity and historical references. | `UC0505Action6`; [FR-05.05](#fr-05-05); specializes `UC0505` |
 | 92 | Reorder Learning Content | Expert | Change the saved order of content items within a module. | `UC0505Action7`; [FR-05.05](#fr-05-05); specializes `UC0505` |
 | 93 | Remove Learning Content | Expert | Remove an item from editable module content without deleting history-bearing approved versions. | `UC0505Action8`; [FR-05.05](#fr-05-05); specializes `UC0505` |
-| 94 | Manage module assessments | Expert | Author exact Skill/knowledge/outcome/mandatory questions and configure shared Skill–knowledge policy; old diagram label retains module wording. | `UC0506`; [FR-05.06](#fr-05-06) |
+| 94 | Manage module assessments | Expert | Author reviewed Skill/knowledge questions and configure shared assessment settings within assigned Roles. | UC0506; [FR-05.06](#fr-05-06) |
 | 95 | Create Assessment Question | Expert | Author a complete module question with options, protected answer data and required classification. | `UC0506Action1`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 96 | Update Assessment Question | Expert | Revise an editable module question without changing versions pinned by learner attempts. | `UC0506Action2`; [FR-05.06](#fr-05-06); specializes `UC0506` |
 | 97 | Classify Question by Skill | Expert | Associate a question with an eligible micro-skill for evidence/scoring interpretation. | `UC0506Action3`; [FR-05.06](#fr-05-06); specializes `UC0506` |
@@ -431,7 +431,7 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 | [FR-05.03](#fr-05-03) | Submit completed target role configurations | Expert | The Expert shall submit completed target role competency configurations to the L&D Manager and revise returned configurations. |
 | [FR-05.04](#fr-05-04) | Manage skill prerequisites | Expert | The Expert shall define, update, and remove prerequisite relationships between micro-skills. |
 | [FR-05.05](#fr-05-05) | Manage learning modules | Expert | The Expert shall create, update, and organize learning modules, map modules to micro-skills, and add, update, organize, or remove learning content within each module. |
-| [FR-05.06](#fr-05-06) | Manage module assessments | Expert | Expert authors exact Skill/knowledge/outcome/mandatory questions for L&D publication and separately configures Skill Assessment per organization+Skill+knowledge, shared by equivalent modules. |
+| [FR-05.06](#fr-05-06) | Manage module assessments | Expert | Author reviewed Skill/knowledge questions and manage shared Skill Assessment settings within assigned authority. |
 | [FR-05.07](#fr-05-07) | Review initial learning pathways | Expert | The Expert shall review initial learning pathways, include or exclude suggested modules, and confirm the pathways. |
 | [FR-05.08](#fr-05-08) | Submit content for approval | Expert | The Expert shall submit new or revised learning modules, including their learning content, to the L&D Manager for approval. |
 | [FR-06.01](#fr-06-01) | Manage personal profile | Employee | The Employee shall view and update personal and work-related profile information. |
@@ -463,6 +463,8 @@ Evidence precedence is Version 2 for intended scope, later approved decisions fo
 
 #### 3.1.1 Screens Flow
 
+Current routes include dedicated Expert/L&D Certificates pages and an Employee RIASEC assessment page that returns to Overview after submission. Baseline configuration selects a Role. The screen flows include these routed pages; existing connectors retain their geometry and style.
+
 The six flows below reflect the current [router](../frontend/src/app/App.tsx), [workspace navigation](../frontend/src/shared/layouts/WorkspaceLayout.tsx) and actual page/dialog components. They cover Guest, Employee, Expert, L&D Manager, System Administrator and Platform Administrator. The screen-description and authorization tables cover these same flows.
 
 **Notation and reading rules**
@@ -493,7 +495,7 @@ Learning Overview is the default home. Upskilling contains Role and Skill tabs, 
 
 Role selection returns to Upskilling; starting/resuming a baseline is a separate guarded action. Role Gap Review opens Learning Pathway only after successful confirmation, and generation, Expert-review, blocked and approved states remain on that page. Module entry is available only when the current pathway/content rules permit it. Completing a module does not automatically open an assessment or establish skill mastery.
 
-Assessment tabs and non-RIASEC quiz/results remain inline states of Assessments; current RIASEC lives in Learning Overview. Selected core quiz dialogs are shown; the non-RIASEC quiz and independent skill-tracking UI still contains browser-local/prototype state, so these navigation controls do not certify a complete persisted assessment or independent-learning workflow. Skill Details returns to its catalog or pathway owner. Additional filter, help, untracking and RIASEC overlays are omitted from this main-navigation view. The server-status utility is omitted consistently with the other actor flows.
+RIASEC starts in Learning Overview, opens a dedicated assessment page and returns after confirmed submission. Current rule-based Skill Assessment and shared history are separate from remaining prototype quiz controls. Skill details return to their opening page. The navigation view adds the dedicated RIASEC page and its return to Overview.
 
 **Expert**
 
@@ -501,7 +503,7 @@ Assessment tabs and non-RIASEC quiz/results remain inline states of Assessments;
 
 ![SCREEN-EXPERT - Expert page and dialog flow](../documents/diagrams/mermaid/screen-flow-expert.png)
 
-Pathway details are a routed page; role details/configuration and pathway checks/approval previews are dialogs. Assessment questions and blueprints are tabs on one page. The learning-content page is registered but has no verified Expert sidebar link, so its entry is dotted. Its current reader-preview link targets an Employee route and is not represented as authorized Expert navigation.
+Pathway details and Certificates are routed pages; role details/configuration and pathway checks/approval previews are dialogs. The Skill configuration wizard is common to assigned Roles; Certificates opens through workspace navigation, not a Module tab. Assessment questions and blueprints are tabs on one page. The learning-content page is registered but has no verified Expert sidebar link, so its entry is dotted. Its current reader-preview link targets an Employee route and is not represented as authorized Expert navigation.
 
 **L&D Manager**
 
@@ -509,7 +511,7 @@ Pathway details are a routed page; role details/configuration and pathway checks
 
 ![SCREEN-LD-MANAGER - L&D Manager page and dialog flow](../documents/diagrams/mermaid/screen-flow-ld-manager.png)
 
-The Baseline Config menu alias leads to the baseline directory. Managing a selected Job Position opens its configuration page; Draft/released versions are page states, while baseline preview and lifecycle confirmations are real dialogs. `/ld-manager/dashboard` and `/ld-manager/learning-outcomes` render the same dashboard component. Legacy redirects to account administration or Expert authoring do not create L&D permissions.
+Baseline Config opens the Role directory and a three-step configuration dialog, with Active and Archived versions. Certificates has its own L&D route for definition review/publication. Existing dashboard aliases remain; no alias grants additional permissions.
 
 **System Administrator**
 
@@ -624,7 +626,7 @@ The Screen column uses the exact names shown in the six screen-flow diagrams in 
 | 44 | Baseline Management | Baseline List | List baseline drafts and released versions by job position, with controls to manage configurations or deactivate active versions. |
 | 45 | Baseline Management | Job Position Selection | Historical diagram action, currently replaced by Role–member Level directory and versions before the editor. |
 | 46 | Baseline Management | Deactivate Baseline | Historical diagram action; no deactivate endpoint is exposed by current scoped rule controller. Do not treat this node as current authority. |
-| 47 | Baseline Management | Baseline Configuration | Configure an job position's baseline draft or released version, with save, preview and lifecycle actions. |
+| 47 | Baseline Management | Baseline Configuration | Configure a Role through Questions, Time & retakes and Review; save draft or save and activate. |
 | 48 | Baseline Management | Baseline Preview | Open a dialog to preview the saved baseline draft without starting an Employee assessment attempt. |
 | 49 | Baseline Management | Action Confirmation | Open a dialog to confirm baseline lifecycle actions or navigation that would leave unsaved changes. |
 | 50 | Content Approval | Content Approvals | Display learning offering submissions and provide review, approval and revision-feedback actions. |
@@ -643,7 +645,7 @@ The Screen column uses the exact names shown in the six screen-flow diagrams in 
 | 63 | Organization Administration | Organization Settings | Display organization settings and provide the available inline configuration forms. |
 | 64 | Organization Administration | System Console | Display the organization administration overview and available operational information. |
 | 65 | Knowledge Graph | Knowledge Graph | Display the organization's knowledge graph and provide visualization and exploration controls. |
-| 66 | Employee Overview | Learning Overview | Display the Employee's learning overview, tracked skills and available pathway links; Gap Analysis is an alias of this page. |
+| 66 | Employee Overview | Learning Overview | Show target Skill coverage, met levels and required pathway progress, with evidence sources and RIASEC entry. |
 | 67 | Employee Upskilling | Upskilling | Browse Role and Skill tabs, review the current role selection and access baseline, gap-review and skill-tracking controls. |
 | 68 | Employee Role Selection | Role Selection | Open a dialog to choose a published organization Role and Level; confirmation saves the selection and returns to Upskilling. |
 | 69 | Employee Gap Review | Role Gap Review | Open a dialog to inspect Role-Level gaps, return to role selection when a baseline is required, or confirm a pathway request. |
@@ -660,10 +662,19 @@ The Screen column uses the exact names shown in the six screen-flow diagrams in 
 | 80 | Employee Baseline | Baseline Assessment | Display the baseline entry/history, active attempt or result according to the route and attempt state, subject to feature and access guards. |
 | 81 | Employee Baseline | Submit Baseline | Open a dialog to confirm submitting the current baseline attempt or return to its questions. |
 | 82 | Employee Profile | My Mastery | Display the Employee's baseline-derived profiles and source references, with links to attempt results, history or role selection. |
+| 83 | Certificate Catalog | Expert Certificates | Create/import, resolve conflicts and submit definitions; inspect publication history. |
+| 84 | Certificate Approval | L&D Certificates | Review exact definition revisions, approve/reject and inspect publication/retry status. |
+| 85 | Skill Assessment | Shared Configuration | Expert manages common question/timing/retake rules subject to assigned authority. |
+| 86 | Career Interests | RIASEC Assessment | Employee completes the separate 60-item page, reviews and submits, then returns to Overview. |
+| 87 | Employee Evidence | Submit Certificate | Employee submits one authorized link or private file for the required definition. |
+| 88 | Evidence Review | Expert Evidence Review | Assigned Expert reviews original evidence and approves or rejects it with retained history. |
 
 All `W` paths use the workspace prefix defined above; the table does not imply that unprefixed tenant URLs remain valid. `W/employee/riasec` redirects to `W/employee/overview?tab=riasec`; `W/employee/guidance` redirects to `W/employee/upskilling?tab=roles`; skill aliases redirect to the skills tab. `W/ld-manager/users` redirects to `W/admin/users` but does not authorize account management. Old workspace-scoped `/learner/*` and `/manager/*` aliases must not be counted as separate capabilities.
 
 #### 3.1.3 Screen Authorization
+
+Certificates routes are separate for Expert authoring and L&D definition review. Employee evidence submission and RIASEC attempts require the owning Employee; evidence review requires the assigned Expert. Shared Skill configuration is activated only for the Expert's currently assigned Roles. A learner's Role determines which configuration applies to a shared Skill. Browser navigation alone grants no access.
+
 
 This is the **required authorization matrix**, not a claim that every prototype or legacy endpoint enforces it. **X** means the role is permitted to access the screen or perform the activity within its authorized scope; a **blank cell** means no permission is granted. Bold rows use the exact screen names from sections 3.1.1 and 3.1.2. Indented rows identify activities requiring an explicit permission.
 
@@ -1681,8 +1692,8 @@ The Database column identifies the authoritative store for every entity in the c
 
 **Function Detail:**
 
-- Active readers use dependentKnowledgeLevel/prerequisiteKnowledgeLevel and owned Skill outcome/version mapping, not minimum mastery.
-- Reject malformed/cyclic/duplicate exact pairs; legacy numeric authoring remains a separate incomplete integration.
+- Direct Skill prerequisites need no level selection; current readers assess cross-Skill prerequisites at Advanced and include lower main-Skill levels.
+- Reject invalid ownership, duplicates, self-links and cycles. Older level-specific fields remain compatibility data.
 - Initial baseline planning does not traverse closure to create B work. Actual failed Skill prerequisite group supplies new requirement/dependency provenance.
 
 
@@ -1692,15 +1703,17 @@ The Database column identifies the authoritative store for every entity in the c
 
 **Function Trigger:** Responsible Expert creates/imports/edits Module content or a certificate definition.
 
-**Function Description:** Publish exact single-Skill knowledge/outcome provision with existing owner/review safeguards.
+**Function Description:** Publish exact single-Skill knowledge provision with existing owner/review safeguards.
 
 **Function Detail:**
 
-- Module has exactly one taught Skill, one knowledgeLevel, skillVersion/outcomes, immutable content/revision and ordered Text/Video lessons. New authoring has no price (V61).
+- Module has exactly one taught Skill, one knowledgeLevel, skillVersion, immutable content/revision and ordered Text/Video lessons. New authoring has no price (V61).
 - Responsible Expert submits whole module/content revision; L&D approves/returns and retryable graph projection releases it. Assessment policy and Question Bank remain separate.
 - Certificate-only requires one active definition per exact pair, mandatory HTTPS reference URL and owned Skill version; catalog definition does not approve learner evidence.
 - Do not infer equivalence from Skill alone or fabricate missing provider/reviewer metadata. Preserve original pins/accepted learner history.
 
+
+Certificate import resolves identical duplicates and changed-content conflicts before Expert confirms submission. L&D reviews the exact revision; batch review supports up to 100 definitions. Publication may be pending or require retry. Existing pathways keep the original definition after a replacement is published.
 
 <a id="fr-05-08"></a>
 
@@ -1736,55 +1749,50 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.9.1 Manage baseline assessment configuration - FR-04.05
 
-**Function Trigger:** L&D opens the organization Role–member Level directory.
+**Function Trigger:** L&D opens Baseline Config and selects a Role.
 
-**Function Description:** Configure BASELINE for one exact Role–Level; preserve immutable versions and learner pins.
+**Function Description:** Maintain one Baseline configuration for the Role. The Employee's selected Level determines the applicable Skills and knowledge levels.
 
 **Function Detail:**
 
-- Inputs: trusted L&D membership/entitlement; actual catalog scope key/hash; commandKey and expected draft/activation revisions. Job Position is context, not assessment scope.
-- Discover/filter/count scopes before pagination, including unconfigured pairs. Open versions, create/resume one draft and save incomplete editor progress without activation.
-- Configure common count/required-correct per knowledge level, positive time/maxAttempts and nonnegative retake wait; readiness requires exact groups/outcome coverage and sufficient approved bank. Baseline mandatory/veto flags are false.
-- Complete-and-activate validates and publishes atomically; active/draft may coexist. Retain old versions and explicit abandoned draft snapshots. No rule-controller deactivation/restore operation is exposed.
-- Version numbers are per org+purpose+scope under V62. Reject stale draft/catalog/activation or changed-body replay; existing attempts retain original rules/deadline.
-- Source is implemented locally; draft-before-unconfigured ordering is confirmed. No runtime/DB acceptance asserted.
-
+- Configurations lists Roles needing setup, with saved drafts first. Active and Archived retain current and earlier configurations.
+- Configure questions and correct answers per knowledge level, seconds per question, attempts and retake wait. Baseline has no mandatory-question or all-wrong-veto condition.
+- Save draft keeps progress. Save & Activate saves and activates the saved version; an uncertain or failed stage can be retried.
+- Required groups need sufficient approved questions. Missing bank, changed catalog or conflicting edits block the affected operation.
+- Existing papers keep their questions, accepted answers, settings and deadlines. Historical Role-Level configurations remain read-only.
 
 <a id="fr-05-06"></a>
 
 #### 3.9.2 Manage module assessments - FR-05.06
 
-**Function Trigger:** Expert opens Question Bank or Skill Assessment configuration.
+**Function Trigger:** Expert opens Assessment Bank or Skill Assessment configuration.
 
-**Function Description:** Author reviewed exact questions and configure SKILL_ASSESSMENT per organization+Skill+knowledge, shared across equivalent modules.
+**Function Description:** Author reviewed questions and maintain shared Skill Assessment settings for authorized Skills.
 
 **Function Detail:**
 
-- Question inputs: Skill, knowledgeLevel, one outcomeCode, mandatory, prompt, four distinct choices, one correct key and explanation. MAIN/PREREQUISITE is a paper role, not a fixed question type; no difficulty-to-knowledge conversion.
-- Responsible Expert saves/submits exact candidate; L&D acknowledges/reviews publication. Successor drafts, import identity, availability requests and historical protected keys remain with Question Bank.
-- Expert separately creates/saves/activates the exact Skill–knowledge policy, including all configured prerequisite groups, counts/pass/mandatory/veto and its own timing/retake limits.
-- One draft/active per scope and scoped version numbers. Policy is not copied per Module or managed in a parallel L&D Skill editor.
-- Missing mappings/coverage, unreviewed bank, stale catalog/revision or impossible counts block activation/start. Current policy service checks entitled Expert but individual Skill-assignment restriction is not demonstrated.
-- Current source implements these separate aggregates; a single module/content offering submission does not bundle the entire assessment workflow.
-
+- Questions contain a prompt, four distinct choices, one correct answer, explanation, Skill, knowledge level and mandatory status. Outcome Codes are not required by current matching.
+- Responsible Expert submits questions; L&D reviews the exact version before publication. Question publication and module publication are separate.
+- Shared settings define counts, passing counts and mandatory quotas for knowledge levels and prerequisites, plus seconds per question, attempts and retake wait.
+- Experts may configure only Skills covered by assigned Roles. Activating the unchanged common editor applies its settings to all currently assigned Roles. The same Skill in another Role uses that other Role's configuration.
+- Current implementation separates configuration by Role; used attempts, waiting periods and history still share Employee + Skill + knowledge level + Skill version across Roles and modules. Full attempt isolation by Role is not implemented.
+- New papers require sufficient approved questions and preserve the exact settings used. Existing attempts and published question history are retained.
 
 <a id="fr-06-02"></a>
 
 #### 3.9.3 Complete baseline assessment - FR-06.02
 
-**Function Trigger:** Employee starts/resumes the selected Role–Level baseline.
+**Function Trigger:** Employee starts or resumes Baseline for the selected Role and Level.
 
-**Function Description:** Return diagnostic group outcomes with a persisted paper/deadline, separately from official achievement.
+**Function Description:** Identify initial learning needs while retaining a resumable paper and diagnostic results.
 
 **Function Detail:**
 
-- Inputs: trusted Employee/organization/entitlement; expected selection ID/revision, purpose BASELINE, prior attempt for retake and Idempotency-Key. No learner-supplied pass/tenant/reviewer fields.
-- Resolve explicit selected MODULE_ONLY groups minus exact compatible official evidence; certificate-only/unconfigured needs remain separate. Do not assess the whole Job Position or add unassessed prerequisite groups.
-- Validate exact scoped policy/hash and bank coverage; sample/freeze all groups/items/rules once. Reload resumes accepted answers and original deadline.
-- Server scores correct=1, wrong/unanswered=0, with separate correct/total/pass/reasons per group. Explicit submit AND server deadline finalize once; no whole-paper PASSED/FAILED database state substitutes for group results.
-- Baseline pass skips that initial learning need only; it writes neither official ACHIEVED nor module completion. Missing evidence is not failure; all-exempt/no groups returns ASSESSMENT_NOT_REQUIRED without synthetic pass.
-- Configured max attempts/wait apply; every retake is a new full current configured paper. Final scoring and downstream processing status are distinct; no new executable acceptance is asserted.
-
+- Assess target Skills through their required knowledge level, including lower levels and certificate-mode Skills. Compatible official evidence and retained lower-level assessment history are considered before assigning new questions.
+- Starting freezes questions, answer order, settings and deadline. Resume keeps the same paper and saved answers.
+- Employee explicitly submits, or the server finalizes at the deadline. Wrong and unanswered questions score zero; each group has its own pass result.
+- Passing Baseline may avoid initial learning but never awards official achievement. Baseline does not traverse unrelated prerequisite Skills to invent learning work.
+- Attempts and wait follow the Role configuration. Missing resources or stale selection remain visible errors.
 
 <a id="fr-06-03"></a>
 
@@ -1819,37 +1827,34 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.9.5 Complete learning and assessments - FR-06.08
 
-**Function Trigger:** Employee opens a current accepted module option or its assessment action.
+**Function Trigger:** Employee opens an approved module or its Skill Assessment.
 
-**Function Description:** Learn pinned content, then take exact MAIN + all prerequisite groups and retain supplemental work.
+**Function Description:** Complete approved content and take the Skill assessment, including required foundation and prerequisite checks.
 
 **Function Detail:**
 
-- Inputs: current selection/accepted step/module revision/content and Skill-version/knowledge/outcome proof. Legacy Skill-only eligibility is not complete exam authority.
-- Text completion requires reached-end and explicit confirmation; Video needs at least 90% distinct bounded watched coverage plus confirmation. Every pinned lesson must complete before exact requirement completion sidecar qualifies.
-- Skill Assessment includes MAIN and all configured transitive prerequisite groups even for achieved prerequisites. Shared Skill policy does not mean shared module progress or score carry-over.
-- Main fail or configured all-wrong prerequisite veto requires new full retake. Passing main with ordinary unachieved prerequisite shortage waits for actual required supplementation.
-- Failed officially achieved prerequisite records NEED_REVIEW without revocation. Once B was assigned, later passing B inside A retake does not complete B. A already started remains open; new official completion may still wait.
-- One qualified option plus accepted assessment/conditions satisfies a requirement; other choices retain independent history. Content, baseline and bypass alone never award achievement.
-
+- Learning uses the accepted module revision. Reading completion requires reaching the end and confirming; video completion requires at least 90% watched coverage and confirmation.
+- Skill Assessment checks the main requirement, its lower levels and prerequisite Skills. Current readers use Advanced for cross-Skill prerequisites, even when they have official achievement.
+- Actual failed prerequisite groups may add learning or certificate needs even when the main group also fails. Cross-Skill prerequisites precede missing lower levels of the main Skill.
+- Earlier official achievements are retained with NEED_REVIEW where appropriate. New missing needs require their own learning/evidence.
+- Completing supplements does not rewrite an old failed paper. Employee takes a new full assessment when eligible.
+- Attempts, waiting periods and history are shared for the same Employee, Skill, knowledge level and Skill version across modules. Content alone and Baseline alone do not award official achievement.
 
 <a id="fr-07-05"></a>
 
 #### 3.9.6 Generate and evaluate assessments - FR-07.05
 
-**Function Trigger:** Authorized start, answer, submit or server deadline is processed.
+**Function Trigger:** An authorized assessment start, answer, submission or deadline is processed.
 
-**Function Description:** Execute one persisted rule engine with separate Baseline/Skill scopes and immutable group results.
+**Function Description:** Create and score a saved rule-based paper with retained results.
 
 **Function Detail:**
 
-- Read current trusted context and policy/catalog hashes, validate full bank and freeze paper before starting timer. No IRT/model/SE/mastery fallback.
-- Reserve mandatory questions for Skill groups, cover configured outcomes and random-fill distinct eligible items inside group total. Baseline uses coverage/random fill without mandatory/veto.
-- Accept only presented item/options under expected revision and server deadline. Resume can finalize an expired attempt; it never extends time.
-- Manual submit/deadline serialize one FINALIZED outcome with SUBMITTED/DEADLINE reason and per-group immutable results.
-- Write result/outbox/job/receipt consistently; downstream worker consumes accepted event idempotently, distinguishing WAITING_REQUIRED_SUPPLEMENT from scoring failure.
-- Current source bounds counts/capacity; RIASEC now uses separate persisted V72 storage, server raw 0–40 scoring and durable AI jobs. It does not use the rule knowledge-assessment engine.
-
+- Check current access, target/learning context, settings and approved bank before creating a paper. Missing required questions block creation.
+- Retain the paper, timing and accepted answers. Each group meets its own passing and applicable mandatory rules; scores do not compensate across groups.
+- Submission or deadline finalizes once. Processing results and fulfilling learning requirements are separate outcomes.
+- Later learning, certificate review and pathway updates preserve prior results and history.
+- RIASEC uses its separate V74 personal assessment and AI workflow, not this knowledge-assessment engine.
 
 ### 3.10 Role Guidance
 
@@ -1934,18 +1939,16 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.11.2 Review competency profile and gaps - FR-06.05
 
-**Function Trigger:** Employee opens own profile or selected Role–Level needs.
+**Function Trigger:** Employee opens Overview, competency profile or target needs.
 
-**Function Description:** Display explicit requirements, diagnostics, official exact evidence and review/waiver provenance.
+**Function Description:** Explain the saved target, met knowledge levels and outstanding learning.
 
 **Function Detail:**
 
-- Inputs: trusted own learner/org, selected Level requirements, Skill version/outcomes and source IDs.
-- Separate baseline assessed pass/fail from MODULE_ASSESSMENT/CERTIFICATE ACHIEVED, NEED_REVIEW and bypass; never convert missing evidence to zero or failure.
-- Read-only projection cannot finalize learning or award achievement. Baseline only exposes groups actually assessed; A does not create unassessed prerequisite B.
-- Official evidence is compatible by exact Skill/knowledge/version/outcome coverage; no lower-level inheritance or cross-target diagnostic exemption.
-- Current My Mastery/rule profile has server projections; unrelated browser overview/gap widgets remain separately limited.
-
+- Distinguish levels met through Baseline from official module/certificate achievements. A current learning gap takes precedence over an older Baseline pass.
+- Skills meeting target counts target Skills with all required levels met. Levels met includes target and added prerequisite levels. Required pathway steps completed excludes bypassed steps.
+- Expanded levels show the source and current state. Added prerequisite Skills appear in pathway progress without becoming new original target Skills.
+- Start, end and duration follow the first approved pathway timing. Missing data remains unavailable; viewing does not change progress or award evidence.
 
 <a id="fr-06-06"></a>
 
@@ -1957,7 +1960,7 @@ The Database column identifies the authoritative store for every entity in the c
 
 **Function Detail:**
 
-- Show requirement state, knowledge/outcomes, module alternatives and independent content/assessment status. Assessment badges stay on module cards, not repeated on roots.
+- Show requirement state, knowledge requirements, module alternatives and independent content/assessment status. Assessment badges stay on module cards, not repeated on roots.
 - Only accepted current options admit new learning; exact live approval, provider and dependency guards apply. Authentic started pins preserve continued content.
 - One successful qualified option satisfies a requirement. Optional alternatives are not all mandatory; bypass remains unmet/waived and distinct from FULFILLED.
 - Certificate submission is pending until actual assigned review. Missing provision gives NEEDS_EXPERT_ACTION; approved valid supplementation can be added automatically with original approval basis.
@@ -1984,17 +1987,16 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.11.5 Track learning progress - FR-06.09
 
-**Function Trigger:** Employee inspects progress, attempts, profile or pathway history.
+**Function Trigger:** Employee opens progress, assessment history, Overview or pathway history.
 
-**Function Description:** Expose actual recorded progress with separate diagnostic/official/waived/pending meanings.
+**Function Description:** Show recorded learning and evidence with clear pending and completed states.
 
 **Function Detail:**
 
-- Read lesson completion, option starts/completions, immutable attempt/group results and current requirement revisions under own scope.
-- Show finalized score separately from pending outcome/recovery; no duplicate completion on reload or replay.
-- One fulfilled alternative counts for its requirement; optional choices, bypass and NEED_REVIEW do not become achievements.
-- Current source supports these separate projections; legacy overview/history mock widgets are not a verified unified aggregation.
-
+- Show lesson completion, module progress, assessment history and requirement revisions within the Employee's organization and account.
+- Skill Assessment history and retake allowance are shared by Skill, knowledge level and version across modules; module provenance remains visible.
+- One qualified alternative fulfils its requirement. Optional alternatives and bypass are not additional official achievements.
+- Keep Baseline diagnostics, pending certificate evidence, official achievement and outstanding supplements distinct. A finalized paper can leave learning incomplete.
 
 ### 3.12 Pathway Review
 
@@ -2002,20 +2004,20 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.12.1 Review initial learning pathways - FR-05.07
 
-**Function Trigger:** Current assigned Expert opens a requirement pathway or certificate submission.
+**Function Trigger:** Assigned Expert opens a pathway request or certificate-evidence submission.
 
-**Function Description:** Check/save/approve exact initial requirement revision and record authorized bypass/evidence decisions.
+**Function Description:** Review the exact learning plan and record authorized decisions.
 
 **Function Detail:**
 
-- Server derives organization/Expert/assignment. Client supplies expected revision/contentHash, exact option keys/order and retry identity; reason is mandatory for bypass and evidence decisions.
-- Check fresh providers/requirements/dependencies, then save per-step selections and supported order. Started modules cannot be excluded; started/fulfilled/bypassed/dependency-bound positions are fixed.
-- Approval requires current valid plan/assignment/selection and records exact revision/hash. Generated proposal alone grants no approval or achievement.
-- Confirmed: generate all eligible modules; the selected Role's assigned Expert may reduce alternatives. One qualifying completion and passing Skill Assessment fulfils the step; other eligible modules remain voluntary and assessable under their own conditions.
-- Current bypass accepts an unresolved REQUIRED step with reason even if provision exists. Older report/diagrams restrict this to missing provision; the later general scoped-bypass wording does not settle that narrower permission. Keep scope Open and do not approve the code by inference.
-- Certificate accepts one HTTPS link or private PDF/PNG/JPEG ≤10 MiB subject to tighter limit; original definition/submission is immutable. Assigned Expert approves/rejects exact revision with actual reason/time; approval writes official evidence once.
-- Automatic valid supplementation preserves real approval basis. No full certificate/bypass/parallel runtime acceptance is established here.
-
+- Review target requirements, module alternatives, certificate needs and dependencies within the assigned Role.
+- Expert may exclude unstarted alternatives and adjust supported order; started/completed options and fixed dependencies are protected.
+- Changes save automatically after a short pause. Check shows actionable issues; selecting one focuses the exact Skill and knowledge level. Approval waits for confirmed saving and valid coverage.
+- Approve the saved plan, or reject with a reason. Rejected plans retain target/history and can be repaired and reviewed again.
+- Bypass is allowed only when fresh catalog checks find no suitable module or certificate. Excluding available options does not permit it. The current review editor does not display a Bypass action.
+- Certificate evidence uses one HTTPS link or a private PDF/PNG/JPEG within the upload limit. Assigned Expert reviews the original submission; approval reason is optional, rejection reason required.
+- Approved evidence awards exact achievement and updates the pathway. Submission or catalog publication alone does not.
+- First approval sets pathway timing. Valid later supplementation preserves that approval and timing; no second initial approval is needed unless the basis is invalid.
 
 ### 3.13 Adaptive Engine
 
@@ -2029,7 +2031,7 @@ The Database column identifies the authoritative store for every entity in the c
 
 **Function Detail:**
 
-- Use org/learner, Skill+knowledge+version/outcomes and accepted source ID/version; no numeric mastery update/subtraction in the active rule flow.
+- Use org/learner, Skill+knowledge+version and accepted source ID/version; no numeric mastery update/subtraction in the active rule flow.
 - Baseline records diagnostic groups only. Accepted qualifying module+assessment or assigned certificate approval creates append-only official evidence.
 - Failed previously achieved prerequisite records NEED_REVIEW; later compatible genuine evidence can resolve it without deleting original achievement/history.
 - Consumer receipts/source uniqueness prevent supported duplicate effects; stale/outage states remain recoverable rather than synthetic pass.
@@ -2039,20 +2041,19 @@ The Database column identifies the authoritative store for every entity in the c
 
 #### 3.13.2 Generate and adapt learning pathways - FR-07.08
 
-**Function Trigger:** Employee confirms exact requirement input, or accepted assessment/evidence/provision change affects current plan.
+**Function Trigger:** Employee confirms a pathway request, or assessment/evidence/provision changes affect the current plan.
 
-**Function Description:** Generate/recalculate requirement roots and preserve completed work, approval and original bypass provenance.
+**Function Description:** Generate and update requirement-based pathways while retaining prior decisions and learning.
 
 **Function Detail:**
 
-- Freeze Role/Level/catalog, exact official evidence/diagnostics, required needs and parallel source bypasses. Admission immediately locks both target fields.
-- Generate eligible equivalent alternatives/single certificate; no branch-and-bound, cost/difficulty optimizer or speculative baseline prerequisite closure.
-- Assigned Expert approves initial valid revision. Ordinary assessment shortage creates/reuses exact B and actual source dependency; full-retake/veto and continued A content semantics remain.
-- Refresh compatible evidence/provision automatically and publish immutable successor only when changed, preserving original approval basis/assignment validity.
-- Current-pathway missing provision/backfill preserves started/completed work. Old-target bypasses remain parallel/non-gating even when later provision appears.
-- Bounded generation retry/fencing, learner lock, revision/hash checks and source-event dedup retain history; failures never archive unfinished target to unlock it.
-- Certificate/bypass/backfill/concurrency runtime behavior remains unverified; the option-reduction decision is cleared; code confirmation remains pending.
-
+- Bind the selected Role and Level when accepting a request. Generate approved module alternatives or a certificate requirement for actual learning needs.
+- Assigned Expert reviews the initial plan. Later actual failed prerequisite or lower-level checks add missing requirements and learning dependencies.
+- Cross-Skill prerequisites precede missing lower main-Skill levels. In the demo, JPA Advanced precedes Transaction Intermediate, then a new Transaction Advanced assessment.
+- Preserve started/completed work, Expert exclusions, valid initial approval and first-approval timing.
+- Certificate replacements apply to newly created pathways after publication. Existing pathways keep their original certificate definition.
+- Missing provision stays explicit. Bypass is limited to genuinely missing provision and never grants achievement; carried old bypass work stays parallel to a new target.
+- Retryable background work and retained history support recovery. Source presence does not establish runtime acceptance.
 
 ### 3.14 Development Reporting
 
@@ -2282,13 +2283,13 @@ The current local flow uses separately scoped Baseline and Skill policies, group
 | BR-35 | Subscription end dates add the purchased number of calendar months, retain the billing anniversary day and clamp it to the target month's last day when necessary. A period includes its start but excludes its end. |
 | BR-36 | Renewal is rejected if a paid future period is already scheduled or the selected plan cannot accommodate the organization's counted Employee accounts. If capacity exceeds the purchased allocation at payment application, application waits for capacity remediation. |
 | BR-37 | A target-role code and version combination must be unique within its organization. The creation lookup normalizes the code to uppercase and uses version 1.0 when no version is supplied. |
-| BR-38 | Active assessment prerequisite identity is an exact dependent/prerequisite Skill–knowledge pair; readers reject cycles, duplicate pairs and malformed knowledge configuration. Retained legacy authoring constraints remain separately incomplete. |
+| BR-38 | Skill prerequisites reject invalid ownership, self-links and cycles. Direct Skill edges need no knowledge-level selection; current assessment readers use Advanced for prerequisite Skills. |
 | BR-39 | Numeric minimum mastery is retired from the rule-flow readiness contract; no score-to-knowledge conversion or default threshold is inferred. |
 | BR-40 | Target-role selection is available only to an active Employee and must resolve to a selectable role in that Employee's organization. |
 | BR-41 | Role AND member Level cannot change during active assessment or while an accepted request has required non-bypassed work, including generation/review/errors. Same pair is a reauthorized no-op. |
 | BR-42 | Changed selection checks targetBound before archive/end/write under learner transaction; only released target can be replaced. Preserve historical selection, bypass provenance, attempts and progress. |
-| BR-43 | L&D Baseline scope is organization+Role+actual member Level; Expert Skill Assessment scope is organization+Skill+knowledge shared across equivalent modules. |
-| BR-44 | Baseline uses selected explicit MODULE_ONLY requirements minus compatible official evidence; certificate-only and unconfigured requirements remain separate. No whole-Job-Position union. |
+| BR-43 | Baseline configuration is shared per organization and Role; selected Level determines Employee groups. An Expert activates common Skill Assessment settings for currently assigned Roles. Each Role keeps its own configuration, including for Skills shared with other Roles. |
+| BR-44 | Baseline checks target Skills through their required level, including lower levels and certificate-mode Skills. Compatible official evidence/history is considered; no unassessed cross-Skill prerequisites are added. |
 | BR-45 | Knowledge levels are explicit FOUNDATION/INTERMEDIATE/ADVANCED; no difficulty bucket or implicit lower-level requirement. |
 | BR-46 | Correct=1; wrong/unanswered=0. Each group meets its own requiredCorrectCount and applicable mandatory rule. No cross-group weights or compensation. |
 | BR-47 | At most one draft and active pointer per exact scope; they may coexist. Saving partial draft does not activate or affect frozen attempts. |
@@ -2305,14 +2306,14 @@ The current local flow uses separately scoped Baseline and Skill policies, group
 | BR-58 | Question-bank staff access is restricted to Experts and L&D Managers in an organization. Only the responsible Expert can edit a question or submit its draft. |
 | BR-59 | New question codes are generated by the system, must be unique in the question bank and cannot be changed. Imports cannot supply manually chosen question codes. |
 | BR-60 | A question requires a prompt and a valid micro-skill. Prompt and explanation lengths must not exceed 20,000 characters, and each choice must not exceed 5,000 characters. |
-| BR-61 | Question submission requires four distinct nonempty choices, exactly one correct answer, valid Skill+knowledgeLevel+outcomeCode and explanation. Draft mapping may remain incomplete; legacy difficulty cannot classify knowledge automatically. |
+| BR-61 | Question submission needs four distinct nonempty choices, one correct answer, Skill, knowledge level and explanation. Outcome Codes are not required for current matching. |
 | BR-62 | Matching normalized prompt-and-choice content requires acknowledgment of the duplicate warning before saving or importing; duplicates are not silently accepted. |
 | BR-63 | Only an L&D Manager can approve a submitted question, and that manager must first open the exact submitted version. Approval is blocked if its micro-skill snapshot changed or its responsible Expert is no longer valid. |
 | BR-64 | Published question content is revised through a successor draft rather than by editing the published version. A submitted question must be withdrawn or returned before further draft editing. |
 | BR-65 | Withdrawal, return, responsibility transfer and availability decisions require a reason of at most 2,000 characters. Retirement/reactivation requires an Expert request and an L&D Manager decision. |
 | BR-66 | Bulk question approval accepts 1-500 distinct questions and validates the entire selection before applying approvals. |
 | BR-67 | A question import preview belongs to its creating Expert, expires after 30 minutes and cannot be committed with validation errors or unacknowledged warnings. Changed duplicate matches require a new preview. |
-| BR-68 | Current Module has exactly one Skill at one knowledgeLevel with skillVersion/outcomeCodes and complete released learning content; new authoring omits price. Historical multi-Skill data remains separate. |
+| BR-68 | A Module teaches one Skill at one knowledge level/version and has complete released content. New authoring omits price and Outcome Code selection. |
 | BR-69 | The owning Expert submits a Draft or Returned module. An L&D Manager approves or returns it, and returning a submission requires feedback of at most 2,000 characters. |
 | BR-70 | A module becomes Released only after its approved catalog projection succeeds. A pending publication or archive projection must be retried rather than treated as completed. |
 | BR-71 | Module archival requires an Expert request and L&D Manager approval, and must not remove a required skill provider. Restoring an archived module creates a new draft requiring approval. |
@@ -2321,7 +2322,7 @@ The current local flow uses separately scoped Baseline and Skill policies, group
 | BR-74 | Learning preview does not start a session. Starting learning pins a released module revision; later publication or archival does not silently replace that learner's pinned revision. |
 | BR-75 | A text lesson can be marked completed only after reaching its end. A video lesson requires at least 90% watched coverage; overlapping playback intervals do not count twice. |
 | BR-76 | Video progress must use valid playback positions and contiguous watched intervals of at most 15 seconds, within the allowed elapsed-viewing-time bound. Progress updates must target the pinned learning revision. |
-| BR-77 | Role requirements are explicit requiredKnowledgeLevels. Official evidence compatibility uses exact Skill+knowledge+version/outcome coverage; numeric requiredScore/mastery are not active inputs. |
+| BR-77 | Target requirements use explicit knowledge levels. Official evidence matches organization, Employee, Skill, knowledge level and Skill version; no automatic lower-level achievement or numeric mastery conversion. |
 | BR-78 | No numeric gap subtraction applies. Baseline pass skips corresponding initial learning only and is never official achievement. |
 | BR-79 | Unassessed/incompatible/missing provision is distinct from failure. Baseline only projects actually assessed groups; never add B solely from A prerequisite topology. |
 | BR-80 | Initial work derives from actual target diagnostics/official evidence; later actual failed prerequisite groups add/reuse supplementation. One qualified successful alternative satisfies a requirement. |
@@ -2329,7 +2330,7 @@ The current local flow uses separately scoped Baseline and Skill policies, group
 | BR-82 | Assigned Expert check/save/approve requires exact revision/content hash and current assignment. Generation attaches all eligible modules; Role-assigned Expert may reduce alternatives during review without deleting requirements or history. |
 | BR-83 | Initial-pathway approval requires a valid rechecked plan whose content identity matches the reviewed draft and whose learner selection is still current. A generated proposal is not an approved pathway. |
 | BR-84 | Own current/archived views retain history. New admission requires accepted current option; authentic previously started/pinned packages may continue under retained provenance, including after target change. Archived view alone grants no new start. |
-| BR-85 | Exact accepted option/version/Skill/knowledge/outcomes and live provider/approval/dependency checks govern entry. Continued started A content remains open after B discovery, while official A completion may wait for actual B achievement. |
+| BR-85 | Exact accepted option/version/Skill/knowledge and live provider/approval/dependency checks govern entry. Continued started A content remains open after B discovery, while official A completion may wait for actual B achievement. |
 
 **Implementation references:** Registration rules are grounded in [RegistrationFields](../backend/src/main/java/com/adaptlearngraph/entities/domain/RegistrationFields.java), [RegistrationService](../backend/src/main/java/com/adaptlearngraph/services/RegistrationService.java), [WorkspaceAuthenticationService](../backend/src/main/java/com/adaptlearngraph/services/WorkspaceAuthenticationService.java) and [IntegrationPolicy](../backend/src/main/java/com/adaptlearngraph/entities/domain/IntegrationPolicy.java). Workspace and payment rules are grounded in [SubscriptionAccessPolicy](../backend/src/main/java/com/adaptlearngraph/entities/domain/SubscriptionAccessPolicy.java), [JpaSubscriptionWorkspaceStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaSubscriptionWorkspaceStore.java), [PlanTerms](../backend/src/main/java/com/adaptlearngraph/entities/domain/PlanTerms.java), [JpaPaymentOrderStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaPaymentOrderStore.java), [JpaPaymentProcessingStore](../backend/src/main/java/com/adaptlearngraph/repository/JpaPaymentProcessingStore.java) and [BillingCalendar](../backend/src/main/java/com/adaptlearngraph/entities/domain/BillingCalendar.java). Catalog and assessment rules are grounded in [TargetRoleService](../backend/src/main/java/com/adaptlearngraph/services/TargetRoleService.java), [PrerequisiteService](../backend/src/main/java/com/adaptlearngraph/services/PrerequisiteService.java), [TargetSelectionCommandProcessor](../backend/src/main/java/com/adaptlearngraph/services/TargetSelectionCommandProcessor.java), [BaselineBlueprintService](../backend/src/main/java/com/adaptlearngraph/services/BaselineBlueprintService.java), [BaselineBlueprintDraftValidator](../backend/src/main/java/com/adaptlearngraph/services/BaselineBlueprintDraftValidator.java), [BaselineAssessmentLifecycle](../backend/src/main/java/com/adaptlearngraph/entities/domain/BaselineAssessmentLifecycle.java) and the [adaptive-attempt services](../backend/src/main/java/com/adaptlearngraph/services/AdaptiveAttemptStartService.java). Authoring and learning rules are grounded in [QuestionBankService](../backend/src/main/java/com/adaptlearngraph/services/QuestionBankService.java), [ModuleAuthoringService](../backend/src/main/java/com/adaptlearngraph/services/ModuleAuthoringService.java), [LearningContent](../backend/src/main/java/com/adaptlearngraph/entities/domain/LearningContent.java) and [LearningContentService](../backend/src/main/java/com/adaptlearngraph/services/LearningContentService.java). Gap and pathway rules are grounded in [RoleGap](../backend/src/main/java/com/adaptlearngraph/entities/domain/RoleGap.java), [InitialPathwayAdmission](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayAdmission.java), [InitialPathwayReview](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayReview.java), [InitialPathwayView](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayView.java) and [InitialPathwayAccess](../backend/src/main/java/com/adaptlearngraph/services/InitialPathwayAccess.java).
 
@@ -2397,9 +2398,9 @@ Manual review procedure:
 | Topic | Required follow-up |
 | --- | --- |
 | Authoring/publication | Replace gated legacy role/skill writes with current-model, trusted assignment-scoped workflows and the Expert-submit/L&D-publish split. |
-| Learning/content | Approve persistent module/content bundle, private MinIO access and revision workflow design. |
+| Learning/content | Preserve implemented module/content publication and private access; remaining runtime/provider acceptance is separate. |
 | AI/RIASEC | Local 60-item raw 0–40 flow and Ollama4B model/input/failure contract are implemented; adaptation, general AI quality and member performance remain unverified. |
-| Adaptive engine | Implement evidence-to-mastery, gap calculation, initial review and recalculation with replay/recovery semantics. |
+| Adaptive engine | Current source implements diagnostics, exact evidence, initial review and recalculation. Role-scoped shared configuration is implemented in source; runtime verification remains outstanding. |
 | Financial reporting | Approve actual costs/benefits schema, currency/period/zero-cost rules and realized-versus-scenario distinction. |
 | Operations | Confirm hosting, staging/production URLs, branch protections, CI/CD, backups/restore and AI development-use declaration. SDD contains labeled proposals, not invented deployment facts. |
 | Evidence | Execute source NFR benchmarks and full two-organization acceptance with real approved resources; retain per-REQ results and provider exclusions. |

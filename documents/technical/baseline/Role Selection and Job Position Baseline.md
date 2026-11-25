@@ -12,15 +12,15 @@ Accepted RequirementPathwayAdmission confirmation pins selection revision and pr
 
 ## Sources, processing and storage
 
-Resolve selected explicit MODULE_ONLY target groups minus exact compatible official evidence for BASELINE; keep certificate-only/unconfigured needs separate. SKILL_ASSESSMENT requires current accepted exact completed option (step/module revision/content, Skill version/knowledge/outcomes) and MAIN plus ALL configured transitive prerequisite groups. Official prerequisite evidence does not exempt those groups.
+Baseline checks target Skills through required knowledge levels, including lower levels and certificate-mode Skills, considering compatible evidence/history. It adds no unassessed cross-Skill needs. Skill Assessment requires authorized learning and checks MAIN, lower main-Skill levels and Advanced prerequisite Skills.
 
-RuleAssessmentAttemptService validates active scoped policy/catalog and all bank coverage, samples once, freezes groups/items/rules/options and sets server start/deadline only after a complete paper exists. Resume retains the paper/deadline/accepted answers; only presented options at expected revision before deadline are accepted. Explicit submit and server expiry both FINALIZE once, with SUBMITTED/DEADLINE reason; unanswered=0. Each group has its own count/pass/mandatory/veto/reasons. Retake is a new full paper with configured max/wait and latest previousAttemptId, no carry-over. Current Skill attempt context includes exact module/revision despite shared policy.
+The server checks access, settings and sufficient approved bank, then retains the paper, answers and deadline. Resume keeps them. Submit/deadline finalizes once. Retake uses a new full paper with shared Employee/Skill/level/version allowance and wait; module provenance remains intact.
 
 ## Result and My Mastery
 
 RuleKnowledgeProfileService and RuleAssessmentOutcomeService read PostgreSQL diagnostics/group results separately from official skill_knowledge_evidence and NEED_REVIEW. Baseline only creates diagnostics for actually assessed groups; a pass skips initial corresponding learning, never ACHIEVED or module completion. It does not create B solely from A prerequisite topology. No numeric gap subtraction, title exemption or lower-knowledge inheritance.
 
-Official evidence requires exact org/learner/Skill/knowledge/Skill version/outcome coverage with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
+Official evidence requires exact org/learner/Skill/knowledge/Skill version with accepted MODULE_ASSESSMENT or CERTIFICATE source. Bypass is a waiver, not achievement. Failed already-achieved prerequisite yields NEED_REVIEW without revocation; later genuine compatible evidence may resolve it. Result finalization differs from pending downstream processing; WAITING_REQUIRED_SUPPLEMENT is not a new scoring failure.
 
 ## Observable states and recovery
 

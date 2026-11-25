@@ -1,5 +1,7 @@
 # Test Documentation
 
+**2026-11-23 assessment/Role/pathway/RIASEC features:** detailed cases now follow the existing REQ files and the [unit](unit/FR-06.08-skill-assessment.md), [integration](integration/REQ-001-002-041-042-assessment-pathway.md) and [system](system/FR-06.08-skill-assessment.md) directories. The 26 committed IDs retain their recorded full-run PASS result. Three necessary supporting feature checks (unit1/integration1/browser1) passed separately; do not add them to the committed count. Report5 remains deferred. Older evidence below stays historical.
+
 > [!IMPORTANT]
 > **Target Role Flow Index & Detailed Test Cases (Report 5)**: See [TARGET_ROLE_FLOW_INDEX.md](TARGET_ROLE_FLOW_INDEX.md) for the consolidated cross-reference and step-by-step specifications of all 22 committed automated test cases (20 feature tests across 10 core functions, 1 end-to-end workflow test, and 1 state transition test) mapped to their Excel sheets, UI portals, and Playwright test suites.
 

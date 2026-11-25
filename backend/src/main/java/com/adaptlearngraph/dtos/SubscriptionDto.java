@@ -32,18 +32,58 @@ public final class SubscriptionDto {
                                        PlanTermsResponse terms, long providerOrderCode, String paymentStatus,
                                        String paymentLinkId, String checkoutUrl, Long observedPaidAmount,
                                        Instant createdAt, Instant expiresAt, Instant confirmedAt,
-                                       String failureCode, int attempt) {}
+                                       String failureCode, int attempt, int addonSeats, long addonAmountVnd,
+                                       String seatAddonKind) {
+        public PaymentOrderResponse(UUID orderId, UUID intentId, String kind, UUID registrationId,
+                                    UUID organizationId, UUID ownerAccountId, UUID planId, UUID planVersionId,
+                                    PlanTermsResponse terms, long providerOrderCode, String paymentStatus,
+                                    String paymentLinkId, String checkoutUrl, Long observedPaidAmount,
+                                    Instant createdAt, Instant expiresAt, Instant confirmedAt,
+                                    String failureCode, int attempt) {
+            this(orderId, intentId, kind, registrationId, organizationId, ownerAccountId, planId, planVersionId, terms,
+                    providerOrderCode, paymentStatus, paymentLinkId, checkoutUrl, observedPaidAmount, createdAt, expiresAt,
+                    confirmedAt, failureCode, attempt, 0, 0, null);
+        }
+    }
 
     public record WorkspaceSetupResponse(UUID organizationId, String state, Instant readyAt, String failureCode) {}
 
     public record OrderStatusResponse(PaymentOrderResponse order, String applicationState, WorkspaceSetupResponse workspace) {}
 
-    public record PaidPeriodResponse(UUID periodId, Instant startsAt, Instant endsAt, PlanTermsResponse terms) {}
+    /** {@code terms} are the plan part; {@code addonSeats} are the additional Employee seats paid for the same period. */
+    public record PaidPeriodResponse(UUID periodId, Instant startsAt, Instant endsAt, PlanTermsResponse terms,
+                                     UUID planId, int addonSeats, int totalSeats) {
+        public PaidPeriodResponse(UUID periodId, Instant startsAt, Instant endsAt, PlanTermsResponse terms) {
+            this(periodId, startsAt, endsAt, terms, null, 0, terms == null ? 0 : terms.employeeSeats());
+        }
+    }
 
     public record SummaryResponse(UUID organizationId, String organizationName, String workspaceStatus,
                                   String subscriptionStatus, PaidPeriodResponse current, PaidPeriodResponse scheduled,
                                   int usedSeats, int allocatedSeats, int admissionLimit,
-                                  List<PaymentOrderResponse> paymentHistory) {}
+                                  List<PaymentOrderResponse> paymentHistory, int desiredAddonSeats,
+                                  int scheduledShortfall, UUID renewalPlanId, boolean seatChangeBlocked) {
+        public SummaryResponse(UUID organizationId, String organizationName, String workspaceStatus,
+                               String subscriptionStatus, PaidPeriodResponse current, PaidPeriodResponse scheduled,
+                               int usedSeats, int allocatedSeats, int admissionLimit,
+                               List<PaymentOrderResponse> paymentHistory) {
+            this(organizationId, organizationName, workspaceStatus, subscriptionStatus, current, scheduled, usedSeats,
+                    allocatedSeats, admissionLimit, paymentHistory, 0, 0, null, false);
+        }
+    }
+
+    public record SeatAddonQuoteResponse(String target, String kind, UUID periodId, String planName, Instant startsAt,
+                                         Instant endsAt, int seats, long perSeatVnd, long amountVnd) {}
+
+    public record SeatAddonOrderRequest(@NotNull UUID idempotencyKey,
+                                        @NotNull @JsonDeserialize(using = WholeInteger.class) Integer seats,
+                                        @NotBlank String target,
+                                        @NotNull @JsonDeserialize(using = WholeLong.class) Long expectedAmountVnd) {}
+
+    public record AddonSeatsRequest(@NotNull @JsonDeserialize(using = WholeInteger.class) Integer desiredAddonSeats,
+                                    @NotNull @JsonDeserialize(using = WholeInteger.class) Integer expectedDesiredAddonSeats) {}
+
+    public record AddonSeatsResponse(int desiredAddonSeats) {}
 
     public record WorkspaceResponse(UUID organizationId, String name, String status, String setupState,
                                     String workspaceSlug, String industry, String headcount, String country,
@@ -77,7 +117,11 @@ public final class SubscriptionDto {
     }
 
     public record OrderRequest(@NotNull UUID planId, @NotNull UUID expectedVersionId, @NotNull UUID idempotencyKey,
-                               UUID replacesOrderId) {}
+                               UUID replacesOrderId, @JsonDeserialize(using = WholeInteger.class) Integer expectedAddonSeats) {
+        public OrderRequest(UUID planId, UUID expectedVersionId, UUID idempotencyKey, UUID replacesOrderId) {
+            this(planId, expectedVersionId, idempotencyKey, replacesOrderId, null);
+        }
+    }
 
     public record SuspensionRequest(@NotNull Boolean suspended) {}
 

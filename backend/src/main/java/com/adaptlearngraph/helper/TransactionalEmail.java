@@ -5,6 +5,16 @@ import java.util.Map;
 public record TransactionalEmail(String subject, String text, String html) {
     public static TransactionalEmail render(String subject, String introduction, String code,
             Map<String, String> details, String actionLabel, String actionUrl, String guidance) {
+        return render(subject, introduction, code, details, actionLabel, actionUrl, guidance, false);
+    }
+
+    public static TransactionalEmail renderLearning(String subject, String introduction,
+            Map<String, String> details, String actionLabel, String actionUrl, String guidance) {
+        return render(subject, introduction, null, details, actionLabel, actionUrl, guidance, true);
+    }
+
+    private static TransactionalEmail render(String subject, String introduction, String code,
+            Map<String, String> details, String actionLabel, String actionUrl, String guidance, boolean learning) {
         StringBuilder plain = new StringBuilder(introduction).append("\n\n");
         StringBuilder body = new StringBuilder("<p style=\"margin:0 0 24px;color:rgb(71,85,105);line-height:1.7\">")
                 .append(escape(introduction)).append("</p>");
@@ -18,10 +28,17 @@ public record TransactionalEmail(String subject, String text, String html) {
             body.append("<table role=\"presentation\" style=\"width:100%;border-collapse:collapse;margin:24px 0\">");
             details.forEach((label, value) -> {
                 plain.append(label).append(": ").append(value).append('\n');
-                body.append("<tr><td style=\"padding:12px 0;border-bottom:1px solid rgb(226,232,240);color:rgb(71,85,105)\">")
+                if (learning) {
+                    body.append("<tr><td style=\"padding:16px 20px;border:1px solid rgb(226,232,240);background:rgb(248,250,252);text-align:left;word-break:break-word\">")
+                            .append("<div style=\"font-size:11px;color:rgb(100,116,139);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px\">")
+                            .append(escape(label)).append("</div><div style=\"font-size:15px;font-weight:600;line-height:1.6\">")
+                            .append(escape(value)).append("</div></td></tr>");
+                } else {
+                    body.append("<tr><td style=\"padding:12px 0;border-bottom:1px solid rgb(226,232,240);color:rgb(71,85,105)\">")
                         .append(escape(label)).append("</td><td style=\"padding:12px 0 12px 16px;text-align:right;")
                         .append("border-bottom:1px solid rgb(226,232,240);font-weight:600\">")
                         .append(escape(value)).append("</td></tr>");
+                }
             });
             body.append("</table>");
         }
@@ -36,10 +53,12 @@ public record TransactionalEmail(String subject, String text, String html) {
                     .append(escape(actionUrl)).append("\">").append(escape(actionLabel)).append("</a></p>")
                     .append("<p style=\"font-size:12px;line-height:1.6;word-break:break-all;color:rgb(71,85,105)\">")
                     .append("If the button does not work, open: <a href=\"").append(escape(actionUrl)).append("\">")
-                    .append(escape(actionUrl)).append("</a></p>");
+                    .append(learning ? "Open your learning workspace" : escape(actionUrl)).append("</a></p>");
         }
         plain.append("\n").append(guidance).append("\n\nAdapt-Learn-Graph\nThis is an automated service notification.");
-        body.append("<p style=\"margin:24px 0 0;font-size:13px;line-height:1.7;color:rgb(71,85,105)\">")
+        body.append(learning
+                ? "<p style=\"margin:24px 0 0;padding:12px 15px;border-left:3px solid rgb(237,166,121);background:rgb(255,248,243);font-size:13px;line-height:1.7;color:rgb(121,86,62)\">"
+                : "<p style=\"margin:24px 0 0;font-size:13px;line-height:1.7;color:rgb(71,85,105)\">")
                 .append(escape(guidance)).append("</p>");
         String html = """
                 <!doctype html><html lang="en"><head><meta charset="UTF-8">
@@ -58,6 +77,10 @@ public record TransactionalEmail(String subject, String text, String html) {
                 Keep account codes and activation links private. We will never ask you to share them.</td></tr>
                 </table></td></tr></table></body></html>
                 """.formatted(escape(introduction), escape(subject), body);
+        if (learning) {
+            html = html.replace("Keep account codes and activation links private. We will never ask you to share them.",
+                    "Please do not reply to this email.");
+        }
         return new TransactionalEmail(subject, plain.toString(), html);
     }
 

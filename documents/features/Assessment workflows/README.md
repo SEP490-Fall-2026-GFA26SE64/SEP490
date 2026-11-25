@@ -1,12 +1,14 @@
 # Assessment Workflows
 
+> Current source separates Skill Assessment configuration by Role. The unchanged Expert editor activates common settings for currently assigned Roles; a shared Skill uses its learning Role's configuration. Attempt history, used attempts and waiting periods still share the same Employee + Skill + knowledge level + Skill version across Roles and modules. Configuration isolation is implemented; full attempt isolation by Role is not. Existing papers retain their original settings. Runtime behavior has not been verified.
+
 **Source alignment — 2026-11-07.** Confirmed behavior is distinguished from checked-in implementation below. [Current source/schema/API contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md) records local profile gates, exact ownership and remaining mismatches. Runtime/database acceptance is not established by this prose update.
 
 **Source:** [Version 2](../../FA26SE267_KNOWLEDGE_GRAPH_BASED_ADAPTIVE_LEARNING__haht43_Version_2.md), section 3.2(c), Functional Requirements.
 
 **Source reconciliation:** 2026-10-28. **Source requirements in this domain:** 6.
 
-**Contract basis:** confirmed shared-Role baseline / Expert Skill–knowledge configuration decisions. Historical evidence retains its original scope; it is not a fresh passing result.
+**Contract basis:** Role Baseline, shared Skill Assessment and current Employee learning decisions. Historical evidence retains its original scope.
 
 ## Shared Role baseline — current contract, 2026-11-19
 
@@ -14,8 +16,8 @@ This section supersedes older Role–member-Level baseline configuration and com
 
 - Counts and passing requirements are configured per knowledge level and applied independently to each required Skill × knowledge-level group. The upper bound is the smallest eligible exact Skill/version bank at that knowledge level across the Role, capped at 500. Every group must supply the configured count; shortages block activation and new attempts rather than reducing counts or passing thresholds. A zero-question required group blocks start and identifies its Skill/knowledge level. Existing attempts retain their frozen paper.
 - Drafts may be explicitly saved with incomplete banks. Activation requires at least one eligible question in every applicable group across the Role's member Levels, reporting missing Level/Skill/knowledge banks. Admission rechecks the selected Level's bank. Existing group/paper capacity guards remain.
-- One shared seconds-per-question setting determines `actual selected questions × seconds per question`; the server freezes the resulting deadline. Retake settings are shared across the Role. There are no new numeric defaults.
-- Opening/editing/Next/Back are local and read-only toward persistence. Save draft and Activate are separate explicit actions. Dirty close offers Save draft / Discard changes / Continue editing; save failure keeps the editor open. Activation requires the exact successfully saved revision and is disabled while edits are unsaved. Abandon saved draft is separate from discarding local edits.
+- Seconds per question determines paper duration. New forms suggest 3 questions/2 correct where possible, 60 seconds per question, 3 attempts and a one-minute wait; saved settings govern the paper.
+- Opening, editing and wizard navigation do not publish changes. Save draft stores progress. Save & Activate saves then activates the saved revision; retry repeats only the failed stage. Closing unsaved changes offers save, discard or continue editing.
 - Configurations lists one row per Role, with drafts before unconfigured Roles. Active holds policies used for new attempts. Successful activation opens Active, retains that Role in view and shows where to find History & details. Archived retains inactive versions, abandoned drafts and historical Role-Level policies.
 - Historical Role-Level policies are read-only; none is automatically promoted or merged. New baseline starts require an activated shared Role policy. Existing attempts retain IDs, frozen questions/rules, accepted answers, results and original deadlines, and remain resumable under ordinary expiry rules. Skill Assessment scope, quotas and timing semantics are unchanged.
 - Results summarize distinct Skills: a Skill passes only when all its required knowledge groups pass. Each level's result and frozen counts/threshold remain available; only failed required levels become initial learning gaps. Keyboard answer selection remains available without shortcut badges or a question-area outline.
@@ -26,11 +28,11 @@ This section supersedes older Role–member-Level baseline configuration and com
 
 **Keyboard controls — 2026-11-18:** the shared Employee baseline/Skill Assessment panel now supports number keys to select displayed answers and Enter to save and advance after server acceptance. The final question opens explicit submission confirmation. State, duplicate/repeat, modifier/IME and editing-control guards retain the original command lifecycle. [Verification](../../testing/system/assessment-keyboard-20261118.md): 10 component tests and 5 isolated Chrome journeys passed; build/scoped lint passed. This is browser interaction evidence, not new live assessment persistence acceptance.
 
-At `2c2468b5`, scoped configuration, Role-derived Expert Skill access, draft-first directories, module-specific retake contexts and mandatory-question quotas exist in active local source. [Ordered flow/API/worker/schema contract](../../technical/Organization%20Rule%20Assessment%20and%20Pathway.md#current-flow-2026-11-18) supersedes older code-confirmation notes here. RIASEC below remains a separate workflow.
+Current source supports Role Baseline, shared Skill Assessment, mandatory-question rules and retained history. Existing attempts keep their original paper and deadline. Experts may configure only Skills covered by their assigned Roles. The common editor activates settings only for the Expert's currently assigned Roles. Each Role retains its own configuration, so the same Skill can use different rules in different Roles. Existing configurations and frozen attempts are preserved.
 
-L&D configures BASELINE per org+Role+member Level; assigned-Role Experts share SKILL_ASSESSMENT per org+Skill+knowledge. Save draft is distinct from activation; immutable policy versions, pointer revisions, catalog hashes, abandoned drafts and command receipts preserve history. New Skill policies explicitly configure mandatoryCount for every MAIN/prerequisite group; exactly that many mandatory plus the remaining ordinary items are sampled within totalCount. All sampled mandatory answers must be correct when quota > 0, alongside the independent requiredCorrectCount. Baseline editor has no mandatory/veto condition. Legacy frozen null-quota papers retain their original semantics.
+L&D maintains one Baseline configuration per organization and Role. The selected Role Level determines the Employee's questions. Skill Assessment uses shared question, timing and retake settings. Each new paper retains its settings. Baseline has no mandatory-question or all-wrong-veto condition. Skill Assessment defines passing counts, mandatory quotas and the prerequisite all-wrong rule. Saving and activating remain explicit actions.
 
-New question/module/evidence matching is Skill+knowledge+Skill version in the trusted organization, with no Outcome Code filter. V63 sidecars and V64 mandatory_count are reflected in the [current schema](../../diagrams/postgresql-assessment.svg). Actual module completion + accepted pathway option admits MAIN + all configured prerequisite groups. Retake allowance/wait is keyed by selection/step/module/revision; equivalent module 1 cannot exhaust module 2. Scores freeze before durable outcome processing; WAITING_SUPPLEMENT is not a failed or discarded paper. No new tests/runtime actions occur in this document update.
+Question/module/evidence matching uses organization, Skill, knowledge level and Skill version, without Outcome Codes. Skill Assessment requires authorized completed learning and includes main, lower-level and prerequisite groups. Retake allowance/wait and history are shared across modules for the same Employee/Skill/level/version. Scores remain immutable while pathway learning may still be incomplete.
 
 ## Current Implementation
 
@@ -39,8 +41,8 @@ New question/module/evidence matching is Skill+knowledge+Skill version in the tr
 | Requirement | Classification | Current behavior and limit |
 | --- | --- | --- |
 | FR-04.05 | Implemented in source; remote state unverified | L&D manages org+Role baseline policies, local editor state, explicit saved drafts and separate activation. Legacy Role-Level policies remain read-only history. |
-| FR-05.06 | Partial | Responsible Expert authors exact Skill/knowledge/outcome/mandatory questions; L&D reviews immutable publication. Expert separately configures org+Skill+knowledge Skill Assessment shared by equivalent modules. Current catalog restricts policy editing to Skills required by assigned active Roles; no direct Skill assignment is required. |
-| FR-06.02 | Implemented; runtime unverified here | Selected Role–Level baseline freezes groups/questions/policy/deadline, resumes accepted answers and returns group diagnostics. Compatible official evidence exempts exact groups; certificate-only needs use evidence, not questions. |
+| FR-05.06 | Implemented with an assignment boundary | Experts author reviewed questions and manage Skill Assessment. The common editor applies settings to currently assigned Roles only; a shared Skill uses the configuration of its owning Role. |
+| FR-06.02 | Implemented; runtime unverified here | Baseline checks target Skills and lower levels, including certificate-mode Skills, and retains diagnostic results without awarding official achievement. |
 | FR-06.03 | Implemented local opt-in; source re-inspected 2026-11-18 | Overview owns 60 EN/VI activities, server autosave/takeover, raw 0–40 scores, current/history/inactive/recovery and durable AI. Latest history/permanent-delete UI has build/static evidence only. |
 | FR-06.08 | Implemented local path; remaining branches unverified | Exact completed accepted module option admits MAIN + all prerequisite groups. Content completion differs from official achievement; supplementation/veto/full retakes remain explicit. |
 | FR-07.05 | Implemented local rule engine | RuleAssessmentAttemptService/RuleAssessment score persisted groups, auto-finalize at server deadline and queue idempotent downstream effects. Legacy IRT services are not this route's fallback. |
@@ -106,20 +108,20 @@ Canonical entry is `/employee/overview?tab=riasec`; standalone/learner and recog
 
 ### Shared engine, scope and policy
 
-The responsible Expert authors question content, key/explanation and exact Skill + knowledge + Skill version/mandatory mapping; L&D reviews question publication. L&D owns BASELINE configuration per organization + Role; selected member Level determines each Employee's requirements. Expert owns SKILL_ASSESSMENT per organization + Skill + knowledge level, shared across equivalent modules. The shared engine does not merge their drafts, activation pointers or version counters. No arbitrary policy scripting is accepted.
+The responsible Expert authors questions, choices, correct answers, explanations and Skill/knowledge mapping. L&D reviews publication. L&D maintains one Baseline configuration per organization and Role. The selected Role Level determines the Employee's questions. Skill Assessment uses shared question, timing and retake settings. Each new paper retains its settings. Experts may configure only Skills covered by their assigned Roles. The common editor activates settings only for the Expert's currently assigned Roles. Each Role retains its own configuration, so the same Skill can use different rules in different Roles. Existing configurations and frozen attempts are preserved.
 
-Knowledge levels are FOUNDATION / INTERMEDIATE / ADVANCED, distinct from Role member Level and legacy EASY/MEDIUM/HARD difficulty. No level implies another. MAIN/PREREQUISITE is a group's role in a paper, not a fixed question type.
+Knowledge levels are FOUNDATION, INTERMEDIATE and ADVANCED, separate from Role Level. Baseline includes lower levels of the target Skill; this never grants lower-level achievements automatically. Skill Assessment includes lower main-Skill levels and prerequisite Skills, which current readers assess at Advanced.
 
 | Purpose | Scope | Result consumer |
 | --- | --- | --- |
-| BASELINE | Explicit MODULE_ONLY requirements of the selected Role and member Level, minus exact compatible official achievements. CERTIFICATE_ONLY uses certificate evidence instead of baseline questions. | Initial learning needs; pass skips initial module assignment only. |
+| BASELINE | Target Skills through the required knowledge level, including certificate-mode Skills, subject to compatible evidence and retained history. | Diagnostic initial learning needs; no official achievement. |
 | SKILL_ASSESSMENT | Main skill–knowledge requirement after qualifying learning, plus ALL configured prerequisite groups. Official prerequisite achievement does not exempt these groups. | Main completion/official achievement when required conditions hold; prerequisite supplementation or NEED_REVIEW and recalculation. |
 
 The shared engine validates coverage, samples, persists/resumes and scores. It does not approve certificates/bypasses or arbitrarily mutate pathways. RIASEC remains a separate interest workflow.
 
-L&D and Expert maintain their separately owned BASELINE and SKILL_ASSESSMENT scopes and active versions. Both automatically finalize at their frozen server deadline. Baseline editor configures common count/pass settings per knowledge level, seconds per actual question and Role retake limits; baseline mandatory and veto flags are false. Expert configures Skill Assessment group counts/pass/mandatory and optional all-wrong prerequisite veto, plus its own fixed timer/retake limits. Values come from the organization; 7/10 is an example, not a default. A group must meet its own threshold AND configured mandatory conditions. No aggregate score offsets another group's failure.
+L&D manages Role Baseline; Experts manage Skill Assessment within their assignment. Paper duration follows actual question count and seconds per question. Every group must meet its own passing and mandatory rules. One group cannot offset another failure.
 
-Mandatory quota counts inside total: new Skill policies sample exactly mandatoryCount approved mandatory items and fill the remainder from ordinary items in the same Skill/knowledge/Skill-version bank, without duplicates. Quota0 means ordinary-only sampling. Legacy null-quota frozen papers keep their earlier selection semantics. Validate mandatory count fits the total, bank sufficiency and achievable conditions/thresholds. Skill Assessment requires its complete configured bank; baseline positive shortfalls follow the proportional allocation rule above, while a zero required bank blocks the entire start. No group borrows questions from another. Current validation bounds groups to 1–500 questions and up to 1,000 unique groups; the configured paper ceiling defaults to 1,000 items. Count, capacity, bank coverage and exact catalog hashes are rechecked before activation/start.
+Mandatory questions count within the total. Configuration and new-paper creation require sufficient approved questions. Missing or insufficient required questions block the affected operation. Another Skill or level cannot fill the gap. Existing papers keep frozen rules.
 
 Correct = 1; incorrect/unanswered = 0. Negative/partial credit, IRT ability/SE/confidence/calibration, BKT mastery updates and numeric target-gap subtraction are outside the new active flow. Scores describe the sampled paper, not a percentage of all workplace competence.
 
@@ -133,11 +135,11 @@ Correct = 1; incorrect/unanswered = 0. Negative/partial credit, IRT ability/SE/c
 
 Business states distinguish not assessed, unavailable/insufficient bank, in progress/resumable, finalized and downstream processing pending/failed. Missing evidence is not a failed assessment. The current contract names/transaction/API mapping govern implementation. Configured deadline automatically finalizes the paper once with unanswered items zero; unsupported abandonment/cancellation features are not added.
 
-### Confirmed scope, ordering and module retry rules
+### Assignment, ordering and shared assessment history
 
-Expert Skill-policy editing follows assigned Roles: an Expert may configure Skills contained in any Role they are assigned, and Experts of different Roles sharing the Skill edit one common Skill-knowledge policy. A separate direct Skill assignment is not required. Enforce trusted organization/membership/entitlement, Role-derived scope and revision/replay checks.
+Experts may configure only Skills covered by their assigned Roles. The common editor activates settings only for the Expert's currently assigned Roles. Each Role retains its own configuration, so the same Skill can use different rules in different Roles. Existing configurations and frozen attempts are preserved.
 
-Saved draft scopes precede unconfigured scopes. Equivalent modules use common policy parameters, but max-attempt allowance and retake waiting time apply separately to each module's authorized learning context. Module 1 cannot exhaust or delay module 2, and prior Skill achievement does not itself block another eligible module's assessment. Each module still requires its own qualifying completion/access and retry conditions. This is confirmed policy and is present in CurrentRoleKnowledgeCatalog context keys and RuleAssessmentAttemptService counters/wait guards at the 18 November source checkpoint; runtime acceptance remains version-scoped.
+Drafts appear before unconfigured entries. Attempts, allowance, waiting periods and history are shared by the same Employee, Skill, knowledge level and Skill version across modules and learning contexts. Opening another module does not reset allowance. Its own authorized learning completion is still required.
 
 ### Prerequisite results and full retake
 
@@ -145,10 +147,10 @@ Saved draft scopes precede unconfigured scopes. Equivalent modules use common po
 | --- | --- | --- |
 | Main fails its own rules | Incomplete; reuse current step. | Evaluate prerequisite groups separately; do not duplicate the main step. |
 | Main and prerequisites pass | May complete when learning and required conditions hold. | No supplementation from those groups. |
-| Prerequisite below threshold with at least one correct | Main may pass; retain main group result pending required supplementation before closing the step. | Without official achievement: required remediation. With official achievement: retain ACHIEVED and record NEED_REVIEW/optional review. |
+| Prerequisite fails without a veto | Main remains incomplete until required learning and a new qualifying assessment. | Add missing learning/certificate work unless official achievement already exists; retain that achievement with NEED_REVIEW. |
 | All answers wrong in a prerequisite and org veto enabled | Main remains incomplete and requires assessment retake, even when prerequisite was officially achieved. | Remediation if not officially achieved; otherwise NEED_REVIEW. Never revoke the prior achievement. |
 
-With veto disabled, ordinary group rules apply; zero correct does not silently enable a veto. Each retake is a NEW full configured paper: main + ALL prerequisite groups, without passing-group score carry-over/exemption. Retaining a main group result while awaiting supplementation is not a partial-paper retake and does not award ACHIEVED. [Profile/recalculation](../Adaptive%20engine/README.md#profile-and-evidence-precedence) defines downstream effects.
+Every retake is a new full paper containing main and prerequisite groups, without carrying passing groups forward. Completing a supplement or obtaining a certificate does not change an old failed result. The Employee takes a new assessment when eligible. A processed result can still leave learning pending.
 
 ### UI continuity and implementation boundary
 
@@ -168,7 +170,7 @@ The current routed configuration/Question Bank/reader flows reuse the existing v
 | 6. Main Flow | Select Role; edit local knowledge-level counts/pass, seconds per question and retakes; explicitly Save draft; separately Activate that saved revision after all-Level readiness checks. |
 | 7. Alternative / Exception Flows | Reject stale/unauthorized/impossible configuration; expose insufficient bank; preserve frozen attempts. |
 | 8. Postconditions | New policy revision is available with prior history retained; no learner result is awarded. |
-| 9. Acceptance Criteria | One draft and active version per Role scope, selected-Level requirements, proportional shortfall threshold rounded up, zero-bank blocking, frozen actual-count deadline, independent Skill policies and preserved historical papers. |
+| 9. Acceptance Criteria | One draft and active version per Role scope, selected-Level requirements, sufficient approved questions, missing-bank blocking, frozen actual-count deadline, independent Skill policies and preserved historical papers. |
 
 <a id="fr-05-06"></a>
 
@@ -216,7 +218,7 @@ Verification: [unit](../../testing/unit/REQ-014-question-bank.md), [PostgreSQL i
 | 3. Description | The Employee shall take/resume the selected Role–Level baseline, submit answers and review separate diagnostic group results. |
 | 4. Actor | Employee |
 | 5. Preconditions | Trusted entitled Employee, valid selected Role/member Level, ready policy/bank and compatible official exemptions. |
-| 6. Main Flow | Resolve required MODULE_ONLY groups; start/resume frozen persisted attempt; save answers; finalize once; show per-group diagnostics and learning needs. |
+| 6. Main Flow | Resolve target Skill groups and applicable lower levels; start/resume frozen persisted attempt; save answers; finalize once; show per-group diagnostics and learning needs. |
 | 7. Alternative / Exception Flows | Unavailable/insufficient evidence differs from failed. If all groups are officially exempt, show exemptions and remaining certificate needs without a synthetic pass. |
 | 8. Postconditions | Retain diagnostic attempt/results; pass skips initial assignment only, writing neither official ACHIEVED nor module completion. |
 | 9. Acceptance Criteria | Same-paper resume; exact official exemptions; no implicit lower-level exemption, self-declared-title exemption, numeric mastery or aggregate pass offset. |

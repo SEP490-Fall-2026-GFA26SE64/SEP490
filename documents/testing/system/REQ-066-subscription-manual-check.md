@@ -52,6 +52,20 @@ The specs create independent synthetic verified registrants/admins; secrets are 
 6. Verify the stored fields and seat count. Deactivate/reactivate membership, including concurrent final-seat attempts; only one may acquire the last seat.
 7. With a second organization/registrant, attempt cross-organization/order/resource access and forged role headers. Expect denial and no mutation.
 
+## Additional Employee Seats (FR-03.07)
+
+Prerequisite: an organization with an ACTIVE paid period and no unresolved renewal or seat payment. Sign in as its Organization Administrator and open `/admin/subscription`. Evidence: [FR-03-07 system run](FR-03-07-subscription-seat-addon-20261119.md).
+
+1. **Additional Employee seats** shows the plan seats, the additional seats and the total for the current period.
+2. Enter 0 or 51. An inline "1 to 50" error appears and **Calculate price** is disabled.
+3. Enter 2 and calculate. The price is prorated for the remaining time, rounded up to whole VND (Starter fixture: 245 VND per full-period seat). Confirm. The payment result page opens. While the order is pending, buying seats and renewing are blocked with a message.
+4. Pay with the isolated test provider. After reload, the total and the effective admission limit go up by 2. Mailpit receives an "Additional Employee seats" email that links to the order.
+5. Reduce the add-on for the next renewal. The current period keeps its seats and no refund is made. A value that would leave fewer seats than active Employees is rejected.
+6. Open the renewal for the same plan. It lists the kept add-on seats and their full per-seat price in the total. Pick a different plan: it states that add-ons reset to 0. If the add-on value changed in another tab, the server rejects the stale order (409) and its message is shown; nothing is charged.
+7. With a paid scheduled period, buy 1 seat. The current period goes up, a shortfall banner appears for the scheduled period, and the admission limit stays at the scheduled ceiling. Pay the shortfall: the quantity is fixed, the price is the full per-seat price, and the banner disappears.
+8. As another organization's admin, call the seat add-on routes for this organization. Expect 403 and no change.
+9. Repeat the key screens at 390×844.
+
 ## Verification / Cleanup
 
 Repeat relevant flows at desktop and 390x844 mobile widths, EN/VI, reduced motion and keyboard-only input. Check dialog focus, inline errors, screenshots, console/network, then reload/API-read persisted outcomes.

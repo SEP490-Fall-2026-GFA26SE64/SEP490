@@ -62,8 +62,8 @@ public final class RuleAssessmentAttemptService {
     private final AuditEventJpaRepository audit;
     private SharedSkillAssessmentService sharedSkills;
     public RuleAssessmentAttemptService sharedSkills(SharedSkillAssessmentService value){sharedSkills=value;return this;}
-    private com.adaptlearngraph.entities.AssessmentRulePolicyEntity activePolicy(UUID org,com.adaptlearngraph.entities.domain.AssessmentPolicyScope.Scope scope,Purpose purpose,boolean persist) {
-        var shared=purpose==Purpose.SKILL_ASSESSMENT&&sharedSkills!=null?sharedSkills.resolve(org,scope,persist):Optional.<com.adaptlearngraph.entities.AssessmentRulePolicyEntity>empty();
+    private com.adaptlearngraph.entities.AssessmentRulePolicyEntity activePolicy(UUID org,com.adaptlearngraph.entities.domain.AssessmentPolicyScope.Scope scope,Purpose purpose,String role,boolean persist) {
+        var shared=purpose==Purpose.SKILL_ASSESSMENT&&sharedSkills!=null?sharedSkills.resolve(org,scope,role,persist):Optional.<com.adaptlearngraph.entities.AssessmentRulePolicyEntity>empty();
         return shared.or(()->scopedPolicies.active(org,purpose.name(),scope.key())).orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
     }
     public RuleAssessmentAttemptService(RoleBaselineFlow.Identity identity,CurrentRoleSelectionStore selections,Contexts contexts,
@@ -127,7 +127,8 @@ public final class RuleAssessmentAttemptService {
                 var scope=skillScope(context);ensureResolved(a,scope);
                 var active=activeSkill(a,scope,true);
                 if(active.size()>1)throw new Failure(409,"MULTIPLE_ACTIVE_SKILL_ASSESSMENTS");
-                return active.isEmpty()?latestSkill(a,scope).map(RuleAssessmentAttemptEntity::getId):Optional.of(active.getFirst().getId());
+                if(!active.isEmpty() && !sameSkillRole(active.getFirst(),context))throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
+                return active.isEmpty()?latestSkill(a,scope).filter(row->sameSkillRole(row,context)).map(RuleAssessmentAttemptEntity::getId):Optional.of(active.getFirst().getId());
             }
             return attempts.contextHistory(a.organizationId(),a.learnerId(),command.purpose().name(),context.contextKey(),PageRequest.of(0,1)).stream()
                     .map(RuleAssessmentAttemptEntity::getId).findFirst();
@@ -151,6 +152,7 @@ public final class RuleAssessmentAttemptService {
                 var active=activeSkill(a,skill,true);
                 if(active.size()>1)throw new Failure(409,"MULTIPLE_ACTIVE_SKILL_ASSESSMENTS");
                 if(active.size()==1) {
+                    if(!sameSkillRole(active.getFirst(),context))throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
                     var result=readLocked(a,active.getFirst().getId());retain(a,"RULE_START",resource,key,hash,result,UUID.randomUUID());return result;
                 }
                 history=latestSkill(a,skill).stream().toList();
@@ -174,8 +176,10 @@ public final class RuleAssessmentAttemptService {
                     .findFirst().orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
             if(skill!=null && scope.groups().stream().noneMatch(g->g.requirement().skillId().equals(skill.skillId()) && g.requirement().knowledgeLevel()==skill.knowledgeLevel() && skill.skillVersion().equals(g.skillVersion())))
                 throw new Failure(409,"SKILL_VERSION_CHANGED");
-            policyContext.put("policyScopeKey",scope.key());
-            var policy=activePolicy(a.organizationId(),scope,command.purpose(),true);
+            String policyRole=command.purpose()==Purpose.SKILL_ASSESSMENT && !command.independent()?policyContext.path("roleId").asText():null;
+            if(policyRole!=null && policyRole.isBlank())throw integrity();
+            policyContext.put("policyScopeKey",command.purpose()==Purpose.SKILL_ASSESSMENT?SharedSkillAssessmentService.paperKey(scope,policyRole):scope.key());
+            var policy=activePolicy(a.organizationId(),scope,command.purpose(),policyRole,true);
             if(!scope.ready() || !scope.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
             var config=read(policy.getConfiguration(),Policy.class);
             if(command.purpose()==Purpose.BASELINE && config.baselineTiming()==null)throw new Failure(422,"ASSESSMENT_POLICY_REQUIRED");
@@ -269,13 +273,15 @@ public final class RuleAssessmentAttemptService {
     public SkillHistory skillHistory(String skillId,String level,String version,int page,int size) {
         var a=actor();SkillAssessmentScope scope;
         try{scope=new SkillAssessmentScope(skillId,KnowledgeLevel.valueOf(level),version);}catch(RuntimeException invalid){throw new Failure(400,"INVALID_REQUEST");}
-        return skillHistory(a,scope,page,size);
+        return skillHistory(a,scope,page,size,selections.current(a).map(selection->selection.role().id()).orElse(null));
     }
-    public SkillHistory moduleSkillHistory(String moduleId,int revision,int page,int size) {
+    public SkillHistory moduleSkillHistory(String moduleId,int revision,int page,int size,String learningContext) {
         var a=actor();if(moduleId==null || moduleId.isBlank() || moduleId.length()>200 || revision<1)throw new Failure(400,"INVALID_REQUEST");
-        return skillHistory(a,contexts.scopeForModule(a,moduleId,revision),page,size);
+        if(!Set.of("ROLE","INDEPENDENT").contains(learningContext))throw new Failure(400,"INVALID_REQUEST");
+        var role="ROLE".equals(learningContext)?selections.current(a).orElseThrow(()->new Failure(409,"SELECTION_REQUIRED")).role().id():null;
+        return skillHistory(a,contexts.scopeForModule(a,moduleId,revision),page,size,role);
     }
-    private SkillHistory skillHistory(RoleBaselineFlow.Actor a,SkillAssessmentScope scope,int page,int size) {
+    private SkillHistory skillHistory(RoleBaselineFlow.Actor a,SkillAssessmentScope scope,int page,int size,String policyRole) {
         if(page<0 || page>10000 || size<1 || size>100)throw new Failure(400,"INVALID_REQUEST");
         return selections.transaction(a,()->{
             reauthorize(a);
@@ -289,7 +295,7 @@ public final class RuleAssessmentAttemptService {
                     .orElseThrow(()->new Failure(422,"ASSESSMENT_POLICY_REQUIRED"));
                 if(catalog.groups().stream().noneMatch(g->g.requirement().skillId().equals(scope.skillId()) && g.requirement().knowledgeLevel()==scope.knowledgeLevel() && scope.skillVersion().equals(g.skillVersion())))
                     throw new Failure(409,"SKILL_VERSION_CHANGED");
-                var policy=activePolicy(a.organizationId(),catalog,Purpose.SKILL_ASSESSMENT,false);
+                var policy=activePolicy(a.organizationId(),catalog,Purpose.SKILL_ASSESSMENT,policyRole,false);
                 if(!catalog.ready() || !catalog.matchesCatalog(policy.getCatalogHash()))throw new Failure(422,"ASSESSMENT_POLICY_CATALOG_CHANGED");
                 var config=read(policy.getConfiguration(),Policy.class);
                 if(!RoleBaselineFlow.hash(policy.getHashDomain()+"\n"+Purpose.SKILL_ASSESSMENT+"\n"+write(config)).equals(policy.getConfigurationHash()))throw integrity();
@@ -310,6 +316,16 @@ public final class RuleAssessmentAttemptService {
                 c.path("jobPositionId").asText(""),c.path("jobPositionName").asText(""),start.stepId(),start.moduleId(),start.moduleRevision());
             return new AttemptSummary(row.getId(),target,row.getState(),row.getStartedAt(),row.getDeadlineAt(),row.getFinishedAt(),row.getFinishReason(),row.getPreviousAttemptId());
         }catch(Exception invalid){throw integrity();}
+    }
+    /** Until Role-specific admission is migrated, never reuse another Role's frozen paper as this Role's new start. */
+    private boolean sameSkillRole(RuleAssessmentAttemptEntity row,Context context) {
+        try {
+            var frozen=json.readTree(row.getContextSnapshot()).path("context");var current=json.readTree(context.snapshot());
+            boolean oldIndependent="INDEPENDENT_SKILL".equals(frozen.path("learningContext").asText());
+            boolean newIndependent="INDEPENDENT_SKILL".equals(current.path("learningContext").asText());
+            return oldIndependent==newIndependent && (oldIndependent || !current.path("roleId").asText().isBlank()
+                    && current.path("roleId").asText().equals(frozen.path("roleId").asText()));
+        }catch(java.io.IOException invalid){throw integrity();}
     }
     private SkillAssessmentScope skillScope(Context context) {
         try {

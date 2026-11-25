@@ -1,10 +1,14 @@
 package com.adaptlearngraph.services;
 
+import com.adaptlearngraph.dtos.SubscriptionDto.AddonSeatsRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.AddonSeatsResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberAccessRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberProfileRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.MemberResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.OrderRequest;
 import com.adaptlearngraph.dtos.SubscriptionDto.OrderStatusResponse;
+import com.adaptlearngraph.dtos.SubscriptionDto.SeatAddonOrderRequest;
+import com.adaptlearngraph.dtos.SubscriptionDto.SeatAddonQuoteResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.SummaryResponse;
 import com.adaptlearngraph.dtos.SubscriptionDto.WorkspaceResponse;
 import com.adaptlearngraph.entities.domain.MemberProfileUpdate;
@@ -35,8 +39,24 @@ public class SubscriptionLifecycleApplicationService {
     /** Creates a purchase order ({@code organizationId == null}) or a renewal order for the path organization. */
     public OrderStatusResponse create(UUID organizationId, OrderRequest input) {
         var command = new PaymentOrderStore.Command(organizationId, input.planId(), input.expectedVersionId(),
-                input.idempotencyKey(), input.replacesOrderId());
+                input.idempotencyKey(), input.replacesOrderId(), input.expectedAddonSeats());
         return toResponse(lifecycle.create(command));
+    }
+
+    public SeatAddonQuoteResponse quoteSeatAddon(UUID organizationId, String target, int seats) {
+        var quote = lifecycle.quoteSeatAddon(organizationId, target, seats);
+        return new SeatAddonQuoteResponse(quote.target(), quote.kind(), quote.periodId(), quote.planName(), quote.startsAt(),
+                quote.endsAt(), quote.seats(), quote.perSeatVnd(), quote.amountVnd());
+    }
+
+    public OrderStatusResponse createSeatAddon(UUID organizationId, SeatAddonOrderRequest input) {
+        return toResponse(lifecycle.createSeatAddon(new PaymentOrderStore.SeatAddonCommand(organizationId,
+                input.idempotencyKey(), input.target(), input.seats(), input.expectedAmountVnd())));
+    }
+
+    public AddonSeatsResponse changeAddonSeats(UUID organizationId, AddonSeatsRequest input) {
+        return new AddonSeatsResponse(lifecycle.changeAddonSeats(organizationId, input.desiredAddonSeats(),
+                input.expectedDesiredAddonSeats()));
     }
 
     public OrderStatusResponse current(UUID organizationId) {

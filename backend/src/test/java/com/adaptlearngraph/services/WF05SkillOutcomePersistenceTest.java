@@ -17,7 +17,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 class WF05SkillOutcomePersistenceTest {
     WF05PathwayPersistenceTest p;RuleAssessmentAttemptService assessments;RuleAssessmentOutcomeService outcomes;
     RequirementPathwayRecalculationService recalculation;RequirementPathwayPlanningService planning;
-    RequirementPathway.Requirement b;String moduleA,moduleA2,moduleB;Map<String,ScopedAssessmentPolicyService.Workspace> policies=new HashMap<>();
+    RequirementPathway.Requirement b;String moduleA,moduleA2,moduleB;SharedSkillAssessmentService sharedSkills;
     @BeforeAll static void start(){WF05PolicyPersistenceTest.start();}
     @AfterAll static void stop(){WF05PolicyPersistenceTest.stop();}
     @BeforeEach void setup() throws Exception {
@@ -28,6 +28,10 @@ class WF05SkillOutcomePersistenceTest {
         b=new RequirementPathway.Requirement("B","Skill B",KnowledgeLevel.FOUNDATION,"v1",List.of(),RequirementPathway.Provision.MODULE_ONLY);
         var a2=new RequirementPathway.Option(moduleA2,1,"content-v1","Module A2",List.of("OUT-1"),"v1");
         p.snapshot=new RulePathwayCatalog.Snapshot("skills-v1",List.of(p.need,b),Map.of(p.need.key(),List.of(a1,a2),b.key(),List.of(b1)),Map.of());
+        // The selected Role initially requires A only. B is discovered by the actual failed assessment,
+        // not added to the initial baseline requirements by an over-broad catalog stub.
+        var initial=new RulePathwayCatalog.Snapshot("skills-v1",List.of(p.need),Map.of(p.need.key(),List.of(a1,a2)),Map.of());
+        when(p.catalog.resolve(any(),any(),anyString(),anyList())).thenReturn(initial);
         p.generated();p.expert();p.review.approve(p.request,UUID.randomUUID().toString(),p.expected());
         UUID bank=UUID.randomUUID();sql.update("INSERT INTO platform.question_bank(question_bank_id,name,created_by) VALUES (?,'WF05 B bank',?)",bank,f.actor);
         sql.update("INSERT INTO platform.question_bank_scope(organization_id,question_bank_id) VALUES (?,?)",f.org,bank);
@@ -37,16 +41,18 @@ class WF05SkillOutcomePersistenceTest {
             sql.update("INSERT INTO platform.assessment_item_skill_scope(item_version_id,skill_version,source) VALUES (?,'v1','PUBLICATION')",id);}
         var scopes=new ArrayList<AssessmentPolicyScope.Scope>();
         for(String main:List.of("S-A","B")){
-            var specs=new ArrayList<AssessmentPolicyScope.GroupSpec>();var rules=new ArrayList<GroupRule>();
+            var specs=new ArrayList<AssessmentPolicyScope.GroupSpec>();
             for(String id:main.equals("S-A")?List.of("S-A","B"):List.of("B")){
-                specs.add(new AssessmentPolicyScope.GroupSpec(new AssessmentPolicyScope.ConfigurationRequirement(id,KnowledgeLevel.FOUNDATION,List.of()),"Skill "+id,"v1",SkillProvisionMode.MODULE_ONLY,List.of()));
-                rules.add(new GroupRule(id,KnowledgeLevel.FOUNDATION,2,2,false,false,0));}
+                specs.add(new AssessmentPolicyScope.GroupSpec(new AssessmentPolicyScope.ConfigurationRequirement(id,KnowledgeLevel.FOUNDATION,List.of()),"Skill "+id,"v1",SkillProvisionMode.MODULE_ONLY,List.of()));}
             var scope=new AssessmentPolicyScope.Scope(AssessmentPolicyScope.key(Purpose.SKILL_ASSESSMENT,main,"FOUNDATION"),Purpose.SKILL_ASSESSMENT,main,main,"FOUNDATION","Foundation","FOUNDATION",1,"a".repeat(64),specs,true,List.of());
-            scopes.add(scope);when(f.catalog.discoverForEditor(eq(f.org),eq(Purpose.SKILL_ASSESSMENT),any())).thenReturn(new AssessmentPolicyScope.Discovery(List.copyOf(scopes),List.of()));
-            f.current=f.as(f.actor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);var draft=f.draft(scope);
-            var saved=f.service.save(Purpose.SKILL_ASSESSMENT,scope.key(),new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),draft.draft().id(),draft.draft().revision(),scope.catalogHash(),new Policy(120,0,5,rules)));
-            policies.put(main,f.publish(scope,saved));}
+            scopes.add(scope);}
         when(f.catalog.scopes(f.org,Purpose.SKILL_ASSESSMENT)).thenReturn(scopes);
+        when(f.catalog.roleSkills(f.org,f.otherActor)).thenReturn(Map.of("R1",Set.of("S-A")));
+        when(f.catalog.roleSkills(f.org,null)).thenReturn(Map.of("R1",Set.of("S-A")));
+        f.current=f.as(f.otherActor,SubscriptionAccessPolicy.Role.DOMAIN_EXPERT);
+        sharedSkills=WF05RoleSkillPolicyPersistenceTest.shared(f,db.bean(AssessmentItemKnowledgeMappingJpaRepository.class));
+        var configuration=WF05RoleSkillPolicyPersistenceTest.configuration("Outcome fixture Role R1",2);
+        WF05RoleSkillPolicyPersistenceTest.activate(sharedSkills,new SharedSkillAssessmentService.Configuration(configuration.name(),configuration.levels(),configuration.prerequisite(),30,5,0));
         var tx=new TransactionTemplate(db.transactionManager());var clock=db.bean(RuleAssessmentAttemptJpaRepository.class);
         var contexts=new RuleAssessmentAttemptService.Contexts(){
             public RuleAssessmentAttemptService.Context resolve(RoleBaselineFlow.Actor actor,RuleAssessmentAttemptService.Start start){
@@ -62,8 +68,8 @@ class WF05SkillOutcomePersistenceTest {
             public void assertCurrent(RoleBaselineFlow.Actor actor,RuleAssessmentAttemptService.Context context){}
         };
         assessments=new RuleAssessmentAttemptService(()->p.a.current,p.a.selections,contexts,clock,db.bean(AssessmentRulePolicyJpaRepository.class),db.bean(ScopedAssessmentPolicyJpaRepository.class),f.catalog,
-            db.bean(AssessmentItemKnowledgeMappingJpaRepository.class),db.bean(OutboxEventJpaRepository.class),db.bean(ProcessingJobJpaRepository.class),new PostgresAdvisoryLocks(db.bean(EntityManager.class)),tx,f.json,1000,db.bean(AuditEventJpaRepository.class));
-        planning=new RequirementPathwayPlanningService(p.catalog,p.rules,p.admission,p.revisions,f.json);
+            db.bean(AssessmentItemKnowledgeMappingJpaRepository.class),db.bean(OutboxEventJpaRepository.class),db.bean(ProcessingJobJpaRepository.class),new PostgresAdvisoryLocks(db.bean(EntityManager.class)),tx,f.json,1000,db.bean(AuditEventJpaRepository.class)).sharedSkills(sharedSkills);
+        planning=new RequirementPathwayPlanningService(p.catalog,p.rules,p.admission,p.revisions,f.json).history(db.bean(RuleAssessmentContextJpaRepository.class));
         recalculation=new RequirementPathwayRecalculationService(p.rules,p.revisions,planning,p.review,f.json);
         var effects=new RuleAssessmentOutcomeService.PathwayEffects(){
             public void apply(RuleAssessmentAttemptEntity attempt,UUID event,List<RuleAssessmentOutcomeJpaRepository.GroupRow> groups){recalculation.assessed(attempt,event,groups);}
@@ -85,7 +91,7 @@ class WF05SkillOutcomePersistenceTest {
             boolean incorrect=failB&&group.role()==GroupRole.PREREQUISITE&&!wrong;if(incorrect)wrong=true;
             attempt=assessments.answer(attempt.attemptId(),new RuleAssessmentAttemptService.Answer(attempt.revision(),q.position(),q.itemVersionId(),incorrect?"B":"A"),UUID.randomUUID());}
         return assessments.submit(attempt.attemptId(),attempt.revision(),UUID.randomUUID());}
-    @Test @DisplayName("TC-WF05-F11/F12/S05 persistence: actual shortage assigns B; passing B on A retake retains assigned learning")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-F11 - Failed prerequisite assigns learning retained after retake")
     void supplementationSurvivesRetake() throws Exception {
         completed(moduleA,"S-A");var first=assess("S-A",moduleA,null,true);
         for(int i=0;i<30&&p.revisions.read(p.row()).steps().size()<2;i++)outcomes.runBatch();
@@ -97,20 +103,41 @@ class WF05SkillOutcomePersistenceTest {
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.skill_knowledge_evidence WHERE organization_id=? AND learner_id=? AND skill_id='S-A'",Integer.class,p.a.f.org,p.a.f.actor)).isZero();
         assertThat(retake.results()).allMatch(GroupResult::passed);
         completed(moduleB,"B");var bAttempt=assess("B",moduleB,null,false);
+        for(int i=0;i<30;i++)outcomes.runBatch();
+        assertThat(p.revisions.read(p.row()).steps().stream().filter(s->s.requirement().skillId().equals("B")).findFirst().orElseThrow().state()).isEqualTo(RequirementPathway.State.FULFILLED);
+        // Later B evidence enables a fresh A paper; it does not replay a previously blocked score.
+        assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.skill_knowledge_evidence WHERE organization_id=? AND learner_id=? AND skill_id='S-A'",Integer.class,p.a.f.org,p.a.f.actor)).isZero();
+        var qualified=assess("S-A",moduleA,retake.attemptId(),false);assertThat(qualified.results()).allMatch(GroupResult::passed);
         long end=System.nanoTime()+java.time.Duration.ofSeconds(40).toNanos();
         while(!p.revisions.read(p.row()).targetReleased()&&System.nanoTime()<end){outcomes.runBatch();Thread.sleep(200);}
         var resolved=p.revisions.read(p.row());assertThat(resolved.targetReleased()).isTrue();assertThat(resolved.steps()).hasSize(2);
         assertThat(resolved.steps()).allMatch(s->s.state()==RequirementPathway.State.FULFILLED);assertThat(resolved.dependencies()).hasSize(1);
         assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.skill_knowledge_evidence WHERE organization_id=? AND learner_id=? AND skill_id='B' AND source_id=?",Integer.class,p.a.f.org,p.a.f.actor,bAttempt.attemptId())).isEqualTo(1);
         assertThat(p.a.selections.targetLocked(p.a.current)).isFalse();outcomes.runBatch();
-        assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=? AND learner_id=? AND purpose='SKILL_ASSESSMENT'",Integer.class,p.a.f.org,p.a.f.actor)).isEqualTo(3);
+        assertThat(WF05PolicyPersistenceTest.sql.queryForObject("SELECT count(*) FROM platform.rule_assessment_attempt WHERE organization_id=? AND learner_id=? AND purpose='SKILL_ASSESSMENT'",Integer.class,p.a.f.org,p.a.f.actor)).isEqualTo(4);
+    }
+    @Test @Tag("bm04-wf05") @DisplayName("TC-WF05-F12 - Qualifying assessment completes required work once and releases target without losing history")
+    void completedWorkReleasesTargetAndPreservesHistory() throws Exception {
+        completed(moduleA,"S-A");var attempt=assess("S-A",moduleA,null,false);
+        assertThat(attempt.results()).allMatch(GroupResult::passed);
+        for(int i=0;i<30&&!p.revisions.read(p.row()).targetReleased();i++)outcomes.runBatch();
+        var resolved=p.revisions.read(p.row());assertThat(resolved.targetReleased()).isTrue();
+        assertThat(resolved.steps()).allMatch(s->s.state()==RequirementPathway.State.FULFILLED);
+        assertThat(p.a.selections.targetLocked(p.a.current)).isFalse();
+        var sql=WF05PolicyPersistenceTest.sql;
+        String evidence=sql.queryForObject("SELECT json_agg(e ORDER BY id)::text FROM platform.skill_knowledge_evidence e WHERE organization_id=? AND learner_id=?",String.class,p.a.f.org,p.a.f.actor);
+        assertThat(sql.queryForObject("SELECT count(*) FROM platform.skill_knowledge_evidence WHERE organization_id=? AND learner_id=? AND source_id=?",Integer.class,p.a.f.org,p.a.f.actor,attempt.attemptId())).isEqualTo(1);
+        outcomes.runBatch();outcomes.runBatch();
+        assertThat(sql.queryForObject("SELECT json_agg(e ORDER BY id)::text FROM platform.skill_knowledge_evidence e WHERE organization_id=? AND learner_id=?",String.class,p.a.f.org,p.a.f.actor)).isEqualTo(evidence);
+        assertThat(p.a.flow.choose("R2","L2",p.a.selection.selectionId(),UUID.randomUUID().toString()).role().id()).isEqualTo("R2");
+        assertThat(p.rules.own(p.a.f.org,p.a.f.actor,p.request).orElseThrow().getArchivedAt()).isNotNull();
+        assertThat(assessments.resume(attempt.attemptId()).results()).isEqualTo(attempt.results());
+        assertThat(sql.queryForObject("SELECT count(*) FROM platform.learning_module_completion WHERE organization_id=? AND learner_id=? AND module_id=?",Integer.class,p.a.f.org.toString(),p.a.f.actor.toString(),moduleA)).isEqualTo(1);
     }
     @Test @DisplayName("Shared skill scope: module A2 retains A1 history and cannot bypass its retry allowance")
     void sharedSkillRetryBudgetCannotBeBypassedThroughAnotherModule() throws Exception {
-        var f=p.a.f;var workspace=policies.get("S-A");var scope=workspace.scope();
-        var draft=f.service.create(Purpose.SKILL_ASSESSMENT,scope.key(),new ScopedAssessmentPolicyService.Create(UUID.randomUUID(),workspace.activationRevision()));
-        var saved=f.service.save(Purpose.SKILL_ASSESSMENT,scope.key(),new ScopedAssessmentPolicyService.Save(UUID.randomUUID(),draft.draft().id(),draft.draft().revision(),scope.catalogHash(),
-            new Policy(120,3600,1,workspace.active().configuration().groups())));f.publish(scope,saved);
+        var config=sharedSkills.read(0,"","latest").active().configuration();
+        WF05RoleSkillPolicyPersistenceTest.activate(sharedSkills,new SharedSkillAssessmentService.Configuration(config.name(),config.levels(),config.prerequisite(),config.secondsPerQuestion(),1,3600));
         completed(moduleA,"S-A");completed(moduleA2,"S-A");var first=assess("S-A",moduleA,null,false);
         for(int i=0;i<30&&!p.revisions.read(p.row()).targetReleased();i++)outcomes.runBatch();
         assertThat(p.revisions.read(p.row()).targetReleased()).isTrue();
@@ -119,7 +146,7 @@ class WF05SkillOutcomePersistenceTest {
         assertThatThrownBy(()->assess("S-A",moduleA2,first.attemptId(),false)).hasMessageContaining("RETAKE_LIMIT_REACHED");
         assertThat(assessments.skillHistory("S-A","FOUNDATION","v1",0,20).items()).extracting(RuleAssessmentAttemptService.AttemptSummary::attemptId).containsExactly(first.attemptId());
     }
-    @Test @DisplayName("TC-WF05-S05 persistence: failed prior-official prerequisite opens NEED_REVIEW and preserves immutable evidence")
+    @Test @org.junit.jupiter.api.Tag("bm04-wf05") @DisplayName("TC-WF05-S05 - Prior-official failure needs review without revocation")
     void priorOfficialPrerequisiteNeedsReview() throws Exception {
         var sql=WF05PolicyPersistenceTest.sql;UUID oldEvidence=UUID.randomUUID(),source=UUID.randomUUID();
         // Explicit historical official-evidence precondition; no assertion that this test produced its original certificate.
