@@ -1,0 +1,44 @@
+{
+  "V3": {
+    "title": "Project registration Version 3",
+    "kind": "user supplied requirement",
+    "path": "../../../sources/version-3/research-scope-extract.md",
+    "accessedOn": "2026-11-23"
+  },
+  "GOV": {
+    "title": "UK Government software developer role",
+    "url": "https://understand-digital-data-roles-skills.service.gov.uk/role/software-developer/",
+    "use": "Broad role scope and responsibility progression; local levels and requirements are not an official equivalence.",
+    "accessedOn": "2026-11-23"
+  },
+  "MDN": {
+    "title": "MDN Curriculum",
+    "url": "https://developer.mozilla.org/en-US/curriculum/",
+    "use": "Frontend topic coverage; does not establish our Intermediate or Advanced thresholds.",
+    "accessedOn": "2026-11-23"
+  },
+  "OWASP": {
+    "title": "OWASP ASVS overview",
+    "url": "https://asvs.owasp.org/",
+    "use": "Security scope context, not certification or a full ASVS compliance mapping.",
+    "accessedOn": "2026-11-23"
+  },
+  "PG": {
+    "title": "PostgreSQL transactions tutorial",
+    "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+    "use": "Transaction concept reference; not a required technology stack.",
+    "accessedOn": "2026-11-23"
+  },
+  "GH": {
+    "title": "Understanding GitHub Actions",
+    "url": "https://docs.github.com/en/actions/get-started/understand-github-actions",
+    "use": "CI workflow concepts; GitHub is an example, not required vendor.",
+    "accessedOn": "2026-11-23"
+  },
+  "LOCAL": {
+    "title": "Existing skill-level seed",
+    "path": "../../../../dataset/import/ontology_seed-skill-level.json",
+    "use": "Retained identities and legacy comparison; seed approvals are not research expert approval.",
+    "accessedOn": "2026-11-23"
+  }
+}

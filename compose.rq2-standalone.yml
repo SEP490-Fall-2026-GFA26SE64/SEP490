@@ -1,0 +1,21 @@
+name: sep490-rq2-standalone
+x-neo4j: &neo4j
+  image: neo4j:5.26-community
+  environment:
+    NEO4J_AUTH: neo4j/${RQ2_NEO4J_PASSWORD:?Set RQ2_NEO4J_PASSWORD locally}
+    NEO4J_server_memory_heap_initial__size: 128m
+    NEO4J_server_memory_heap_max__size: 256m
+    NEO4J_server_memory_pagecache_size: 64m
+  cpus: 1.5
+  volumes:
+    - ./documents/research/tools/rq2-seed.cypher:/rq2-seed.cypher:ro
+services:
+  rq2-1k:
+    <<: *neo4j
+    ports: ["127.0.0.1:17681:7687"]
+  rq2-5k:
+    <<: *neo4j
+    ports: ["127.0.0.1:17685:7687"]
+  rq2-10k:
+    <<: *neo4j
+    ports: ["127.0.0.1:17690:7687"]

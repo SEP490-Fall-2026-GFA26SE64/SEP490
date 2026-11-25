@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-23",
+  "scope": "Catalog structural checks only",
+  "status": "PASSED",
+  "errors": [],
+  "negativeFixturesRejected": {
+    "dangling prerequisite": true,
+    "duplicate module": true,
+    "missing teaching coverage": true,
+    "fabricated expert approval": true,
+    "wrong knowledge mapping": true,
+    "cycle": true,
+    "initial prerequisite expansion": true
+  },
+  "counts": {
+    "skills": 20,
+    "modules": 72,
+    "skillKnowledgePairs": 60,
+    "requirementRows": 58,
+    "requiredGroupsByRoleLevel": {
+      "Junior": 18,
+      "Middle": 37,
+      "Senior": 49
+    },
+    "prerequisiteEdges": 31
+  },
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "profilesGenerated": 0,
+  "finalRq1Run": "NOT_RUN"
+}

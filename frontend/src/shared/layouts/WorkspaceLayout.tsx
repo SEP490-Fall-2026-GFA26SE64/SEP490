@@ -15,6 +15,7 @@ import {
   CreditCard,
   FileQuestion,
   FolderTree,
+  FlaskConical,
   GitFork,
   HelpCircle,
   LayoutDashboard,
@@ -338,6 +339,16 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.graphBenchmark', isVi ? 'Hiệu năng Đồ thị' : 'Graph Engine Benchmark'),
         href: '/platform-admin/graph-benchmark',
         icon: <Cpu size={15} />,
+      },
+      {
+        label: isVi ? 'Đánh giá Gợi ý (RQ1)' : 'RQ1 Relevance Benchmark',
+        href: '/platform-admin/rq1-benchmark',
+        icon: <Target size={15} />,
+      },
+      {
+        label: isVi ? 'Hiệu quả lộ trình (RQ3)' : 'Pathway Efficiency (RQ3)',
+        href: '/platform-admin/rq3-benchmark',
+        icon: <FlaskConical size={15} />,
       },
     ]
   }

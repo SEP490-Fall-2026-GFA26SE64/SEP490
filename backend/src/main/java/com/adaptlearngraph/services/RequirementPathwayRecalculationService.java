@@ -28,49 +28,18 @@ public final class RequirementPathwayRecalculationService {
                     .findFirst().orElseThrow(()->new Failure(503,"ASSESSED_REQUIREMENT_NOT_FOUND"));
             if(!parent.kind().name().equals(context.path("stepKind").asText()) || !Objects.toString(parent.sourceBypassId(),"").equals(context.path("sourceBypassId").asText("")))
                 throw new Failure(503,"ASSESSED_REQUIREMENT_SCOPE_INVALID");
-            var steps=new ArrayList<>(original.steps().stream().map(step->step.id().equals(parent.id()) && step.state()==State.NEEDS_SUPPLEMENTATION?
-                    new Step(step.id(),step.requirement(),step.kind(),step.sourceBypassId(),State.IN_PROGRESS,"MODULE_COMPLETED_ASSESSMENT_RECORDED",null,step.options(),step.certificate(),step.assessedSources()):step).toList());
-            var dependencies=new ArrayList<>(original.dependencies());
+            var failed=new ArrayList<FailedPrerequisite>();
             for(var group:groups) {
                 if(!"PREREQUISITE".equals(group.getRole()) || group.getPassed() || group.getOfficialAtFinalization())continue;
                 var definition=java.util.stream.StreamSupport.stream(context.path("requirements").spliterator(),false)
                         .filter(item->group.getSkillId().equals(item.path("requirement").path("skillId").asText())
                             && group.getKnowledgeLevel().equals(item.path("requirement").path("knowledgeLevel").asText())).findFirst().orElseThrow();
                 var outcomes=List.<String>of();
-                var required=new Requirement(group.getSkillId(),definition.path("skillName").asText(),KnowledgeLevel.valueOf(group.getKnowledgeLevel()),
-                        definition.path("skillVersion").asText(),outcomes,Provision.valueOf(definition.path("mode").asText()));
-                var existing=steps.stream().filter(step->step.kind()==parent.kind() && Objects.equals(step.sourceBypassId(),parent.sourceBypassId())
-                        && step.requirement().key().equals(required.key())).findFirst();
-                if(existing.isPresent() && !existing.get().requirement().proofKey().equals(required.proofKey()))throw new Failure(422,"SUPPLEMENT_SCOPE_CONFLICT");
-                var id=existing.map(Step::id).orElseGet(()->RequirementPathway.stepId(request,required,parent.kind(),parent.sourceBypassId()));
-                if(id.equals(parent.id()))throw new Failure(422,"SUPPLEMENT_DEPENDENCY_CYCLE");
-                var sources=new ArrayList<>(existing.map(Step::assessedSources).orElse(List.of()));
-                var source=new AssessedSource(attempt.getId(),group.getGroupId(),parent.id());if(!sources.contains(source))sources.add(source);
-                var next=existing.isPresent()?new Step(id,required,parent.kind(),parent.sourceBypassId(),existing.get().state(),existing.get().reason(),
-                        existing.get().fulfilledEvidenceId(),existing.get().options(),existing.get().certificate(),sources):
-                        new Step(id,required,parent.kind(),parent.sourceBypassId(),State.NEEDS_EXPERT_ACTION,"ASSESSED_PREREQUISITE_REQUIRES_LEARNING",null,List.of(),null,sources);
-                if(existing.isPresent())steps.set(steps.indexOf(existing.get()),next);else steps.add(next);
-                if(parent.kind()==Kind.REQUIRED && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(id) && edge.dependentStepId().equals(parent.id())))
-                    dependencies.add(new Dependency(id,parent.id(),attempt.getId(),group.getGroupId()));
+                failed.add(new FailedPrerequisite(group.getGroupId(),new Requirement(group.getSkillId(),definition.path("skillName").asText(),
+                        KnowledgeLevel.valueOf(group.getKnowledgeLevel()),definition.path("skillVersion").asText(),outcomes,Provision.valueOf(definition.path("mode").asText()))));
             }
-            // Contextual learning dependencies, not HAS_SKILL_PREREQUISITE self-edges:
-            // every failed cross-Skill prerequisite precedes the MAIN Skill's failed lower levels.
-            for(var target:List.copyOf(steps))if(target.kind()==Kind.REQUIRED) {
-                var foundations=steps.stream().filter(step->step.kind()==Kind.REQUIRED
-                        && step.requirement().skillId().equals(target.requirement().skillId())
-                        && step.requirement().knowledgeLevel().ordinal()<target.requirement().knowledgeLevel().ordinal()
-                        && step.assessedSources().stream().anyMatch(source->source.dependentStepId().equals(target.id()))).toList();
-                for(var foundation:foundations)for(var prerequisite:steps) {
-                    if(prerequisite.id().equals(foundation.id()) || prerequisite.kind()!=Kind.REQUIRED)continue;
-                    var source=prerequisite.assessedSources().stream().filter(item->item.dependentStepId().equals(target.id())).findFirst();
-                    if(source.isEmpty())continue;
-                    boolean otherSkill=!prerequisite.requirement().skillId().equals(target.requirement().skillId());
-                    boolean lower=prerequisite.requirement().skillId().equals(foundation.requirement().skillId())
-                            && prerequisite.requirement().knowledgeLevel().ordinal()<foundation.requirement().knowledgeLevel().ordinal();
-                    if((otherSkill || lower) && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(prerequisite.id()) && edge.dependentStepId().equals(foundation.id())))
-                        dependencies.add(new Dependency(prerequisite.id(),foundation.id(),source.get().attemptId(),source.get().groupId()));
-                }
-            }
+            var supplemented=supplement(request,original,parent,attempt.getId(),failed);
+            var steps=supplemented.steps();var dependencies=supplemented.dependencies();
             // Retake passing B never removes a step or dependency discovered by an earlier actual failure.
             var next=planning.refresh(row,new Plan(steps,dependencies));
             if(!next.equals(original)) {
@@ -79,6 +48,54 @@ public final class RequirementPathwayRecalculationService {
             }
         }catch(com.adaptlearngraph.exception.InitialPathwayFailure failure){throw failure;}
         catch(Exception invalid){throw new Failure(503,"ASSESSMENT_PATHWAY_RECALCULATION_FAILED");}
+    }
+    /** One failed PREREQUISITE group (not official at finalization) of a finalized SKILL_ASSESSMENT attempt. */
+    public record FailedPrerequisite(UUID groupId,Requirement requirement) {
+        public FailedPrerequisite {Objects.requireNonNull(groupId);Objects.requireNonNull(requirement);}
+    }
+    /**
+     * Pure supplementation transition applied by {@link #assessed} before the planning refresh. It adds or deduplicates
+     * assessed prerequisite steps and dependencies and never awards evidence. Research adapters call this same method.
+     */
+    public static Plan supplement(UUID request,Plan original,Step parent,UUID attemptId,List<FailedPrerequisite> failed) {
+        var steps=new ArrayList<>(original.steps().stream().map(step->step.id().equals(parent.id()) && step.state()==State.NEEDS_SUPPLEMENTATION?
+                new Step(step.id(),step.requirement(),step.kind(),step.sourceBypassId(),State.IN_PROGRESS,"MODULE_COMPLETED_ASSESSMENT_RECORDED",null,step.options(),step.certificate(),step.assessedSources()):step).toList());
+        var dependencies=new ArrayList<>(original.dependencies());
+        for(var failure:failed) {
+            var required=failure.requirement();
+            var existing=steps.stream().filter(step->step.kind()==parent.kind() && Objects.equals(step.sourceBypassId(),parent.sourceBypassId())
+                    && step.requirement().key().equals(required.key())).findFirst();
+            if(existing.isPresent() && !existing.get().requirement().proofKey().equals(required.proofKey()))throw new Failure(422,"SUPPLEMENT_SCOPE_CONFLICT");
+            var id=existing.map(Step::id).orElseGet(()->RequirementPathway.stepId(request,required,parent.kind(),parent.sourceBypassId()));
+            if(id.equals(parent.id()))throw new Failure(422,"SUPPLEMENT_DEPENDENCY_CYCLE");
+            var sources=new ArrayList<>(existing.map(Step::assessedSources).orElse(List.of()));
+            var source=new AssessedSource(attemptId,failure.groupId(),parent.id());if(!sources.contains(source))sources.add(source);
+            var next=existing.isPresent()?new Step(id,required,parent.kind(),parent.sourceBypassId(),existing.get().state(),existing.get().reason(),
+                    existing.get().fulfilledEvidenceId(),existing.get().options(),existing.get().certificate(),sources):
+                    new Step(id,required,parent.kind(),parent.sourceBypassId(),State.NEEDS_EXPERT_ACTION,"ASSESSED_PREREQUISITE_REQUIRES_LEARNING",null,List.of(),null,sources);
+            if(existing.isPresent())steps.set(steps.indexOf(existing.get()),next);else steps.add(next);
+            if(parent.kind()==Kind.REQUIRED && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(id) && edge.dependentStepId().equals(parent.id())))
+                dependencies.add(new Dependency(id,parent.id(),attemptId,failure.groupId()));
+        }
+        // Contextual learning dependencies, not HAS_SKILL_PREREQUISITE self-edges:
+        // every failed cross-Skill prerequisite precedes the MAIN Skill's failed lower levels.
+        for(var target:List.copyOf(steps))if(target.kind()==Kind.REQUIRED) {
+            var foundations=steps.stream().filter(step->step.kind()==Kind.REQUIRED
+                    && step.requirement().skillId().equals(target.requirement().skillId())
+                    && step.requirement().knowledgeLevel().ordinal()<target.requirement().knowledgeLevel().ordinal()
+                    && step.assessedSources().stream().anyMatch(source->source.dependentStepId().equals(target.id()))).toList();
+            for(var foundation:foundations)for(var prerequisite:steps) {
+                if(prerequisite.id().equals(foundation.id()) || prerequisite.kind()!=Kind.REQUIRED)continue;
+                var source=prerequisite.assessedSources().stream().filter(item->item.dependentStepId().equals(target.id())).findFirst();
+                if(source.isEmpty())continue;
+                boolean otherSkill=!prerequisite.requirement().skillId().equals(target.requirement().skillId());
+                boolean lower=prerequisite.requirement().skillId().equals(foundation.requirement().skillId())
+                        && prerequisite.requirement().knowledgeLevel().ordinal()<foundation.requirement().knowledgeLevel().ordinal();
+                if((otherSkill || lower) && dependencies.stream().noneMatch(edge->edge.prerequisiteStepId().equals(prerequisite.id()) && edge.dependentStepId().equals(foundation.id())))
+                    dependencies.add(new Dependency(prerequisite.id(),foundation.id(),source.get().attemptId(),source.get().groupId()));
+            }
+        }
+        return new Plan(steps,dependencies);
     }
     public Optional<RuleAssessmentOutcomeService.PathwayBefore> before(RuleAssessmentAttemptEntity attempt) {
         InitialJpa.requireTransaction();if(!"SKILL_ASSESSMENT".equals(attempt.getPurpose()))return Optional.empty();

@@ -1,0 +1,1150 @@
+[
+  {
+    "id": "RQR-JUNIOR-CORE01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-CORE02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-CORE03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-CORE04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS05",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS06",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS07",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS09",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS10",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance. Native markup literacy is required; specialized advanced markup remains an available learning option.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS11",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS12",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS13",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS14",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-JUNIOR-FS16",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Junior",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-CORE01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-CORE02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-CORE03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-CORE04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS05",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS06",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS07",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS08",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS08",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow. These responsibilities start as explicit independent requirements at Middle.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS09",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS10",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow. Native markup literacy is required; specialized advanced markup remains an available learning option.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS11",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS12",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS13",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS14",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS15",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS15",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow. These responsibilities start as explicit independent requirements at Middle.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-MIDDLE-FS16",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Middle",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Middle scope includes independent application across the full-stack workflow.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-CORE01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-CORE02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-CORE03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-CORE04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS01",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS02",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS03",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS04",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS05",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS06",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS07",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS08",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS08",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. These responsibilities start as explicit independent requirements at Middle.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS09",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS10",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Native markup literacy is required; specialized advanced markup remains an available learning option. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS11",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS12",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS13",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS14",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS15",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS15",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. These responsibilities start as explicit independent requirements at Middle.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQR-SENIOR-FS16",
+    "roleId": "ROLE-F72E5464F9B3",
+    "roleLevel": "Senior",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "mandatory": true,
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints.",
+    "sourceIds": [
+      "GOV",
+      "V3"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  }
+]

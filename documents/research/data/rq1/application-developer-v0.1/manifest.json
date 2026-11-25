@@ -1,0 +1,56 @@
+{
+  "datasetId": "application-developer-catalog",
+  "version": "research-ad-0.1",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-23",
+  "phase": "CATALOG_PREPARATION",
+  "frozen": false,
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "reviewedBy": null,
+  "reviewedAt": null,
+  "profileCount": 0,
+  "expertLabelCount": 0,
+  "counts": {
+    "skills": 20,
+    "modules": 72,
+    "skillKnowledgePairs": 60,
+    "requirementRows": 58,
+    "requiredGroupsByRoleLevel": {
+      "Junior": 18,
+      "Middle": 37,
+      "Senior": 49
+    },
+    "prerequisiteEdges": 31
+  },
+  "generatorSha256": "84abb7fa92df8952fd171052ca6a128e26ae8450514f7827fec3f5f59b503c34",
+  "legacySource": {
+    "path": "documents/dataset/import/ontology_seed-skill-level.json",
+    "sha256": "475dd1d66241f55e427fe98d6ff478afa593593bff8c10cde825e0852eb14d38"
+  },
+  "randomSeed": null,
+  "generationMethod": "Deterministic assembly of locally authored specifications; no random profiles or inferred expert labels.",
+  "applicationImportReady": false,
+  "limitations": [
+    "Local role requirements and prerequisite choices require expert review.",
+    "Module descriptions are synthetic and do not establish learning effectiveness.",
+    "No engine parity or final RQ1 scoring performed."
+  ],
+  "files": {
+    "CHANGE_RATIONALE.md": "5b3b256c0c634637fb1325249433aee9dc77c468121a6c197ce4451a3b7c6e70",
+    "COMPETENCY_MATRIX.md": "1b7a26bae2fb00682fbbf472f2036c94bc33d0e34967e5756b2bf07f6e06c6e3",
+    "MODULE_CARDS.md": "73596117b6344058f9f5373c32b75d7d206db34f2647e202ecf5eaf6706d09be",
+    "PREREQUISITES.md": "a3f708d0a952f46fcfcdf6b4ee7c4283e54c64e36a64bd9b45ed0aa2ac9ddaf0",
+    "README.md": "8024db25374736c87c19e4ac34846257f1aa7c169b0eec766da70117d981ef78",
+    "REVIEW_CHECKLIST.md": "67b9a475bd48dc6ff5efff26549018468290b097c964a3a1c6c44e3f1974ef8d",
+    "change-log.json": "1d14e2afd7153ac7d949464d2aadd5bc32401017a609695597bbe9eb9204c871",
+    "legacy-requirements.json": "0fd327e27feaa3f13c31666f10156bac86a6b25d7c6aa949c3ad59312bbb931a",
+    "modules.json": "d0dcaf5cbad77f70ea1aba899d24bdb38e2fbe527bbad8ca2be62a3bbc238af3",
+    "prerequisites.json": "4a06e1ab2d07fc64b4f4484877e079948baff1988569673908c99aafa10df4fc",
+    "requirements.json": "bff77a3c112b8bd51d40332846928340872fff09626bbd41f245eb71ab5c46f5",
+    "review-items.json": "68c49c958c5b5e06787a8fabfb7181f4b19ab48034f3c5667711458d07e60222",
+    "role.json": "45a7ff835b5182e0129a32874c5ff4ecfb6b733a0def46e5e60f0f72a881afae",
+    "skills.json": "ebe552b512607a26474dc60c9cfdc72dd5eae2ddef753cdf1f10041ecbcdb94f",
+    "sources.json": "2d7cff18395ce4dd37554c60d7d31da5bf87add0016457ef9a3d8e832f16a85d",
+    "teaching-bindings.json": "f98767d61c8c09b7156d7f95a613e72a9c7007a9d0a484a4038d7d1bd4392cce"
+  }
+}

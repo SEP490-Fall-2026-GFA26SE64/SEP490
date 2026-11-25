@@ -1,0 +1,2018 @@
+[
+  {
+    "id": "RQM-36A294466D67",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Tracing a shopping-basket calculator",
+    "description": "This synthetic module specification concerns executable business logic through the case \"Tracing a shopping-basket calculator\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Trace branching and collection operations for a small order calculator",
+      "Identify boundary inputs and explain the expected result"
+    ],
+    "includedScope": "Executable business logic",
+    "excludedScope": "Framework deployment and architecture selection",
+    "scenarioFocus": "Tracing a shopping-basket calculator",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9913EA625E9E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Implementing a subscription price engine",
+    "description": "This synthetic module specification concerns executable business logic through the case \"Implementing a subscription price engine\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Implement decomposed pricing logic with explicit error handling",
+      "Verify empty, invalid and boundary cases without changing the stated rules"
+    ],
+    "includedScope": "Executable business logic",
+    "excludedScope": "Framework deployment and architecture selection",
+    "scenarioFocus": "Implementing a subscription price engine",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-E404CAA61743",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Evolving promotion rules safely",
+    "description": "This synthetic module specification concerns executable business logic through the case \"Evolving promotion rules safely\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate alternative implementations under changing discount policies",
+      "Justify complexity and maintainability trade-offs using failure cases"
+    ],
+    "includedScope": "Executable business logic",
+    "excludedScope": "Framework deployment and architecture selection",
+    "scenarioFocus": "Evolving promotion rules safely",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-54F0D846F365",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Recovering a local edit",
+    "description": "This synthetic module specification concerns version-controlled collaboration through the case \"Recovering a local edit\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain commits, branches and working-tree changes",
+      "Recover a mistaken local edit without losing unrelated work"
+    ],
+    "includedScope": "Version-controlled collaboration",
+    "excludedScope": "Build pipeline authoring and application debugging",
+    "scenarioFocus": "Recovering a local edit",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-F9F7B9FAA3B4",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reconciling two checkout changes",
+    "description": "This synthetic module specification concerns version-controlled collaboration through the case \"Reconciling two checkout changes\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Resolve a conflicting feature change while preserving both intended behaviors",
+      "Prepare a reviewable history and identify the tested revision"
+    ],
+    "includedScope": "Version-controlled collaboration",
+    "excludedScope": "Build pipeline authoring and application debugging",
+    "scenarioFocus": "Reconciling two checkout changes",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-49A8B9DC554E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Coordinating a hotfix across releases",
+    "description": "This synthetic module specification concerns version-controlled collaboration through the case \"Coordinating a hotfix across releases\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Design a branching and hotfix strategy for concurrent releases",
+      "Evaluate rollback and traceability risks across maintained versions"
+    ],
+    "includedScope": "Version-controlled collaboration",
+    "excludedScope": "Build pipeline authoring and application debugging",
+    "scenarioFocus": "Coordinating a hotfix across releases",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-070396F558FD",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Specifying a password-change request",
+    "description": "This synthetic module specification concerns verifiable software requirements through the case \"Specifying a password-change request\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Identify actors, inputs and outputs in a small user request",
+      "Write observable acceptance examples including one failure case"
+    ],
+    "includedScope": "Verifiable software requirements",
+    "excludedScope": "UI styling and implementation of the whole feature",
+    "scenarioFocus": "Specifying a password-change request",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-A6D56EBA3698",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Clarifying a booking workflow",
+    "description": "This synthetic module specification concerns verifiable software requirements through the case \"Clarifying a booking workflow\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Resolve ambiguities in a multi-step user workflow",
+      "Define testable business rules and boundaries before implementation"
+    ],
+    "includedScope": "Verifiable software requirements",
+    "excludedScope": "UI styling and implementation of the whole feature",
+    "scenarioFocus": "Clarifying a booking workflow",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-CC34569CE6A5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Negotiating a constrained product release",
+    "description": "This synthetic module specification concerns verifiable software requirements through the case \"Negotiating a constrained product release\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Reconcile conflicting functional and quality constraints",
+      "Prioritize a bounded release with traceable acceptance and explicit residual risk"
+    ],
+    "includedScope": "Verifiable software requirements",
+    "excludedScope": "UI styling and implementation of the whole feature",
+    "scenarioFocus": "Negotiating a constrained product release",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-25E84C5FDDBA",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reading a release checklist",
+    "description": "This synthetic module specification concerns controlled application release through the case \"Reading a release checklist\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain configuration, artifact and health-check roles in a release",
+      "Identify the rollback point in a supplied deployment procedure"
+    ],
+    "includedScope": "Controlled application release",
+    "excludedScope": "Cloud platform administration and continuous-integration pipeline design",
+    "scenarioFocus": "Reading a release checklist",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-67572E5548A5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Rolling out a booking service",
+    "description": "This synthetic module specification concerns controlled application release through the case \"Rolling out a booking service\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Plan a reproducible application rollout with environment-specific configuration",
+      "Verify service health and define rollback triggers"
+    ],
+    "includedScope": "Controlled application release",
+    "excludedScope": "Cloud platform administration and continuous-integration pipeline design",
+    "scenarioFocus": "Rolling out a booking service",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-386342038EA4",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Planning a staged release with schema changes",
+    "description": "This synthetic module specification concerns controlled application release through the case \"Planning a staged release with schema changes\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate staged rollout alternatives under migration and availability constraints",
+      "Specify evidence for safe rollback when versions coexist"
+    ],
+    "includedScope": "Controlled application release",
+    "excludedScope": "Cloud platform administration and continuous-integration pipeline design",
+    "scenarioFocus": "Planning a staged release with schema changes",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-460DAAB7C11C",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Mapping a registration journey",
+    "description": "This synthetic module specification concerns user interaction design through the case \"Mapping a registration journey\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Identify interface states and navigation for a simple user task",
+      "Explain the purpose of clear labels and actionable feedback"
+    ],
+    "includedScope": "User interaction design",
+    "excludedScope": "Semantic HTML implementation and visual branding",
+    "scenarioFocus": "Mapping a registration journey",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-4C1B281AD645",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Designing resumable checkout",
+    "description": "This synthetic module specification concerns user interaction design through the case \"Designing resumable checkout\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify interaction states for an interrupted multi-step task",
+      "Resolve navigation and error-recovery ambiguities with a flow model"
+    ],
+    "includedScope": "User interaction design",
+    "excludedScope": "Semantic HTML implementation and visual branding",
+    "scenarioFocus": "Designing resumable checkout",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-FD52058090D1",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing complex account-management flows",
+    "description": "This synthetic module specification concerns user interaction design through the case \"Reviewing complex account-management flows\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Compare interaction alternatives for conflicting user needs",
+      "Justify recovery and consistency decisions across complex workflows"
+    ],
+    "includedScope": "User interaction design",
+    "excludedScope": "Semantic HTML implementation and visual branding",
+    "scenarioFocus": "Reviewing complex account-management flows",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9AD7623CFB27",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Finding barriers in a sign-up form",
+    "description": "This synthetic module specification concerns accessible web interaction through the case \"Finding barriers in a sign-up form\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain semantic controls, accessible names and keyboard order",
+      "Identify inaccessible interactions in a small form"
+    ],
+    "includedScope": "Accessible web interaction",
+    "excludedScope": "Full accessibility certification and purely visual layout work",
+    "scenarioFocus": "Finding barriers in a sign-up form",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-3576E488BF31",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Managing focus in a confirmation dialog",
+    "description": "This synthetic module specification concerns accessible web interaction through the case \"Managing focus in a confirmation dialog\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify keyboard and focus behavior for a dialog and validation flow",
+      "Check accessible names and dynamic feedback against observable criteria"
+    ],
+    "includedScope": "Accessible web interaction",
+    "excludedScope": "Full accessibility certification and purely visual layout work",
+    "scenarioFocus": "Managing focus in a confirmation dialog",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-215EA3B96152",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing an interactive data workspace",
+    "description": "This synthetic module specification concerns accessible web interaction through the case \"Reviewing an interactive data workspace\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate accessibility trade-offs in a complex interactive widget",
+      "Design a verification strategy across input methods and assistive use"
+    ],
+    "includedScope": "Accessible web interaction",
+    "excludedScope": "Full accessibility certification and purely visual layout work",
+    "scenarioFocus": "Reviewing an interactive data workspace",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-1F23A4315BCA",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Describing a notes API",
+    "description": "This synthetic module specification concerns application api contracts through the case \"Describing a notes API\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain request, response and error conventions for a resource API",
+      "Select suitable operations and response meanings for basic CRUD"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "Describing a notes API",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-F0EA6C643C74",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A library lending endpoint",
+    "description": "This synthetic module specification concerns application api contracts through the case \"A library lending endpoint\". It introduces concepts and interpretation of a bounded example. The case emphasizes resource identity and not-found responses.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain request, response and error conventions for a resource API",
+      "Select suitable operations and response meanings for basic CRUD"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "resource identity and not-found responses",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-1ED251ADA864",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Specifying a paginated inventory API",
+    "description": "This synthetic module specification concerns application api contracts through the case \"Specifying a paginated inventory API\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify pagination, validation and repeat-request behavior for an API",
+      "Check examples for consistent success and failure contracts"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "Specifying a paginated inventory API",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-815D6FC46FF7",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A support-ticket search endpoint",
+    "description": "This synthetic module specification concerns application api contracts through the case \"A support-ticket search endpoint\". It addresses independent application and checks within a stated workflow. The case emphasizes filter combinations and repeat submissions.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify pagination, validation and repeat-request behavior for an API",
+      "Check examples for consistent success and failure contracts"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "filter combinations and repeat submissions",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-8DB140806477",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Evolving a reservation API contract",
+    "description": "This synthetic module specification concerns application api contracts through the case \"Evolving a reservation API contract\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate versioning and compatibility strategies for changing consumers",
+      "Justify idempotency and failure semantics under partial completion"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "Evolving a reservation API contract",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-5BFAC5D874C2",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A partner-facing billing contract",
+    "description": "This synthetic module specification concerns application api contracts through the case \"A partner-facing billing contract\". It addresses evaluation of alternatives under interacting constraints. The case emphasizes consumer migration and retry ambiguity.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate versioning and compatibility strategies for changing consumers",
+      "Justify idempotency and failure semantics under partial completion"
+    ],
+    "includedScope": "Application API contracts",
+    "excludedScope": "Database schema design and UI implementation",
+    "scenarioFocus": "consumer migration and retry ambiguity",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-FD5BC7D33325",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reading customer and order queries",
+    "description": "This synthetic module specification concerns relational data queries through the case \"Reading customer and order queries\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain filtering, joining and aggregation on related tables",
+      "Predict the result of a query with missing or duplicate rows"
+    ],
+    "includedScope": "Relational data queries",
+    "excludedScope": "Database administration and transaction-isolation design",
+    "scenarioFocus": "Reading customer and order queries",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9FAD42B7BAA5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Building a stock movement report",
+    "description": "This synthetic module specification concerns relational data queries through the case \"Building a stock movement report\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Construct queries for grouped business reports with explicit null handling",
+      "Check result correctness against a small reference dataset"
+    ],
+    "includedScope": "Relational data queries",
+    "excludedScope": "Database administration and transaction-isolation design",
+    "scenarioFocus": "Building a stock movement report",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-19EB174400CE",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing a high-volume reporting query",
+    "description": "This synthetic module specification concerns relational data queries through the case \"Reviewing a high-volume reporting query\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Compare equivalent query formulations under skewed data and access constraints",
+      "Justify an optimization while preserving result semantics"
+    ],
+    "includedScope": "Relational data queries",
+    "excludedScope": "Database administration and transaction-isolation design",
+    "scenarioFocus": "Reviewing a high-volume reporting query",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-935D1D6EBEFD",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Following an order notification",
+    "description": "This synthetic module specification concerns component integration through the case \"Following an order notification\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Identify producer, consumer and exchanged data in an integration",
+      "Explain how a failed dependency affects a user operation"
+    ],
+    "includedScope": "Component integration",
+    "excludedScope": "Individual function implementation and API naming conventions alone",
+    "scenarioFocus": "Following an order notification",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-94EF97152E2B",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Connecting checkout to a notification service",
+    "description": "This synthetic module specification concerns component integration through the case \"Connecting checkout to a notification service\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify component coordination with timeouts and partial-failure handling",
+      "Define contract and integration checks for the combined workflow"
+    ],
+    "includedScope": "Component integration",
+    "excludedScope": "Individual function implementation and API naming conventions alone",
+    "scenarioFocus": "Connecting checkout to a notification service",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-162A3783727F",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Recovering a distributed fulfillment workflow",
+    "description": "This synthetic module specification concerns component integration through the case \"Recovering a distributed fulfillment workflow\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate recovery strategies for repeated or out-of-order messages",
+      "Justify consistency and coupling trade-offs across service boundaries"
+    ],
+    "includedScope": "Component integration",
+    "excludedScope": "Individual function implementation and API naming conventions alone",
+    "scenarioFocus": "Recovering a distributed fulfillment workflow",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-991380A07B3B",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Diagnosing an incorrect total",
+    "description": "This synthetic module specification concerns systematic defect diagnosis through the case \"Diagnosing an incorrect total\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Reproduce a defect from a bounded input and observed output",
+      "Distinguish symptoms from a testable causal hypothesis"
+    ],
+    "includedScope": "Systematic defect diagnosis",
+    "excludedScope": "Broad monitoring infrastructure and feature redesign",
+    "scenarioFocus": "Diagnosing an incorrect total",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-69EFF23103D5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Tracing a lost form update",
+    "description": "This synthetic module specification concerns systematic defect diagnosis through the case \"Tracing a lost form update\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Trace a failure across UI, API and persistence boundaries",
+      "Verify the smallest justified correction with a regression case"
+    ],
+    "includedScope": "Systematic defect diagnosis",
+    "excludedScope": "Broad monitoring infrastructure and feature redesign",
+    "scenarioFocus": "Tracing a lost form update",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-6379AC5A32BF",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Investigating an intermittent duplicate order",
+    "description": "This synthetic module specification concerns systematic defect diagnosis through the case \"Investigating an intermittent duplicate order\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate competing explanations for an intermittent production-like fault",
+      "Design discriminating observations and validate a fix under recurrence conditions"
+    ],
+    "includedScope": "Systematic defect diagnosis",
+    "excludedScope": "Broad monitoring infrastructure and feature redesign",
+    "scenarioFocus": "Investigating an intermittent duplicate order",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-3CBE1C18D90D",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Checking a quantity validator",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"Checking a quantity validator\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain assertions, test isolation and boundary cases",
+      "Identify useful tests for a pure validation function"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "Checking a quantity validator",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-A805E6072730",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A date-range validator",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"A date-range validator\". It introduces concepts and interpretation of a bounded example. The case emphasizes empty and inverted ranges.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain assertions, test isolation and boundary cases",
+      "Identify useful tests for a pure validation function"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "empty and inverted ranges",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-FE3734588299",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Testing a stock reservation service",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"Testing a stock reservation service\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Design deterministic unit tests around service collaborators",
+      "Verify error behavior without coupling tests to private implementation details"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "Testing a stock reservation service",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-A20690381438",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A notification scheduling unit",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"A notification scheduling unit\". It addresses independent application and checks within a stated workflow. The case emphasizes clock control and failed collaborators.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Design deterministic unit tests around service collaborators",
+      "Verify error behavior without coupling tests to private implementation details"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "clock control and failed collaborators",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9555C97CBC43",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing tests for a pricing state machine",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"Reviewing tests for a pricing state machine\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate a unit-test suite for blind spots and brittle doubles",
+      "Select high-value cases for complex state transitions and mutation risks"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "Reviewing tests for a pricing state machine",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-7C96DA007C29",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "An entitlement decision suite",
+    "description": "This synthetic module specification concerns automated unit verification through the case \"An entitlement decision suite\". It addresses evaluation of alternatives under interacting constraints. The case emphasizes state transitions and misleading test doubles.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate a unit-test suite for blind spots and brittle doubles",
+      "Select high-value cases for complex state transitions and mutation risks"
+    ],
+    "includedScope": "Automated unit verification",
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "scenarioFocus": "state transitions and misleading test doubles",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-B6B672688C49",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Commenting on a small validation patch",
+    "description": "This synthetic module specification concerns code review decisions through the case \"Commenting on a small validation patch\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Distinguish correctness defects from style preferences in a patch",
+      "Write actionable feedback tied to an observable risk"
+    ],
+    "includedScope": "Code review decisions",
+    "excludedScope": "Writing a new feature and managing Git conflicts",
+    "scenarioFocus": "Commenting on a small validation patch",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-467E1AF9AF41",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing an account-update feature",
+    "description": "This synthetic module specification concerns code review decisions through the case \"Reviewing an account-update feature\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Review a feature diff for boundary behavior, tests and maintainability",
+      "Prioritize blocking findings and explain suggested corrections"
+    ],
+    "includedScope": "Code review decisions",
+    "excludedScope": "Writing a new feature and managing Git conflicts",
+    "scenarioFocus": "Reviewing an account-update feature",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-C728A8009DCD",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing a cross-service permission change",
+    "description": "This synthetic module specification concerns code review decisions through the case \"Reviewing a cross-service permission change\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate cross-cutting design and security risks in a large change",
+      "Justify review decisions with evidence and proportionate verification"
+    ],
+    "includedScope": "Code review decisions",
+    "excludedScope": "Writing a new feature and managing Git conflicts",
+    "scenarioFocus": "Reviewing a cross-service permission change",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-5266FC1A2CC8",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Understanding a flexible product grid",
+    "description": "This synthetic module specification concerns responsive interface layout through the case \"Understanding a flexible product grid\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain flexible sizing, flow and viewport-dependent layout",
+      "Identify overflow causes in a simple page"
+    ],
+    "includedScope": "Responsive interface layout",
+    "excludedScope": "Visual brand design and keyboard accessibility verification",
+    "scenarioFocus": "Understanding a flexible product grid",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-0B270FCE7190",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Adapting a management screen",
+    "description": "This synthetic module specification concerns responsive interface layout through the case \"Adapting a management screen\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify a responsive layout across narrow and wide viewports",
+      "Preserve content order and usable controls with long text and tables"
+    ],
+    "includedScope": "Responsive interface layout",
+    "excludedScope": "Visual brand design and keyboard accessibility verification",
+    "scenarioFocus": "Adapting a management screen",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-E809B874333E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing a localized analytics layout",
+    "description": "This synthetic module specification concerns responsive interface layout through the case \"Reviewing a localized analytics layout\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate layout strategies for dense data and localization constraints",
+      "Define checks for content loss, reflow and interaction stability"
+    ],
+    "includedScope": "Responsive interface layout",
+    "excludedScope": "Visual brand design and keyboard accessibility verification",
+    "scenarioFocus": "Reviewing a localized analytics layout",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-1A1E535ADE00",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Structuring a contact page",
+    "description": "This synthetic module specification concerns semantic html structure through the case \"Structuring a contact page\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Choose elements matching headings, navigation and form intent",
+      "Explain the difference between a link and an action control"
+    ],
+    "includedScope": "Semantic HTML structure",
+    "excludedScope": "CSS layout and custom-widget interaction programming",
+    "scenarioFocus": "Structuring a contact page",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-E227DD0C9E1B",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Marking up a grouped application form",
+    "description": "This synthetic module specification concerns semantic html structure through the case \"Marking up a grouped application form\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Structure a complex document and form with meaningful relationships",
+      "Validate labels, groups and native interaction semantics"
+    ],
+    "includedScope": "Semantic HTML structure",
+    "excludedScope": "CSS layout and custom-widget interaction programming",
+    "scenarioFocus": "Marking up a grouped application form",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-56B6C1293FA2",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing reusable page primitives",
+    "description": "This synthetic module specification concerns semantic html structure through the case \"Reviewing reusable page primitives\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate competing markup structures for reusable components",
+      "Justify native-element choices and semantic constraints during composition"
+    ],
+    "includedScope": "Semantic HTML structure",
+    "excludedScope": "CSS layout and custom-widget interaction programming",
+    "scenarioFocus": "Reviewing reusable page primitives",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-6ED110AAFBB0",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reading a remote-list request",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"Reading a remote-list request\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain pending, success and failure states of a browser request",
+      "Distinguish HTTP failure from a successful empty response"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "Reading a remote-list request",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-C97FCC59875C",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A remote weather panel",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"A remote weather panel\". It introduces concepts and interpretation of a bounded example. The case emphasizes empty responses and network failures.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain pending, success and failure states of a browser request",
+      "Distinguish HTTP failure from a successful empty response"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "empty responses and network failures",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-1C35929CF055",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Preventing stale search results",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"Preventing stale search results\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Handle cancellation and stale responses in an interactive search",
+      "Specify consistent loading, empty and retry states"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "Preventing stale search results",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-5DD6DD6878EC",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A dependent address selector",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"A dependent address selector\". It addresses independent application and checks within a stated workflow. The case emphasizes cancellation when the parent selection changes.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Handle cancellation and stale responses in an interactive search",
+      "Specify consistent loading, empty and retry states"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "cancellation when the parent selection changes",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-BAD2447DD7AB",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Coordinating edits during unreliable connectivity",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"Coordinating edits during unreliable connectivity\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate coordination strategies for overlapping browser operations",
+      "Justify freshness and recovery rules under races and intermittent connectivity"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "Coordinating edits during unreliable connectivity",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-095282DD9FC2",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "An offline-tolerant draft editor",
+    "description": "This synthetic module specification concerns asynchronous browser requests through the case \"An offline-tolerant draft editor\". It addresses evaluation of alternatives under interacting constraints. The case emphasizes reconciliation of overlapping saves.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate coordination strategies for overlapping browser operations",
+      "Justify freshness and recovery rules under races and intermittent connectivity"
+    ],
+    "includedScope": "Asynchronous browser requests",
+    "excludedScope": "Server API design and distributed-message processing",
+    "scenarioFocus": "reconciliation of overlapping saves",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9B283985D80E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Checking a registration payload",
+    "description": "This synthetic module specification concerns application input validation through the case \"Checking a registration payload\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Distinguish required, malformed and out-of-range input",
+      "Explain why client checks do not replace server validation"
+    ],
+    "includedScope": "Application input validation",
+    "excludedScope": "Authorization policy and cryptographic implementation",
+    "scenarioFocus": "Checking a registration payload",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-5F28225F4C98",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Validating a nested order request",
+    "description": "This synthetic module specification concerns application input validation through the case \"Validating a nested order request\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify consistent validation and feedback at request boundaries",
+      "Check nested, missing and adversarial input without trusting the client"
+    ],
+    "includedScope": "Application input validation",
+    "excludedScope": "Authorization policy and cryptographic implementation",
+    "scenarioFocus": "Validating a nested order request",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-A13EFC8777BB",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing validation across evolving clients",
+    "description": "This synthetic module specification concerns application input validation through the case \"Reviewing validation across evolving clients\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate validation policy across multiple entry points and schema versions",
+      "Justify canonicalization and compatibility decisions against ambiguous input"
+    ],
+    "includedScope": "Application input validation",
+    "excludedScope": "Authorization policy and cryptographic implementation",
+    "scenarioFocus": "Reviewing validation across evolving clients",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-0BF6C9E304D5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Explaining access to a private note",
+    "description": "This synthetic module specification concerns resource authorization through the case \"Explaining access to a private note\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Distinguish authentication from permission to act on a resource",
+      "Identify missing ownership checks in a simple access scenario"
+    ],
+    "includedScope": "Resource authorization",
+    "excludedScope": "Identity-provider setup and general authentication implementation",
+    "scenarioFocus": "Explaining access to a private note",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-53338A249C50",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Protecting a multi-tenant project API",
+    "description": "This synthetic module specification concerns resource authorization through the case \"Protecting a multi-tenant project API\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify trusted actor, organization and resource checks for protected operations",
+      "Verify allowed and denied cases including cross-organization access"
+    ],
+    "includedScope": "Resource authorization",
+    "excludedScope": "Identity-provider setup and general authentication implementation",
+    "scenarioFocus": "Protecting a multi-tenant project API",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-45F1034C455E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing delegated access during permission changes",
+    "description": "This synthetic module specification concerns resource authorization through the case \"Reviewing delegated access during permission changes\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate authorization consistency across delegated and asynchronous actions",
+      "Justify policy decisions under stale grants and concurrent changes"
+    ],
+    "includedScope": "Resource authorization",
+    "excludedScope": "Identity-provider setup and general authentication implementation",
+    "scenarioFocus": "Reviewing delegated access during permission changes",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-F6DB2919E556",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reasoning about an account transfer",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"Reasoning about an account transfer\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain commit and rollback for related database changes",
+      "Identify a partial-update failure that violates a business invariant"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "Reasoning about an account transfer",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-47EB270FF841",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A booking and payment record",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"A booking and payment record\". It introduces concepts and interpretation of a bounded example. The case emphasizes rollback of related writes.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain commit and rollback for related database changes",
+      "Identify a partial-update failure that violates a business invariant"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "rollback of related writes",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-8DD629D58323",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Protecting inventory reservations",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"Protecting inventory reservations\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Define transaction boundaries for a concurrent reservation",
+      "Check rollback and competing updates against a stated invariant"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "Protecting inventory reservations",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-47C78D8480BF",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A limited-seat booking transaction",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"A limited-seat booking transaction\". It addresses independent application and checks within a stated workflow. The case emphasizes conflicting reservations and retries.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Define transaction boundaries for a concurrent reservation",
+      "Check rollback and competing updates against a stated invariant"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "conflicting reservations and retries",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-D3B28CE0F87E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing a contended allocation workflow",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"Reviewing a contended allocation workflow\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate isolation, lock and retry alternatives under contention",
+      "Justify correctness and throughput trade-offs for overlapping transactions"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "Reviewing a contended allocation workflow",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-3CF437DB0428",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "A concurrent credit-allocation process",
+    "description": "This synthetic module specification concerns atomic data updates through the case \"A concurrent credit-allocation process\". It addresses evaluation of alternatives under interacting constraints. The case emphasizes isolation anomalies and lock ordering.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate isolation, lock and retry alternatives under contention",
+      "Justify correctness and throughput trade-offs for overlapping transactions"
+    ],
+    "includedScope": "Atomic data updates",
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "scenarioFocus": "isolation anomalies and lock ordering",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-AEC0B7987AFC",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Recognizing duplication in order rules",
+    "description": "This synthetic module specification concerns behavior-preserving restructuring through the case \"Recognizing duplication in order rules\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Identify duplication and mixed responsibilities in a small function",
+      "Explain how characterization checks protect existing behavior"
+    ],
+    "includedScope": "Behavior-preserving restructuring",
+    "excludedScope": "New business features and architecture replacement",
+    "scenarioFocus": "Recognizing duplication in order rules",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-CDFE062DD04E",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Separating a coupled checkout service",
+    "description": "This synthetic module specification concerns behavior-preserving restructuring through the case \"Separating a coupled checkout service\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Plan incremental restructuring of a coupled service",
+      "Preserve public behavior with focused regression checks"
+    ],
+    "includedScope": "Behavior-preserving restructuring",
+    "excludedScope": "New business features and architecture replacement",
+    "scenarioFocus": "Separating a coupled checkout service",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-3EB85A87E1C3",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Restructuring a legacy pricing subsystem",
+    "description": "This synthetic module specification concerns behavior-preserving restructuring through the case \"Restructuring a legacy pricing subsystem\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate alternative decompositions for a legacy subsystem",
+      "Justify migration steps and compatibility checks under ongoing change"
+    ],
+    "includedScope": "Behavior-preserving restructuring",
+    "excludedScope": "New business features and architecture replacement",
+    "scenarioFocus": "Restructuring a legacy pricing subsystem",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-5EC010180AD5",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reading a pull-request check",
+    "description": "This synthetic module specification concerns continuous integration workflows through the case \"Reading a pull-request check\". It introduces concepts and interpretation of a bounded example.",
+    "knowledgeLevel": "FOUNDATION",
+    "learningOutcomes": [
+      "Explain triggers, jobs and build-test artifacts in a pipeline",
+      "Identify how a failing check blocks an unsafe merge"
+    ],
+    "includedScope": "Continuous integration workflows",
+    "excludedScope": "Production rollout and infrastructure provisioning",
+    "scenarioFocus": "Reading a pull-request check",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GH"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-9FDABE9A3731",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Building a repeatable verification pipeline",
+    "description": "This synthetic module specification concerns continuous integration workflows through the case \"Building a repeatable verification pipeline\". It addresses independent application and checks within a stated workflow.",
+    "knowledgeLevel": "INTERMEDIATE",
+    "learningOutcomes": [
+      "Specify a reproducible build and test workflow for a web application",
+      "Handle dependency setup and diagnostic artifacts on failure"
+    ],
+    "includedScope": "Continuous integration workflows",
+    "excludedScope": "Production rollout and infrastructure provisioning",
+    "scenarioFocus": "Building a repeatable verification pipeline",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GH"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQM-B7884284AF1C",
+    "revision": 1,
+    "contentVersion": "research-ad-0.1",
+    "organizationId": "RESEARCH-AD-ORG",
+    "title": "Reviewing a secure parallel build workflow",
+    "description": "This synthetic module specification concerns continuous integration workflows through the case \"Reviewing a secure parallel build workflow\". It addresses evaluation of alternatives under interacting constraints.",
+    "knowledgeLevel": "ADVANCED",
+    "learningOutcomes": [
+      "Evaluate pipeline isolation, caching and parallelization trade-offs",
+      "Justify reliable checks under untrusted changes and constrained runners"
+    ],
+    "includedScope": "Continuous integration workflows",
+    "excludedScope": "Production rollout and infrastructure provisioning",
+    "scenarioFocus": "Reviewing a secure parallel build workflow",
+    "language": "en",
+    "artifactType": "SYNTHETIC_MODULE_SPECIFICATION",
+    "benchmarkAvailability": "CANDIDATE",
+    "applicationPublicationState": null,
+    "durationMinutes": null,
+    "price": null,
+    "sourceIds": [
+      "GH"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  }
+]

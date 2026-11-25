@@ -684,8 +684,8 @@ export function PlatformGraphBenchmarkPage() {
                       <CardTitle className="text-base flex items-center gap-2">
                         <span>
                           {isVi
-                            ? 'Phân rã Thời gian Thực thi'
-                            : 'Step-by-Step Runtime Breakdown'}
+                            ? 'Minh họa các bước truy vấn'
+                            : 'Query Steps Illustration'}
                         </span>
                         {isRunning && (
                           <Badge variant="primary" className="text-[10px] py-0 px-2 animate-pulse">
@@ -1226,17 +1226,9 @@ export function PlatformGraphBenchmarkPage() {
                   ))}
                 </div>
                 <Text variant="caption" tone="muted" className="mt-1 block">
-                  {selectedScale === '1k'
-                    ? isVi
-                      ? '~1.000 nodes, ~5.100 edges (Catalog thực tế)'
-                      : '~1,000 nodes, ~5,100 edges (Live baseline)'
-                    : selectedScale === '5k'
-                    ? isVi
-                      ? '~5.000 nodes, ~25.800 edges (Quy mô trung bình)'
-                      : '~5,000 nodes, ~25,800 edges (Medium scale)'
-                    : isVi
-                    ? '~10.000 nodes, ~52.400 edges (Mục tiêu RQ2)'
-                    : '~10,000 nodes, ~52,400 edges (Target scale)'}
+                  {isVi
+                    ? 'Neo4j riêng cho mỗi quy mô. Số cạnh được kiểm đếm khi chạy.'
+                    : 'Dedicated Neo4j graph per scale. Relationships are counted at run time.'}
                 </Text>
               </div>
 

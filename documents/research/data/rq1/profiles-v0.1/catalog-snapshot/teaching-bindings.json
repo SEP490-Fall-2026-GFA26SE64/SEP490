@@ -1,0 +1,1010 @@
+[
+  {
+    "moduleId": "RQM-36A294466D67",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-CORE01-FOUNDATION-01",
+      "MS-CORE01-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9913EA625E9E",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-CORE01-INTERMEDIATE-01",
+      "MS-CORE01-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-E404CAA61743",
+    "skillId": "MS-CORE01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-CORE01-ADVANCED-01",
+      "MS-CORE01-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-54F0D846F365",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-CORE02-FOUNDATION-01",
+      "MS-CORE02-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-F9F7B9FAA3B4",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-CORE02-INTERMEDIATE-01",
+      "MS-CORE02-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-49A8B9DC554E",
+    "skillId": "MS-CORE02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-CORE02-ADVANCED-01",
+      "MS-CORE02-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-070396F558FD",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-CORE03-FOUNDATION-01",
+      "MS-CORE03-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-A6D56EBA3698",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-CORE03-INTERMEDIATE-01",
+      "MS-CORE03-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-CC34569CE6A5",
+    "skillId": "MS-CORE03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-CORE03-ADVANCED-01",
+      "MS-CORE03-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-25E84C5FDDBA",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-CORE04-FOUNDATION-01",
+      "MS-CORE04-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-67572E5548A5",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-CORE04-INTERMEDIATE-01",
+      "MS-CORE04-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-386342038EA4",
+    "skillId": "MS-CORE04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-CORE04-ADVANCED-01",
+      "MS-CORE04-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-460DAAB7C11C",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS01-FOUNDATION-01",
+      "MS-FS01-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-4C1B281AD645",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS01-INTERMEDIATE-01",
+      "MS-FS01-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-FD52058090D1",
+    "skillId": "MS-FS01",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS01-ADVANCED-01",
+      "MS-FS01-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9AD7623CFB27",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS02-FOUNDATION-01",
+      "MS-FS02-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-3576E488BF31",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS02-INTERMEDIATE-01",
+      "MS-FS02-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-215EA3B96152",
+    "skillId": "MS-FS02",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS02-ADVANCED-01",
+      "MS-FS02-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-1F23A4315BCA",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS03-FOUNDATION-01",
+      "MS-FS03-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-F0EA6C643C74",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS03-FOUNDATION-01",
+      "MS-FS03-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-1ED251ADA864",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS03-INTERMEDIATE-01",
+      "MS-FS03-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-815D6FC46FF7",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS03-INTERMEDIATE-01",
+      "MS-FS03-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-8DB140806477",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS03-ADVANCED-01",
+      "MS-FS03-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-5BFAC5D874C2",
+    "skillId": "MS-FS03",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS03-ADVANCED-01",
+      "MS-FS03-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-FD5BC7D33325",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS04-FOUNDATION-01",
+      "MS-FS04-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9FAD42B7BAA5",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS04-INTERMEDIATE-01",
+      "MS-FS04-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-19EB174400CE",
+    "skillId": "MS-FS04",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS04-ADVANCED-01",
+      "MS-FS04-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-935D1D6EBEFD",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS05-FOUNDATION-01",
+      "MS-FS05-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-94EF97152E2B",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS05-INTERMEDIATE-01",
+      "MS-FS05-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-162A3783727F",
+    "skillId": "MS-FS05",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS05-ADVANCED-01",
+      "MS-FS05-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-991380A07B3B",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS06-FOUNDATION-01",
+      "MS-FS06-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-69EFF23103D5",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS06-INTERMEDIATE-01",
+      "MS-FS06-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-6379AC5A32BF",
+    "skillId": "MS-FS06",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS06-ADVANCED-01",
+      "MS-FS06-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-3CBE1C18D90D",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS07-FOUNDATION-01",
+      "MS-FS07-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-A805E6072730",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS07-FOUNDATION-01",
+      "MS-FS07-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-FE3734588299",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS07-INTERMEDIATE-01",
+      "MS-FS07-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-A20690381438",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS07-INTERMEDIATE-01",
+      "MS-FS07-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9555C97CBC43",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS07-ADVANCED-01",
+      "MS-FS07-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-7C96DA007C29",
+    "skillId": "MS-FS07",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS07-ADVANCED-01",
+      "MS-FS07-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-B6B672688C49",
+    "skillId": "MS-FS08",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS08-FOUNDATION-01",
+      "MS-FS08-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-467E1AF9AF41",
+    "skillId": "MS-FS08",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS08-INTERMEDIATE-01",
+      "MS-FS08-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-C728A8009DCD",
+    "skillId": "MS-FS08",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS08-ADVANCED-01",
+      "MS-FS08-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-5266FC1A2CC8",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS09-FOUNDATION-01",
+      "MS-FS09-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-0B270FCE7190",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS09-INTERMEDIATE-01",
+      "MS-FS09-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-E809B874333E",
+    "skillId": "MS-FS09",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS09-ADVANCED-01",
+      "MS-FS09-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-1A1E535ADE00",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS10-FOUNDATION-01",
+      "MS-FS10-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-E227DD0C9E1B",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS10-INTERMEDIATE-01",
+      "MS-FS10-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-56B6C1293FA2",
+    "skillId": "MS-FS10",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS10-ADVANCED-01",
+      "MS-FS10-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-6ED110AAFBB0",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS11-FOUNDATION-01",
+      "MS-FS11-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-C97FCC59875C",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS11-FOUNDATION-01",
+      "MS-FS11-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-1C35929CF055",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS11-INTERMEDIATE-01",
+      "MS-FS11-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-5DD6DD6878EC",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS11-INTERMEDIATE-01",
+      "MS-FS11-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-BAD2447DD7AB",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS11-ADVANCED-01",
+      "MS-FS11-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-095282DD9FC2",
+    "skillId": "MS-FS11",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS11-ADVANCED-01",
+      "MS-FS11-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9B283985D80E",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS12-FOUNDATION-01",
+      "MS-FS12-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-5F28225F4C98",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS12-INTERMEDIATE-01",
+      "MS-FS12-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-A13EFC8777BB",
+    "skillId": "MS-FS12",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS12-ADVANCED-01",
+      "MS-FS12-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-0BF6C9E304D5",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS13-FOUNDATION-01",
+      "MS-FS13-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-53338A249C50",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS13-INTERMEDIATE-01",
+      "MS-FS13-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-45F1034C455E",
+    "skillId": "MS-FS13",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS13-ADVANCED-01",
+      "MS-FS13-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-F6DB2919E556",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS14-FOUNDATION-01",
+      "MS-FS14-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-47EB270FF841",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS14-FOUNDATION-01",
+      "MS-FS14-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-8DD629D58323",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS14-INTERMEDIATE-01",
+      "MS-FS14-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-47C78D8480BF",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS14-INTERMEDIATE-01",
+      "MS-FS14-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-D3B28CE0F87E",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS14-ADVANCED-01",
+      "MS-FS14-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-3CF437DB0428",
+    "skillId": "MS-FS14",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS14-ADVANCED-01",
+      "MS-FS14-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-AEC0B7987AFC",
+    "skillId": "MS-FS15",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS15-FOUNDATION-01",
+      "MS-FS15-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-CDFE062DD04E",
+    "skillId": "MS-FS15",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS15-INTERMEDIATE-01",
+      "MS-FS15-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-3EB85A87E1C3",
+    "skillId": "MS-FS15",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS15-ADVANCED-01",
+      "MS-FS15-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-5EC010180AD5",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "FOUNDATION",
+    "outcomeCodes": [
+      "MS-FS16-FOUNDATION-01",
+      "MS-FS16-FOUNDATION-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-9FDABE9A3731",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "INTERMEDIATE",
+    "outcomeCodes": [
+      "MS-FS16-INTERMEDIATE-01",
+      "MS-FS16-INTERMEDIATE-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "moduleId": "RQM-B7884284AF1C",
+    "skillId": "MS-FS16",
+    "skillVersion": "research-ad-0.1",
+    "knowledgeLevel": "ADVANCED",
+    "outcomeCodes": [
+      "MS-FS16-ADVANCED-01",
+      "MS-FS16-ADVANCED-02"
+    ],
+    "mappingRationale": "Both stated outcomes target this exact research skill and knowledge group; subject to independent expert review.",
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  }
+]

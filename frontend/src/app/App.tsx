@@ -15,6 +15,8 @@ const queryClient = new QueryClient({
 const AdaptivePathwayPage = lazy(() => import('../features/employee/pathway/AdaptivePathwayPage').then(module => ({ default: module.AdaptivePathwayPage })))
 const LearningUploadSettingsPage = lazy(() => import('../features/platform-admin/LearningUploadSettingsPage').then(module => ({ default: module.LearningUploadSettingsPage })))
 const PlatformGraphBenchmarkPage = lazy(() => import('../features/platform-admin/PlatformGraphBenchmarkPage').then(module => ({ default: module.PlatformGraphBenchmarkPage })))
+const PlatformRq1BenchmarkPage = lazy(() => import('../features/platform-admin/PlatformRq1BenchmarkPage').then(module => ({ default: module.PlatformRq1BenchmarkPage })))
+const PlatformRq3BenchmarkPage = lazy(() => import('../features/platform-admin/PlatformRq3BenchmarkPage').then(module => ({ default: module.PlatformRq3BenchmarkPage })))
 const LearningModuleReaderPage = lazy(() => import('../features/employee/modules/LearningModuleReaderPage').then(module => ({ default: module.LearningModuleReaderPage })))
 const AdminDashboardPage = lazy(() => import('../features/administration/dashboard/AdminDashboardPage').then(module => ({ default: module.AdminDashboardPage })))
 const DesignSystemShowcasePage = lazy(() => import('../features/administration/design-system/DesignSystemShowcasePage').then(module => ({ default: module.DesignSystemShowcasePage })))
@@ -217,6 +219,8 @@ export default function App() {
             <Route path="/platform-admin/learning-upload-settings" element={<LearningUploadSettingsPage />} />
             <Route path="/platform-admin/activity" element={<PlatformActivityMonitoringPage />} />
             <Route path="/platform-admin/graph-benchmark" element={<PlatformGraphBenchmarkPage />} />
+            <Route path="/platform-admin/rq1-benchmark" element={<PlatformRq1BenchmarkPage />} />
+            <Route path="/platform-admin/rq3-benchmark" element={<PlatformRq3BenchmarkPage />} />
 
             {/* System Status route */}
             <Route path="/system-status" element={<SystemStatusPage />} />

@@ -1,0 +1,15 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (file:/private/tmp/sep490-rq2-audit/lib/netty-common-4.1.135.Final.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+ACTUAL nodes=1059 relationships=4795 version=5.26.32
+FIXTURE set=1 tested=100 missing=79 outside3to5=4 hopMismatch=5 actualHops={2=4, 3=10, 4=6, 5=1}
+FIXTURE set=2 tested=100 missing=81 outside3to5=4 hopMismatch=7 actualHops={2=4, 3=3, 4=10, 5=2}
+FIXTURE set=3 tested=100 missing=65 outside3to5=6 hopMismatch=9 actualHops={2=6, 3=11, 4=13, 5=5}
+13:13:13.859 [main] INFO com.adaptlearngraph.services.PlatformGraphBenchmarkService -- Live Neo4j benchmark completed successfully: scale=1k, runs=100, warmups=50, meanLatency=12.87524288
+RUN scale=1k reportedNodes=1098 runs=100 mean=12.88 p95=21.01 exportedTimings=30 sampleHops=[5, 4, 4, 4, 4, 4, 4, 5, 4, 5]
+13:13:17.271 [main] INFO com.adaptlearngraph.services.PlatformGraphBenchmarkService -- Live Neo4j benchmark completed successfully: scale=5k, runs=100, warmups=50, meanLatency=26.635630390000003
+RUN scale=5k reportedNodes=5000 runs=100 mean=26.64 p95=60.26 exportedTimings=30 sampleHops=[5, 4, 4, 4, 4, 4, 4, 5, 4, 5]
+13:13:20.217 [main] INFO com.adaptlearngraph.services.PlatformGraphBenchmarkService -- Live Neo4j benchmark completed successfully: scale=10k, runs=100, warmups=50, meanLatency=30.0530717
+RUN scale=10k reportedNodes=10000 runs=100 mean=30.05 p95=64.26 exportedTimings=30 sampleHops=[5, 4, 4, 4, 4, 4, 4, 5, 4, 5]
+AFTER nodes=1059 relationships=4795

@@ -61,16 +61,7 @@ public final class RequirementPathwayPlanningService {
             // assessment does not resolve that work. Compatible official evidence above does.
             // A bypass is historical resolution, never achievement or renewed mandatory learning.
             if(previous.state()==State.BYPASSED && bypass.isEmpty()) {steps.add(previous);continue;}
-            var state=previous.state()==State.IN_PROGRESS && next.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:next.state();
-            String reason=next.reason();
-            // Retain original pins for continued reading when provision becomes stale; eligibility still requires fresh validation.
-            var options=(next.state()==State.NEEDS_EXPERT_ACTION?previous.options():next.options()).stream()
-                    .filter(option->!excluded.contains(option.moduleId())).toList();
-            if(requirement.provision()==Provision.MODULE_ONLY && options.isEmpty() && state!=State.FULFILLED) {
-                state=State.NEEDS_EXPERT_ACTION;reason="PROVISION_REQUIRES_EXPERT_ACTION";
-            }
-            var certificate=next.state()==State.NEEDS_EXPERT_ACTION?previous.certificate():next.certificate();
-            steps.add(new Step(previous.id(),requirement,previous.kind(),previous.sourceBypassId(),state,reason,next.fulfilledEvidenceId(),options,certificate,previous.assessedSources()));
+            steps.add(refreshedStep(previous,requirement,next,excluded));
         }
         for(var gap:carried) {
             var required=requirement(gap.getRequirementSnapshot());var current=byKey.get(required.key());
@@ -83,6 +74,22 @@ public final class RequirementPathwayPlanningService {
             if(next.state()!=State.NEEDS_EXPERT_ACTION)steps.add(next);
         }
         return new Plan(steps,plan.dependencies());
+    }
+    /**
+     * Pure per-step refresh: merges a previous step with the regenerated step for fresh provision/evidence. Shared by
+     * {@link #refresh} and research adapters so that both apply the same state transition.
+     */
+    public static Step refreshedStep(Step previous,Requirement requirement,Step next,Set<String> excluded) {
+        var state=previous.state()==State.IN_PROGRESS && next.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:next.state();
+        String reason=next.reason();
+        // Retain original pins for continued reading when provision becomes stale; eligibility still requires fresh validation.
+        var options=(next.state()==State.NEEDS_EXPERT_ACTION?previous.options():next.options()).stream()
+                .filter(option->!excluded.contains(option.moduleId())).toList();
+        if(requirement.provision()==Provision.MODULE_ONLY && options.isEmpty() && state!=State.FULFILLED) {
+            state=State.NEEDS_EXPERT_ACTION;reason="PROVISION_REQUIRES_EXPERT_ACTION";
+        }
+        var certificate=next.state()==State.NEEDS_EXPERT_ACTION?previous.certificate():next.certificate();
+        return new Step(previous.id(),requirement,previous.kind(),previous.sourceBypassId(),state,reason,next.fulfilledEvidenceId(),options,certificate,previous.assessedSources());
     }
     private Requirement requirement(String snapshot) {
         try{return json.readValue(snapshot,Requirement.class);}

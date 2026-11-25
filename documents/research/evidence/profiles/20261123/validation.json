@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-23",
+  "status": "PASSED",
+  "errors": [],
+  "profileCount": 500,
+  "splitCounts": {
+    "development": 450,
+    "gold50": 50,
+    "pilot10": 10
+  },
+  "maximumWithinRoleGapJaccard": 0.75,
+  "negativeFixturesRejected": {
+    "overlapping splits": true,
+    "pilot contamination": true,
+    "incorrect initial gap": true,
+    "baseline converted to achievement": true,
+    "mismatched skill version": true,
+    "false gold validation": true
+  },
+  "humanLabels": 0,
+  "runtimeParity": "NOT_VERIFIED",
+  "meaning": "Structural validity only; not expert gold verification or final research results."
+}

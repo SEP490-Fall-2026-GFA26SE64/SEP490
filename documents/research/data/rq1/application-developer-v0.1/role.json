@@ -1,0 +1,27 @@
+{
+  "id": "ROLE-F72E5464F9B3",
+  "name": "Application Developer",
+  "researchSpecialization": "Web full-stack",
+  "version": "research-ad-0.1",
+  "levels": [
+    {
+      "name": "Junior",
+      "ordinal": 1,
+      "scope": "Bounded implementation with guidance; identify errors and follow established checks."
+    },
+    {
+      "name": "Middle",
+      "ordinal": 2,
+      "scope": "Independently implement, integrate and verify an application change."
+    },
+    {
+      "name": "Senior",
+      "ordinal": 3,
+      "scope": "Evaluate cross-cutting trade-offs and guide changes under interacting constraints."
+    }
+  ],
+  "knowledgeSemantics": "FOUNDATION, INTERMEDIATE and ADVANCED are distinct explicit groups, not automatic supersets. Role levels specify sets of groups. Baseline passes do not grant official achievement.",
+  "reviewStatus": "NEEDS_EXPERT_REVIEW",
+  "reviewedBy": null,
+  "reviewedAt": null
+}

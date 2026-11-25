@@ -1,0 +1,22 @@
+{
+  "status": "TEMPLATE",
+  "experiment": null,
+  "runId": null,
+  "protocolVersion": "0.1",
+  "phase": null,
+  "datasetVersion": null,
+  "datasetSha256": null,
+  "fixtureSha256": null,
+  "engineCommit": null,
+  "relevantDirtyDiffSha256": null,
+  "seeds": [],
+  "parameters": {},
+  "environment": {"os": null, "cpu": null, "memory": null, "runtimeVersions": {}, "databaseVersion": null, "imageDigest": null, "limits": {}},
+  "actualCounts": {},
+  "commands": [],
+  "startedAt": null,
+  "finishedAt": null,
+  "failures": [],
+  "artifacts": [],
+  "limitations": []
+}

@@ -1,0 +1,727 @@
+[
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE01",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE02",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE03",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE04",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS01",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS02",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS03",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS04",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS05",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS06",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS07",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS09",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS10",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance. Native markup literacy is required; specialized advanced markup remains an available learning option."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS11",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS12",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS13",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS14",
+    "oldKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "RETAINED",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS16",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Junior scope is bounded implementation and interpretation with guidance."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE01",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE02",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE03",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE04",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS01",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS02",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS03",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS04",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS05",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS06",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS07",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS08",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow. These responsibilities start as explicit independent requirements at Middle."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS09",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS10",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow. Native markup literacy is required; specialized advanced markup remains an available learning option."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS11",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS12",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS13",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS14",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS15",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow. These responsibilities start as explicit independent requirements at Middle."
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS16",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Middle scope includes independent application across the full-stack workflow."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE01",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE02",
+    "oldKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "RETAINED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE03",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE04",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS01",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS02",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS03",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS04",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS05",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS06",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS07",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS08",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "RETAINED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. These responsibilities start as explicit independent requirements at Middle."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS09",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS10",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Native markup literacy is required; specialized advanced markup remains an available learning option. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS11",
+    "oldKnowledgeLevels": null,
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ],
+    "change": "ADDED_TO_ROLE",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. Independent application is sufficient here; advanced specialist depth is not required by this bounded role."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS12",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS13",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS14",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS15",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "RETAINED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints. These responsibilities start as explicit independent requirements at Middle."
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS16",
+    "oldKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "newKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE",
+      "ADVANCED"
+    ],
+    "change": "REVISED",
+    "rationale": "Senior scope adds judgment of interacting implementation, quality and security constraints."
+  }
+]

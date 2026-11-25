@@ -1,0 +1,296 @@
+[
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE01",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE02",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-CORE03",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS03",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS04",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS05",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS06",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS07",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS12",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS13",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Junior",
+    "skillId": "MS-FS14",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE01",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE02",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-CORE03",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS03",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS04",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS05",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS06",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS07",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS08",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS12",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS13",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS14",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS15",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Middle",
+    "skillId": "MS-FS16",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE01",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE02",
+    "requiredKnowledgeLevels": [
+      "FOUNDATION",
+      "INTERMEDIATE"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-CORE03",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS03",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS04",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS05",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS06",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS07",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS08",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS12",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS13",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS14",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS15",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  },
+  {
+    "roleLevel": "Senior",
+    "skillId": "MS-FS16",
+    "requiredKnowledgeLevels": [
+      "INTERMEDIATE",
+      "ADVANCED"
+    ]
+  }
+]
