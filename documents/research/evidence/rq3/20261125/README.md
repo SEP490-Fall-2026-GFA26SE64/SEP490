@@ -64,7 +64,7 @@ The integration fixture now separates its initial baseline target (A) from the p
 ### 4. Manual Verification Checklist (`/platform-admin/rq3-benchmark`)
 1. Sign in as Platform Administrator (`platform.admin@adaptlearngraph.com`) and navigate to `/platform-admin/rq3-benchmark`.
 2. Verify the 4 KPI summary cards (`100 × 30`, `+0.0436`, `+0.0717`, `72 / 27 / 1`) and the 5-checkpoint trajectory table (`0, 10, 20, 30, 40` units).
-3. Click **Chạy lại thực nghiệm (30 lần lặp)** (`Re-run simulation (30 replicates)`) and confirm the toast and verification badge update.
+3. Click **Tải lại kết quả đã lưu** (`Reload saved results`) and confirm the toast and the "lần tải #2" badge. The button reloads the stored report; it does not rerun the simulation (relabelled 25 November 2026).
 4. Open Tab 2 (**2. Phân tầng & Độ nhạy**) and verify the Prerequisite Exposure Control table (`HAS_UNACHIEVED_PREREQUISITES` vs `ALL_PREREQUISITES_ALREADY_ACHIEVED`), Role Level / Gap Band / Evidence History tables, and the 5-row Sensitivity Grid.
 5. Open Tab 3 (**3. Tra cứu 100 Hồ sơ Học viên**), filter by Role Level or Gap Band, click individual profiles to inspect their checkpoint trajectories, and test **Xuất CSV (100 hồ sơ)** / **Xuất JSON**.
 

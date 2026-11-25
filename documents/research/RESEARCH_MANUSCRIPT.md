@@ -1,6 +1,8 @@
 # Knowledge Graph Based Adaptive Learning Pathways for Workforce Competency Development
 
-Manuscript draft · Adapt-Learn-Graph · SEP490 · FA26SE267 · 25 November 2026
+Manuscript draft · Adapt-Learn-Graph project team · SEP490 (FA26SE267) · 25 November 2026
+
+Status: pilot results. The simulator assumptions, the RQ1 catalog and the prerequisite relations have not yet been reviewed by an independent expert.
 
 ## Abstract
 
@@ -14,7 +16,7 @@ The study separates three questions. **RQ1** compares the agreement of initial m
 
 ## 2 Related work
 
-We follow a design science approach in which artifact construction and evaluation are separated (Peffers et al., 2007). Path-based recommendation can expose the relationships underlying a learning suggestion (Frej et al., 2024). We compare structured matching with a text baseline so that the evaluation can distinguish agreement from a simple content similarity measure. Partial relevance judgments constrain which ranking metrics can be interpreted, so the current shortlist comparison does not infer catalog-wide recall. Our latency analysis distinguishes a measured run from a repeatable effect across independent runs (Kalibera and Jones, 2013). For RQ3, the evaluated system recalculates pathways from assessment evidence. Bayesian knowledge tracing (Corbett and Anderson, 1994) is related work and is outside the implemented comparison.
+We follow a design science approach in which artifact construction and evaluation are separated (Peffers et al., 2007). Path-based recommendation can expose the relationships underlying a learning suggestion (Frej et al., 2024), and transferring path-based explainable recommenders to education requires evaluation beyond accuracy (Afreen et al., 2025). We compare structured matching with a text baseline so that the evaluation can distinguish agreement from a simple content similarity measure. Sampled or partial relevance judgments can change recommender comparisons (Krichene and Rendle, 2020), so both methods rank the full catalog and the current shortlist comparison does not infer catalog-wide recall. Our latency analysis distinguishes a measured run from a repeatable effect across independent runs (Kalibera and Jones, 2013). For RQ3, the evaluated system recalculates pathways from assessment evidence. Bayesian knowledge tracing (Corbett and Anderson, 1994) is related work and is outside the implemented comparison.
 
 ## 3 Data and methods
 
@@ -46,6 +48,8 @@ For each checkpoint, primary target distance $D(u, b)$ equals the fraction of ta
 | C0 content-based TF–IDF | 41/50 | 82% | 1.28 out of 5 | 0.548 |
 | G0 minus C0 (paired, 95% bootstrap CI) | 7 profiles | +14 pp [+6, +24] | +1.02 [+0.72, +1.32] | +0.288 [+0.210, +0.369] |
 
+Table: Table 1. RQ1 agreement of G0 and C0 top-five recommendations with the consensus shortlist (50 held-out profiles).
+
 G0 agreed more frequently with the consensus shortlist on this cohort and had greater average overlap. Per profile, G0 had more matches on 29 profiles, tied on 21 and had fewer on none. Both G0 misses are Middle profiles with nine gaps, where all five G0 suggestions taught a gap but the single consensus pick fell outside the five slots. The figures were reproduced on 25 November 2026 from the two workbooks with the benchmark engine ([report](results/rq1/20261125-rerun/report.json)). The result is descriptive. The reference contains only common selections, so a recommendation missing from it may still be suitable. This result does not establish superiority against every acceptable recommendation or across other roles or catalogs.
 
 ### 4.2 RQ2 latency on the three measured graphs
@@ -55,6 +59,8 @@ G0 agreed more frequently with the consensus shortlist on this cohort and had gr
 | 1,000 | 1,800 | 9.24 / 37.16 / 13.51 | 12.77 [11.10–16.25] | 45.29 [35.78–67.42] | 16.90 [16.67–24.06] |
 | 5,000 | 9,000 | 6.01 / 17.25 / 7.65 | 17.79 [15.79–20.27] | 58.67 [56.84–76.24] | 24.83 [23.47–31.07] |
 | 10,000 | 18,000 | 12.13 / 51.82 / 18.73 | 16.34 [15.39–16.54] | 53.11 [47.36–53.19] | 21.50 [21.00–23.13] |
+
+Table: Table 2. RQ2 latency of directed 3–5-hop prerequisite shortest-path queries (50 warm-up, 100 measured queries per run).
 
 Each run used 50 warm-up and 100 measured queries. Latency stayed in the same range at all three sizes and did not increase monotonically. The spread between rounds at one size was comparable to the differences between sizes. All 25 November rounds were slower than the 24 November runs, which indicates that host state affected absolute values more than graph size did. The result applies to this prerequisite workload, one graph seed per size and the graph generator used; it is not an asymptotic complexity estimate.
 
@@ -68,6 +74,8 @@ Each run used 50 warm-up and 100 measured queries. Latency stayed in the same ra
 | 30 | 0.6322 | 0.5995 | 0.5834 | +0.0327 | 0.3707 | 0.3134 | +0.0573 |
 | 40 | 0.6128 | 0.5701 | 0.5565 | +0.0427 | 0.2616 | 0.1921 | +0.0695 |
 
+Table: Table 3. RQ3 mean target distance D(b) and initial gap distance D_gap(b) by budget checkpoint (100 profiles × 30 replicates).
+
 At the 40-unit budget, A0 achieved a lower remaining target distance than S0 on 72 of 100 profiles, tied on 27, and had a slightly higher distance on 1 profile. The mean paired target distance reduction was $\Delta D(40) = +0.0427$ (95% bootstrap CI $[+0.0342, +0.0520]$, $\text{SE} = 0.0046$), and the mean initial mandatory gap reduction was $\Delta D_{\text{gap}}(40) = +0.0695$ (95% CI $[+0.0495, +0.0912]$). S1 was lower than A0: $D_{\text{S1}} - D_{\text{A0}} = -0.0136$ (95% CI $[-0.0177, -0.0098]$). Initial gaps were closed in 49.40%, 61.83% and 64.40% of the 3,000 learner-replicate runs under S0, A0 and S1. Restricted mean cost to gap closure was 29.88, 28.17 and 27.59 units, with B = 40 charged to the 1,518, 1,145 and 1,068 censored runs. No run reached D = 0, because baseline-exempt target requirements never receive official evidence. A0 supplemented 1.26 prerequisite requirements per run.
 
 | Cohort stratum | Profiles | Baseline D(0) | S0 Final D(40) | A0 Final D(40) | S1 Final D(40) | Paired ΔD (S0 − A0) | Release S0 / A0 |
@@ -77,6 +85,8 @@ At the 40-unit budget, A0 achieved a lower remaining target distance than S0 on 
 | Junior role level | 34 | 0.7418 | 0.5969 | 0.5283 | 0.5059 | +0.0686 | 48.92% / 61.76% |
 | Middle role level | 33 | 0.6863 | 0.6078 | 0.5779 | 0.5680 | +0.0299 | 52.93% / 64.34% |
 | Senior role level | 33 | 0.6908 | 0.6341 | 0.6054 | 0.5972 | +0.0287 | 46.36% / 59.39% |
+
+Table: Table 4. RQ3 final distances and pathway release rates by cohort stratum.
 
 Across the 25 profiles where all prerequisite requirements were already officially achieved at baseline, S0, A0 and S1 produced identical outcomes ($\Delta D = 0.0000$). The adaptive gain is therefore confined to the 75 profiles with unachieved prerequisites ($\Delta D = +0.0569$). At checkpoint 10, A0 shows a higher mandatory gap distance than S0 ($0.7244$ vs $0.7153$) because early budget goes to supplemented prerequisites; from checkpoint 20, A0 is lower. Across ten sensitivity settings, ΔD(S0 − A0) stayed positive with confidence intervals above zero, ranging from +0.0177 at a 20-unit horizon to +0.0524 at an 80-unit horizon. S1 stayed below A0 in every setting. The gain persisted with no item-level prerequisite coupling (λ = 0, +0.0395). This indicates that the advantage comes mainly from the evaluator withholding achievement while a prerequisite group fails, which S0 can satisfy only by chance. [Verification record](evidence/rq3/20261125/README.md).
 
@@ -88,15 +98,31 @@ RQ2 shows that the implementation can execute the specified 3–5-hop workload a
 
 RQ3 distinguishes official achievement from diagnostic baseline exemption. Because baseline passes exempt initial learning without awarding official achievement evidence, baseline-exempt target requirements remain outside $E(u, b)$ unless studied as a prerequisite; consequently, S1 achieves a lower final target distance than A0 ($0.5565$ vs $0.5701$) by forcing upfront study of all unachieved prerequisites, whereas A0 adheres to the application rule of supplementing a prerequisite only after an assessment failure reveals a gap. Any observed difference from this simulation depends on the modeled learning and assessment dynamics and does not establish that real employees learn faster. The simulator assumptions, rubric and prerequisite relations have not yet been reviewed by an independent expert, so the RQ3 results are a pilot.
 
-## 6 Conclusion
+## 6 Threats to validity
+
+**Construct validity.** RQ1 measures exact-ID agreement with the intersection of two reviewers' priority lists, not graded relevance over the whole catalog. Equivalent alternative modules are not credited, and shortlist recall is bounded by a list of at most five items. RQ2 measures driver-side latency for one structural query, not pathway planning or end-to-end response time. RQ3 measures distance to official target attainment in a simulator; it does not measure learning by people.
+
+**Internal validity.** In RQ1, the same role definitions produce the catalog bindings that G0 matches on and the learning needs shown to reviewers, which favors G0. In RQ2, each scale has one graph seed and 100 measured queries per run. The exported results keep only 30 raw timings, and host state changed the absolute values between days. In RQ3, all policies share learner states, random streams, costs and the runtime scoring and recalculation transitions. The learner model and its parameters are assumptions; ten sensitivity settings and the equal-knowledge control limit, but do not remove, this dependence.
+
+**External validity.** All results concern one role family (Application Developer), one synthetic 72-module catalog, synthetic profiles, a synthetic prerequisite-only graph and an uncalibrated learner model. They do not transfer to other roles, real employees, mixed production ontologies or concurrent users.
+
+**Conclusion validity.** RQ1 rests on 50 profiles, so one profile changes Hit Rate@5 by two percentage points. RQ3 replicates quantify simulation noise; the 100 profiles, not the 3,000 runs, are the independent units of the bootstrap. RQ2 reports ranges across three rounds and makes no significance claim.
+
+## 7 Conclusion
 
 The RQ1 comparison shows higher exact agreement for G0 on the 50-profile consensus reference. RQ2 measured median latencies of roughly 6–20 ms on three isolated Neo4j prerequisite graphs, without a monotonic increase from 1,000 to 10,000 nodes. RQ3 demonstrates that under the modeled prerequisite assessment rules and a 40-unit activity budget, evidence-driven pathway recalculation (A0) reduces remaining target distance more than a fixed static curriculum (S0) on profiles with unachieved prerequisites, but less than a static curriculum that expands all unachieved prerequisites up front (S1). These findings characterize the current prototype under the documented synthetic inputs.
+
+## Data and code availability
+
+The catalog, profiles, consensus workbook, run outputs, manifests with SHA-256 hashes and the commands that regenerate every table are in the project repository under `documents/research/`. The rerun commands are listed in `documents/research/tools/README.md`. All data are synthetic; no employee data were used.
 
 ## References
 
 - Peffers, K., Tuunanen, T., Rothenberger, M. A., and Chatterjee, S. (2007). A Design Science Research Methodology for Information Systems Research. *Journal of Management Information Systems*, 24(3), 45–77. DOI 10.2753/MIS0742-1222240302.
 - Frej, J., Shah, N., Knežević, M., Nazaretsky, T., and Käser, T. (2024). Finding Paths for Explainable MOOC Recommendation: A Learner Perspective. *LAK 2024*. DOI 10.1145/3636555.3636898.
+- Afreen, N., Balloccu, G., Boratto, L., Fenu, G., Malloci, F. M., Marras, M., and Martis, A. G. (2025). Can Path-Based Explainable Recommendation Methods based on Knowledge Graphs Generalize for Personalized Education? *UMAP '25*, 273–278. DOI 10.1145/3699682.3728323.
 - Corbett, A. T., and Anderson, J. R. (1994). Knowledge tracing: Modeling the acquisition of procedural knowledge. *User Modeling and User-Adapted Interaction*, 4, 253–278. DOI 10.1007/BF01099821.
+- Krichene, W., and Rendle, S. (2020). On Sampled Metrics for Item Recommendation. *KDD 2020*, 1748–1757. DOI 10.1145/3394486.3403226.
 - Kalibera, T., and Jones, R. (2013). Rigorous Benchmarking in Reasonable Time. *ISMM 2013*, 63–74. DOI 10.1145/2464157.2464160.
 
 ## Reproducibility artifacts

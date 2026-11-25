@@ -335,18 +335,19 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <CreditCard size={15} />,
       },
       { label: t('nav.learningUploadLimits', 'Learning upload limits'), href: '/platform-admin/learning-upload-settings', icon: <Sliders size={15} /> },
+      // Research benchmarks, in research-question order with one naming pattern: "RQn · short topic".
       {
-        label: t('nav.graphBenchmark', isVi ? 'Hiệu năng Đồ thị' : 'Graph Engine Benchmark'),
-        href: '/platform-admin/graph-benchmark',
-        icon: <Cpu size={15} />,
-      },
-      {
-        label: isVi ? 'Đánh giá Gợi ý (RQ1)' : 'RQ1 Relevance Benchmark',
+        label: isVi ? 'RQ1 · Độ phù hợp gợi ý' : 'RQ1 · Relevance',
         href: '/platform-admin/rq1-benchmark',
         icon: <Target size={15} />,
       },
       {
-        label: isVi ? 'Hiệu quả lộ trình (RQ3)' : 'Pathway Efficiency (RQ3)',
+        label: isVi ? 'RQ2 · Độ trễ đồ thị' : 'RQ2 · Graph Latency',
+        href: '/platform-admin/graph-benchmark',
+        icon: <Cpu size={15} />,
+      },
+      {
+        label: isVi ? 'RQ3 · Hiệu quả lộ trình' : 'RQ3 · Pathway Efficiency',
         href: '/platform-admin/rq3-benchmark',
         icon: <FlaskConical size={15} />,
       },

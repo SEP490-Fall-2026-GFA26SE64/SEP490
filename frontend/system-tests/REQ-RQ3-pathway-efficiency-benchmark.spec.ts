@@ -22,7 +22,7 @@ test.describe('Experiment 3 (RQ3) Adaptive Pathway Efficiency Benchmark Page', (
     })
   })
 
-  test('displays 100-profile × 30-replicate RQ3 trajectory comparison, re-runs simulation, inspects strata & sensitivity grid, filters individual learner profiles, and passes desktop & mobile layout checks', async ({
+  test('displays 100-profile × 30-replicate RQ3 trajectory comparison, reloads saved results, inspects strata & sensitivity grid, filters individual learner profiles, and passes desktop & mobile layout checks', async ({
     page,
   }, testInfo) => {
     const browserErrors: string[] = []
@@ -46,11 +46,12 @@ test.describe('Experiment 3 (RQ3) Adaptive Pathway Efficiency Benchmark Page', (
     await expect(page.getByText('0.6128').first()).toBeVisible()
     await expect(page.getByText('0.5701').first()).toBeVisible()
 
-    // 2. Click Re-run Simulation button and verify verification badge updates
+    // 2. Click the reload button (it reloads saved results, not a new simulation) and verify the load badge
     const runBtn = page.getByTestId('rq3-run-button')
     await expect(runBtn).toBeEnabled()
     await runBtn.click()
-    await expect(page.getByText(/Lần chạy #2|Run #2/i)).toBeVisible()
+    await expect(runBtn).toHaveText(/Tải lại kết quả đã lưu|Reload saved results/)
+    await expect(page.getByText(/lần tải #2|load #2/i)).toBeVisible()
 
     // 3. Switch to Tab 2: Strata & Sensitivity Analysis
     await page.getByTestId('rq3-tab-strata').click()

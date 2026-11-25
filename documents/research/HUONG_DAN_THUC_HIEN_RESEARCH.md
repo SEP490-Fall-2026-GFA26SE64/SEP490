@@ -7,7 +7,7 @@ Cập nhật 25/11/2026. Đây là điểm bắt đầu cho cả nhóm. Cả ba 
 1. [README](README.md): trạng thái hiện tại và bản đồ tài liệu.
 2. [Bản Word](Knowledge_Graph-Based_Adaptive_Learning_Pathways_for_Workforce_Competency_Development.docx) hoặc [nguồn Markdown của bản thảo](RESEARCH_FRAMEWORK.md): vấn đề, đóng góp, phương pháp, ba RQ và giới hạn.
 3. [Nghiên cứu liên quan](RELATED_WORK.md): nguồn học thuật, mức độ đã đọc và điểm cần bổ sung trước công bố.
-4. Protocol [RQ1](RQ1_RECOMMENDATION_RELEVANCE_EXPERIMENT_1.md), [RQ2](RQ2_GRAPH_LATENCY_EXPERIMENT_2.md), [RQ3](RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.md); kết quả tổng hợp trong [bản thảo bài báo](RESEARCH_MANUSCRIPT.md).
+4. Protocol [RQ1](RQ1_RECOMMENDATION_RELEVANCE_EXPERIMENT_1.md), [RQ2](RQ2_GRAPH_LATENCY_EXPERIMENT_2.md), [RQ3](RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.md); kết quả tổng hợp trong [bản thảo bài báo](RESEARCH_MANUSCRIPT.md). Có bản dịch tiếng Việt: [bản thảo](RESEARCH_MANUSCRIPT.vi.md), [RQ1](RQ1_RECOMMENDATION_RELEVANCE_EXPERIMENT_1.vi.md), [RQ2](RQ2_GRAPH_LATENCY_EXPERIMENT_2.vi.md), [RQ3](RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.vi.md), [khung nghiên cứu](RESEARCH_FRAMEWORK.vi.md), [nghiên cứu liên quan](RELATED_WORK.vi.md).
 5. [Hướng dẫn chuyên gia](EXPERT_ANNOTATION_GUIDE.md), [kế hoạch pilot](PILOT_PLAN.md) và [quy định dữ liệu](DATA_AND_REPRODUCIBILITY.md).
 
 ## 2 Những gì đã chốt
@@ -75,7 +75,7 @@ Không đổi tên pilot thành final sau khi đã chỉnh tham số từ kết 
 
 ## 8 Cập nhật bản Word
 
-[RESEARCH_FRAMEWORK.md](RESEARCH_FRAMEWORK.md) là nguồn nội dung để đồng bộ bản Word. Nếu sửa trực tiếp Word, phải đối chiếu lại nguồn trước lần dựng tiếp theo để tránh mất sửa đổi. Công cụ dựng khung ở [tools/build_research_doc.py](tools/build_research_doc.py); bản thảo bài báo dựng bằng pandoc (xem [tools/README.md](tools/README.md)). Kiểm tra lại trang Word sau mọi thay đổi bố cục. File `.docx` bị `.gitignore` bỏ qua nên không có trong Git; nguồn chuẩn là các file Markdown.
+Nguồn nội dung của hai file Word là [RESEARCH_MANUSCRIPT.md](RESEARCH_MANUSCRIPT.md) và [RESEARCH_FRAMEWORK.md](RESEARCH_FRAMEWORK.md). Sau khi sửa Markdown, dựng lại Word bằng `python3 documents/research/tools/build_docx.py` (cần pandoc). Nếu sửa trực tiếp trong Word thì phải chép thay đổi ngược về Markdown, nếu không lần dựng sau sẽ ghi đè. File `.docx` bị `.gitignore` bỏ qua nên không có trong Git.
 
 ## Dữ liệu hiện tại
 

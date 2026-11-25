@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { CheckCircle2, Download, FlaskConical, Play, RotateCcw } from 'lucide-react'
+import { CheckCircle2, Download, FlaskConical, RotateCcw } from 'lucide-react'
 import { useTranslation } from '../../shared/i18n/LanguageContext'
 import { useToast } from '../../shared/hooks/useToast'
 import { WorkspaceLayout } from '../../shared/layouts/WorkspaceLayout'
@@ -50,7 +50,7 @@ export function PlatformRq3BenchmarkPage() {
     }
   }, [])
 
-  const handleRunSimulation = async () => {
+  const handleReloadResults = async () => {
     if (isRunning) return
     setIsRunning(true)
     setLoadError(null)
@@ -59,18 +59,18 @@ export function PlatformRq3BenchmarkPage() {
       setReport(fresh)
       setRunCount((c) => c + 1)
       toast({
-        title: copy('Đã hoàn tất thực nghiệm RQ3', 'RQ3 simulation completed'),
+        title: copy('Đã tải lại kết quả RQ3', 'RQ3 results reloaded'),
         description: copy(
-          `Đã đối chiếu 100 hồ sơ × ${fresh.replicates} lần lặp. ΔD trung bình = ${formatSigned(fresh.deltaTargetDistanceA0vsS0.mean)}.`,
-          `Evaluated 100 profiles × ${fresh.replicates} replicates. Mean ΔD = ${formatSigned(fresh.deltaTargetDistanceA0vsS0.mean)}.`,
+          `Kết quả đã lưu của lần chạy ${fresh.experimentId}: 100 hồ sơ × ${fresh.replicates} lần lặp, ΔD trung bình = ${formatSigned(fresh.deltaTargetDistanceA0vsS0.mean)}.`,
+          `Saved results of run ${fresh.experimentId}: 100 profiles × ${fresh.replicates} replicates, mean ΔD = ${formatSigned(fresh.deltaTargetDistanceA0vsS0.mean)}.`,
         ),
       })
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Simulation failed'
+      const msg = err instanceof Error ? err.message : 'Unable to reload results'
       setLoadError(msg)
       toast({
         variant: 'destructive',
-        title: copy('Không thể chạy thực nghiệm RQ3', 'Unable to run RQ3 simulation'),
+        title: copy('Không thể tải lại kết quả RQ3', 'Unable to reload RQ3 results'),
         description: msg,
       })
     } finally {
@@ -116,15 +116,19 @@ export function PlatformRq3BenchmarkPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="primary"
-                onClick={handleRunSimulation}
+                onClick={handleReloadResults}
                 disabled={loading || isRunning}
                 data-testid="rq3-run-button"
+                title={copy(
+                  'Trang hiển thị kết quả do Rq3SimulationRunner tính sẵn. Nút này chỉ tải lại kết quả, không chạy lại mô phỏng.',
+                  'This page shows results precomputed by Rq3SimulationRunner. This button reloads them; it does not rerun the simulation.',
+                )}
               >
-                {isRunning ? <RotateCcw aria-hidden size={16} className="animate-spin" /> : <Play aria-hidden size={16} />}
+                <RotateCcw aria-hidden size={16} className={isRunning ? 'animate-spin' : undefined} />
                 <span className="ml-1.5">
                   {isRunning
-                    ? copy('Đang chạy mô phỏng...', 'Running simulation...')
-                    : copy('Chạy lại thực nghiệm (30 lần lặp)', 'Re-run simulation (30 replicates)')}
+                    ? copy('Đang tải kết quả...', 'Loading results...')
+                    : copy('Tải lại kết quả đã lưu', 'Reload saved results')}
                 </span>
               </Button>
               <Button variant="outline" onClick={handleDownloadCsv} disabled={!report} data-testid="rq3-export-csv">
@@ -148,7 +152,7 @@ export function PlatformRq3BenchmarkPage() {
               <CardDescription>{loadError}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="primary" onClick={handleRunSimulation}>
+              <Button variant="primary" onClick={handleReloadResults}>
                 {copy('Thử tải lại', 'Retry loading')}
               </Button>
             </CardContent>
@@ -214,7 +218,7 @@ export function PlatformRq3BenchmarkPage() {
                       </div>
                       <Badge variant="success">
                         <CheckCircle2 aria-hidden size={13} className="mr-1" />
-                        {copy(`Đã kiểm chứng (Lần chạy #${runCount})`, `Verified (Run #${runCount})`)}
+                        {copy(`Kết quả đã lưu · lần tải #${runCount}`, `Saved results · load #${runCount}`)}
                       </Badge>
                     </div>
                   </CardHeader>

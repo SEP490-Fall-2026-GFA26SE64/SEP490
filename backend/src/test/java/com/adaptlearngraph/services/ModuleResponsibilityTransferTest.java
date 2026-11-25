@@ -35,7 +35,7 @@ class ModuleResponsibilityTransferTest {
                 List.of(new Event(1, 1, "CREATE", creator, "2026-11-18T00:00:00Z", "Created")), null, owner);
     }
     @BeforeEach void setup() {
-        port = mock(ModuleAuthoringPort.class); service = new ModuleAuthoringService(port);
+        port = mock(ModuleAuthoringPort.class); service = new ModuleAuthoringService(port, null, mock(com.adaptlearngraph.repository.ReviewSubmissionNotifications.class));
         actor = new Actor("manager", "org", Set.of("LD_MANAGER")); stored = fixture("creator", "owner-a", "DRAFT");
         when(port.actor()).thenAnswer(c -> actor);
         when(port.transaction(any())).thenAnswer(c -> c.<Supplier<?>>getArgument(0).get());

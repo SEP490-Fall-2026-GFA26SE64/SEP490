@@ -45,13 +45,15 @@ describe('PlatformRq3BenchmarkPage', () => {
     expect(screen.getAllByText('+0.0427').length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('72 / 27 / 1')).toBeTruthy()
 
-    // Re-run simulation button is enabled and updates run verification badge
+    // Reload button is enabled, does not claim to rerun the simulation, and updates the load badge
     const runBtn = screen.getByTestId('rq3-run-button') as HTMLButtonElement
+    expect(runBtn.textContent).toMatch(/Tải lại kết quả đã lưu|Reload saved results/)
+    expect(runBtn.textContent).not.toMatch(/Chạy lại|Re-run/)
     expect(runBtn.disabled).toBe(false)
     fireEvent.click(runBtn)
 
     await waitFor(() => {
-      expect(screen.getByText(/#2/)).toBeTruthy()
+      expect(screen.getByText(/lần tải #2|load #2/i)).toBeTruthy()
     })
 
     // Switch to Strata & Sensitivity tab

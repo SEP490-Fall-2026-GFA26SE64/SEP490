@@ -4,8 +4,10 @@ Cập nhật 25/11/2026. Cả 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**, **RQ
 
 ## Tài liệu chính
 
-- [Bản thảo bài báo tổng hợp Word](RESEARCH_MANUSCRIPT.docx) và [nguồn Markdown](RESEARCH_MANUSCRIPT.md).
-- [Khung nghiên cứu Word](Knowledge_Graph-Based_Adaptive_Learning_Pathways_for_Workforce_Competency_Development.docx) và [nguồn nội dung Markdown](RESEARCH_FRAMEWORK.md).
+> **Bản dịch tiếng Việt** (tham khảo, bản tiếng Anh là bản chính): [bản thảo bài báo](RESEARCH_MANUSCRIPT.vi.md), [RQ1](RQ1_RECOMMENDATION_RELEVANCE_EXPERIMENT_1.vi.md), [RQ2](RQ2_GRAPH_LATENCY_EXPERIMENT_2.vi.md), [RQ3](RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.vi.md), [khung nghiên cứu](RESEARCH_FRAMEWORK.vi.md), [nghiên cứu liên quan](RELATED_WORK.vi.md).
+
+- [Bản thảo bài báo tổng hợp Word](RESEARCH_MANUSCRIPT.docx) và [nguồn Markdown](RESEARCH_MANUSCRIPT.md): có mục threats to validity, bảng đánh số, khả năng truy cập dữ liệu. File Word dựng bằng `tools/build_docx.py`, chỉ có trên máy, không có trong Git.
+- [Khung nghiên cứu Word](Knowledge_Graph-Based_Adaptive_Learning_Pathways_for_Workforce_Competency_Development.docx) và [nguồn nội dung Markdown](RESEARCH_FRAMEWORK.md), phiên bản 0.4 cập nhật theo kết quả pilot.
 - [Nghiên cứu liên quan và nguồn tham khảo](RELATED_WORK.md).
 - [RQ1 — Recommendation relevance](RQ1_RECOMMENDATION_RELEVANCE_EXPERIMENT_1.md) và [hướng dẫn quy trình 2 file](RQ1_TWO_FILE_GUIDE.md).
 - [RQ2 — Directed graph query latency](RQ2_GRAPH_LATENCY_EXPERIMENT_2.md) và [hướng dẫn chạy standalone](RQ2_LOCAL_SETUP.md).
@@ -40,7 +42,7 @@ Cập nhật 25/11/2026. Cả 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**, **RQ
      - `S1` thấp hơn `A0`: S1 − A0 = **−0.0136**, 95% CI `[−0.0177, −0.0098]`. Lợi thế của A0 chỉ là so với lộ trình tĩnh không mở rộng tiên quyết.
      - Đóng lỗ hổng ban đầu: 49.40% / 61.83% / 64.40% (S0 / A0 / S1). Không lượt nào đạt D = 0, vì yêu cầu được miễn qua baseline không bao giờ có bằng chứng chính thức.
      - Độ nhạy (η, λ, chi phí đánh giá 0.5/1/2, ngân sách 20/40/80, kiến thức ban đầu bằng nhau): ΔD (S0 − A0) dương ở cả 10 cấu hình, S1 luôn thấp hơn A0.
-   - Còn mở: chuyên gia độc lập chưa rà simulator/rubric/quan hệ tiên quyết; manifest cohort vẫn `DRAFT_PILOT_INPUTS`; `RESEARCH_MANUSCRIPT.docx` chưa sinh lại.
+   - Còn mở: chuyên gia độc lập chưa rà simulator/rubric/quan hệ tiên quyết; manifest cohort vẫn `DRAFT_PILOT_INPUTS`.
    - Bằng chứng kiểm chứng: [evidence/rq3/20261125/README.md](evidence/rq3/20261125/README.md). Giao diện đối chiếu: `/platform-admin/rq3-benchmark`.
 
 ## Lưu trữ

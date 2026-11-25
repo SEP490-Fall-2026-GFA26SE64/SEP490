@@ -1,6 +1,6 @@
 # Knowledge Graph Based Adaptive Learning Pathways for Workforce Competency Development
 
-Research framework and evaluation plan • Version 0.3 • 23 November 2026
+Research framework and evaluation plan • Version 0.4 • 25 November 2026
 
 ## Abstract
 
@@ -8,7 +8,7 @@ This study evaluates an existing knowledge-graph-based learning system for selec
 
 The evaluation comprises three complementary experiments: expert-judged recommendation relevance against content-based filtering; directed prerequisite-query latency on isolated graphs of 1,000, 5,000 and 10,000 nodes; and simulated adaptive versus static pathways under an equal activity budget. The intended contribution is a reproducible evaluation of the implemented approach and its limits. No new learning algorithm or improvement in real employee outcomes is claimed in advance.
 
-The present package defines the study before final experiments. It includes a diagnostic audit of the existing RQ2 service, which found that its scale labels and adjusted timings cannot establish scalability. Final recommendation, latency and pathway results remain to be collected. Numerical simulator and repetition settings are proposals to be reviewed through pilot work before a frozen protocol is published.
+This framework defines the study design. Version 0.3 (23 November 2026) preceded any experiment and included a diagnostic audit of the existing RQ2 service, which found that its scale labels and adjusted timings could not establish scalability. Version 0.4 records that all three experiments have since been run at pilot level; the results are reported in RESEARCH_MANUSCRIPT.md. Final runs still require independent expert review of the catalog, the RQ1 labels and the RQ3 simulator assumptions.
 
 ## Research problem and intended contribution
 
@@ -22,7 +22,7 @@ The proposed contribution is a transparent account of how explicit Role–Level 
 
 Design Science Research provides an organizing process for defining a problem, developing an artifact, demonstrating it and evaluating it [R1]. Here the artifact already exists; inspection and evaluation precede claims about effectiveness. The study does not assume that building a functioning platform answers the research questions.
 
-Educational knowledge-graph recommendation is established prior work. Frej et al. examine path-based MOOC recommendation from a learner perspective [R2]. Afreen and coauthors investigate educational generalization of path-based explainable recommenders [R3]. KnowLP combines knowledge structures with a learned pathway recommendation approach and simulator-based evaluation [R4]. These studies motivate comparison, but their results cannot be transferred to this workforce case.
+Educational knowledge-graph recommendation is established prior work. Frej et al. examine path-based MOOC recommendation from a learner perspective [R2]. Afreen et al. investigate educational generalization of path-based explainable recommenders [R3]. KnowLP combines knowledge structures with a learned pathway recommendation approach and simulator-based evaluation [R4]. These studies motivate comparison, but their results cannot be transferred to this workforce case.
 
 The implemented system uses deterministic rules and evidence updates. It does not estimate latent mastery with Bayesian Knowledge Tracing. This distinction matters because the registered wording of RQ3 uses “Knowledge Tracing”; Corbett and Anderson's probabilistic formulation [R5] is conceptually different. The paper retains the registered question while describing the actual mechanism precisely. Any formal change to the registered wording requires the appropriate academic decision.
 
@@ -46,15 +46,15 @@ The method is an artifact-centered evaluation with three controlled experiments.
 
 The initial study covers Application Developer at three levels. Reviewer expertise may include software development, AI and IoT, but the evaluated population and catalog remain the selected role case. Version 3 excludes full educational content creation. Review the synthetic module descriptions, learning outcomes, skill and level mappings, prerequisites and version compatibility before freezing the benchmark; complete lessons are not required.
 
-The rebuilt research catalog contains 20 retained skill identities, 60 skill–knowledge pairs and 72 synthetic module specifications. Junior has 18 required groups, Middle 37 and Senior 49. The 31 directed prerequisite edges and locally authored outcomes remain subject to expert review. Structural checks do not establish expert approval. A separate draft now contains 500 synthetic profiles split into 450 development and 50 held-out inputs; no human relevance labels exist.
+The rebuilt research catalog contains 20 retained skill identities, 60 skill–knowledge pairs and 72 synthetic module specifications. Junior has 18 required groups, Middle 37 and Senior 49. The 31 directed prerequisite edges and locally authored outcomes remain subject to expert review. Structural checks do not establish expert approval. A separate draft contains 500 synthetic profiles split into 450 development and 50 held-out inputs. For the 50 held-out profiles, two reviewers submitted priority shortlists, and their exact-ID intersection is the current RQ1 reference; complete 0/1/2 relevance labels over the catalog do not yet exist.
 
 The current initial pathway planner selects valid mapped options and orders them deterministically; it does not expose a learned relevance ranking or expand all unassessed prerequisites. RQ1 therefore measures an explicit mapping-based evaluation adapter against text matching. It cannot isolate an effect of prerequisite topology at that initial snapshot. This limitation must remain visible in the eventual paper.
 
-The dynamic engine uses actual assessment evidence to revisit prerequisite needs. A policy discrepancy needs resolution before RQ3: current code can mark a prerequisite step ASSESSED_SATISFIED from compatible passed evidence, while older business documentation describes supplementation persisting until learning completion. A resolved pathway step must not automatically be counted as official target achievement. The experiment must freeze one justified policy and test parity with the implementation.
+The dynamic engine uses actual assessment evidence to revisit prerequisite needs. Version 0.3 recorded a policy discrepancy: code could mark a prerequisite step ASSESSED_SATISFIED from compatible passed evidence, while older business documentation described supplementation persisting until learning completion. This has been resolved: in the current runtime, assigned prerequisite learning persists until official evidence is earned, which runtime transition tests confirm. A resolved pathway step is never counted as official target achievement.
 
 ## Data separation and review
 
-RQ1 now has 500 draft synthetic profiles: 450 for development and 50 held out for final evaluation. Ten development profiles are selected for the annotation pilot. The gold50 inputs await expert labels and are not a verified golden set. Catalog and profile review remain prerequisites for final evaluation. At least two real experts judge independently before adjudication. No final test label may be used to adjust scoring, text features, tie rules or profile generation.
+RQ1 now has 500 draft synthetic profiles: 450 for development and 50 held out for final evaluation. Ten development profiles are selected for the annotation pilot. The gold50 inputs have a two-reviewer consensus shortlist but not complete graded labels, so they are not yet a verified golden set. Catalog and profile review remain prerequisites for final evaluation. At least two real experts judge independently before adjudication. No final test label may be used to adjust scoring, text features, tie rules or profile generation.
 
 The one-week preparation target covers framework review, catalog review, pilot preparation and pilot checks. It is not a promise that all three final experiments, expert annotation and paper submission will be complete within that week.
 
@@ -98,7 +98,7 @@ The 22 November 2026 diagnostic execution used a real local graph containing 1,0
 
 Among 300 inspected fixture entries, 225 returned no path, 14 returned a path below three hops, and 61 returned a three-to-five-hop path under the old mixed, undirected predicate. This sample is diagnostic evidence, not validation of the full fixtures or the new directed workload. No result does not distinguish an absent endpoint from an unreachable pair.
 
-Repair of dataset selection, fixture validation, raw measurement persistence and presentation remains required. The audit called service methods directly; it did not verify HTTP authorization or UI behavior. Protocol and retained evidence appear in RQ2_GRAPH_LATENCY_EXPERIMENT_2.md and evidence/rq2/20261122-current-service-audit/.
+Since the audit, a standalone runner measures real isolated graphs of 1,000, 5,000 and 10,000 nodes with Cypher-validated 3/4/5-hop fixtures. Remaining repairs are full raw-sample export (exports keep 30 timings), per-depth reporting and multiple graph seeds. The audit called service methods directly; it did not verify HTTP authorization or UI behavior. Protocol and retained evidence appear in RQ2_GRAPH_LATENCY_EXPERIMENT_2.md and evidence/rq2/20261122-current-service-audit/.
 
 <!-- pagebreak -->
 
@@ -116,7 +116,7 @@ The detailed protocol proposes parameter ranges and a prerequisite-effect sensit
 
 Thirty stochastic replicates per learner are proposed. Replicates quantify simulation noise; they do not create 3,000 independent learners. Estimate paired effects at the learner level with clustered uncertainty. As a secondary outcome, compare effort to reach the same attainment threshold, retain non-attainers and use explicit right-censoring instead of averaging successful cases only.
 
-Before final execution, resolve the ASSESSED_SATISFIED policy discrepancy, verify representative traces against the engine, review simulator assumptions with experts and freeze the event schema. Results support conclusions conditional on this simulator. They cannot establish faster learning by real employees or the validity of a Bayesian Knowledge Tracing model.
+The ASSESSED_SATISFIED discrepancy is resolved, the pilot runs through the engine's own transitions, and the event schema is recorded with every run. Before a final run, experts must still review the simulator assumptions. Results support conclusions conditional on this simulator. They cannot establish faster learning by real employees or the validity of a Bayesian Knowledge Tracing model.
 
 RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.md contains the model equations, event requirements and analysis specification.
 
@@ -146,7 +146,7 @@ Day 6: execute available pilots only after their implementation prerequisites pa
 
 Day 7: review pilot evidence, freeze justified settings and prepare final-run readiness decisions. If gates are incomplete, continue preparation rather than declare final experiments complete.
 
-The seven pilot gates cover catalog quality, label reliability and effort, data separation, graph-scale fidelity, workload integrity, simulator/policy parity and reproducible analysis. PILOT_PLAN.md defines their evidence. Catalog review, final annotation coverage, numeric settings and the RQ3 policy remain open until verified.
+The seven pilot gates cover catalog quality, label reliability and effort, data separation, graph-scale fidelity, workload integrity, simulator/policy parity and reproducible analysis. PILOT_PLAN.md defines their evidence. As of 25 November 2026, catalog review, complete annotation coverage and expert review of the simulator settings remain open; the RQ3 policy question is resolved.
 
 ## Expected paper outputs
 
@@ -160,20 +160,20 @@ The final paper should report RQ1 paired relevance and uncertainty, RQ2 valid la
 
 [R2] Frej, J., Shah, N., Knežević, M., Nazaretsky, T., and Käser, T. 2024. Finding Paths for Explainable MOOC Recommendation: A Learner Perspective. LAK 2024. https://doi.org/10.1145/3636555.3636898
 
-[R3] Afreen, N., and coauthors. 2025. Can Path-Based Explainable Recommendation Methods based on Knowledge Graphs Generalize for Personalized Education? UMAP 2025. https://doi.org/10.1145/3699682.3728323
+[R3] Afreen, N., Balloccu, G., Boratto, L., Fenu, G., Malloci, F. M., Marras, M., and Martis, A. G. 2025. Can Path-Based Explainable Recommendation Methods based on Knowledge Graphs Generalize for Personalized Education? In Proceedings of the 33rd ACM Conference on User Modeling, Adaptation and Personalization (UMAP '25), 273–278. https://doi.org/10.1145/3699682.3728323
 
 [R4] Cheng, X., Zhang, Z., Wang, J., Fang, L., He, C., Guan, Q., Pan, S., and Luo, W. 2025. GraphRAG-Induced Dual Knowledge Structure Graphs for Personalized Learning Path Recommendation. arXiv:2506.22303v2. Preprint. https://arxiv.org/abs/2506.22303
 
 [R5] Corbett, A. T., and Anderson, J. R. 1994. Knowledge tracing: Modeling the acquisition of procedural knowledge. User Modeling and User-Adapted Interaction 4, 253–278. https://doi.org/10.1007/BF01099821
 
-[R6] Krichene, W., and Rendle, S. 2020. On Sampled Metrics for Item Recommendation. KDD 2020. https://research.google/pubs/on-sampled-metrics-for-item-recommendation/
+[R6] Krichene, W., and Rendle, S. 2020. On Sampled Metrics for Item Recommendation. In Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining (KDD '20), 1748–1757. https://doi.org/10.1145/3394486.3403226
 
 [R7] Kalibera, T., and Jones, R. 2013. Rigorous Benchmarking in Reasonable Time. ISMM 2013, 63–74. https://doi.org/10.1145/2464157.2464160
 
-The initial literature review and access notes are recorded in RELATED_WORK.md. Complete R3 author-order and page metadata against the publisher bibliography before submission. The review is focused, not systematic, and does not establish an exhaustive novelty claim.
+The initial literature review and access notes are recorded in RELATED_WORK.md. R3 and R6 metadata were checked against Crossref on 25 November 2026. The review is focused, not systematic, and does not establish an exhaustive novelty claim.
 
 ## Supporting research records
 
 The registered questions are retained in the user-supplied Version 3, section 3.3. Relevant research and content-scope paragraphs with a source hash are retained in sources/version-3/research-scope-extract.md. Implementation inspection distinguishes initial planning, evidence-triggered recalculation and official achievement handling. The framework preparation revision is 2220fc2e48e69e685b3f714f24522f4c04e228a1; it is not a substitute for a frozen experimental source manifest.
 
-The three protocol files, expert annotation guide, pilot plan, data and reproducibility rules, templates and diagnostic audit accompany this framework. The Vietnamese HUONG_DAN_THUC_HIEN_RESEARCH.md explains the reading order, practical next steps and storage locations for the team. No final experiment outcome is supplied by this framework.
+The three protocol files, expert annotation guide, pilot plan, data and reproducibility rules, templates and diagnostic audit accompany this framework. The Vietnamese HUONG_DAN_THUC_HIEN_RESEARCH.md explains the reading order, practical next steps and storage locations for the team. Pilot outcomes are reported in RESEARCH_MANUSCRIPT.md; this framework does not report final experiment outcomes.

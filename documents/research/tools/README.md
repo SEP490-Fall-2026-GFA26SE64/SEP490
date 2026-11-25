@@ -16,12 +16,6 @@ Run every command from the repository root.
 | `build_rq3_pilot_cohort.py` | Builds the 100-profile RQ3 cohort `data/rq3/pilot-v0.1/` from development profiles | `python3 documents/research/tools/build_rq3_pilot_cohort.py documents/research/data/rq1/profiles-v0.1/development450.jsonl documents/research/data/rq3/pilot-v0.1` |
 | `Rq3SimulationRunner` (backend) | Runs RQ3 and writes `results/rq3/<run-id>/` | See [RQ3 evidence](../evidence/rq3/20261125/README.md) |
 | `serve_rq3_browser_review.mjs` | Isolated RQ3 page on `127.0.0.1:4183/rq3-review.html` for Playwright | `node documents/research/tools/serve_rq3_browser_review.mjs` |
-| `build_research_doc.py` | Builds the framework Word file from `RESEARCH_FRAMEWORK.md` (needs `python-docx`) | `python3 documents/research/tools/build_research_doc.py` |
+| `build_docx.py` + `docx_filter.lua` | Builds `RESEARCH_MANUSCRIPT.docx` and the framework Word file with pandoc. Applies Times New Roman, a title page, numbered table captions from `Table:` lines, table widths sized to their content, plain-text inline math, and plain text for repository-file links | `python3 documents/research/tools/build_docx.py [source.md output.docx ...]` |
 
-`RESEARCH_MANUSCRIPT.docx` is built from the Markdown with pandoc:
-
-```bash
-cd documents/research && pandoc RESEARCH_MANUSCRIPT.md -o RESEARCH_MANUSCRIPT.docx
-```
-
-Both `.docx` files are git-ignored.
+Both `.docx` files are git-ignored. The Markdown files are the source; rebuild the Word files after editing them.

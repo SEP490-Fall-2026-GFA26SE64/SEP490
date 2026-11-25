@@ -16,12 +16,14 @@ import static org.mockito.Mockito.*;
 class ModuleAuthoringServiceTest {
     ModuleAuthoringPort port;
     ModuleAuthoringService service;
+    com.adaptlearngraph.repository.ReviewSubmissionNotifications notices;
     Actor actor;
     Map<String, Document> documents;
     Map<String, Integer> pins;
     Content content;
     @BeforeEach void setup() {
-        port = mock(ModuleAuthoringPort.class); service = new ModuleAuthoringService(port);
+        port = mock(ModuleAuthoringPort.class); notices = mock(com.adaptlearngraph.repository.ReviewSubmissionNotifications.class);
+        service = new ModuleAuthoringService(port, null, notices);
         actor = new Actor("expert-a", "org", Set.of("EXPERT")); documents = new HashMap<>(); pins = new HashMap<>();
         content = new Content("content", "Lesson", "# Learn\nPractice the task.", "text/markdown", "1.0", List.of("occ"), "expert-a", ModuleAuthoring.now());
         when(port.actor()).thenAnswer(call -> actor);
@@ -224,4 +226,41 @@ class ModuleAuthoringServiceTest {
                 () -> service.list("", "", "", "", "", 1, true)).status());
     }
 
+    @Test void importRejectsInvalidAndOverlongModuleCodes() {
+        for (String code : List.of("MOD JAVA!", "A".repeat(101))) {
+            var e = assertThrows(Failure.class, () -> service.importModule(code, input("Imported"), false, null));
+            assertEquals(400, e.status()); assertEquals("Invalid module code", e.getMessage());
+        }
+        assertTrue(documents.isEmpty());
+    }
+    @Test void importCannotTakeOverSharedCatalogModuleCode() {
+        when(port.graphModules("org")).thenReturn(List.of(graph("MOD-SHARED", "Shared")));
+        var e = assertThrows(Failure.class, () -> service.importModule("MOD-SHARED", input("Imported"), false, null));
+        assertEquals(409, e.status()); assertTrue(e.getMessage().startsWith("Module code already exists and is not available for this import"));
+        assertTrue(documents.isEmpty());
+    }
+    @Test void reimportOfOwnReleasedModuleNeedsConfirmationAndCreatesNewDraftRevision() {
+        Document released = release(service.create(input("Original")));
+        actor = new Actor("expert-a", "org", Set.of("EXPERT"));
+        var e = assertThrows(Failure.class, () -> service.importModule(released.id(), input("Revised"), false, null));
+        assertEquals(409, e.status()); assertTrue(e.getMessage().startsWith("Confirm importing a new revision of your module"));
+        Document revised = service.importModule(released.id(), input("Revised"), true, released.lockVersion());
+        assertEquals(2, revised.current().number()); assertEquals("DRAFT", revised.current().state());
+        assertEquals("Revised", revised.current().payload().title()); assertEquals(1, revised.releasedRevision());
+    }
+    @Test void returnRequiresFeedbackOfAtMostTwoThousandCharacters() {
+        Document submitted = service.action(service.create(input("Return me")).id(), 1, "submit", null); manager();
+        for (String feedback : List.of(" ", "x".repeat(2001))) {
+            var e = assertThrows(IllegalArgumentException.class, () -> service.action(submitted.id(), submitted.lockVersion(), "return", feedback));
+            assertEquals("Invalid feedback", e.getMessage());
+        }
+        Document returned = service.action(submitted.id(), submitted.lockVersion(), "return", "x".repeat(2000));
+        assertEquals("RETURNED", returned.current().state());
+    }
+    @Test void unknownModuleActionIsRejected() {
+        Document doc = service.create(input("Unknown action")); manager();
+        var e = assertThrows(Failure.class, () -> service.action(doc.id(), doc.lockVersion(), "publish", null));
+        assertEquals(400, e.status()); assertEquals("Unknown action", e.getMessage());
+        assertEquals("DRAFT", documents.get(doc.id()).current().state());
+    }
 }

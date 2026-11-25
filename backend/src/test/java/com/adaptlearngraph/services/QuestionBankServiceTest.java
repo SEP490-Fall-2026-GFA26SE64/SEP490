@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.function.Function;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class QuestionBankServiceTest {
     final UUID org=UUID.randomUUID(),expert=UUID.randomUUID(),peer=UUID.randomUUID(),ld=UUID.randomUUID();
@@ -17,13 +18,15 @@ class QuestionBankServiceTest {
     String skillName="Skill";
     QuestionBank bank;
     QuestionBankService service;
+    com.adaptlearngraph.repository.ReviewSubmissionNotifications notices;
     ObjectMapper json=new ObjectMapper().findAndRegisterModules();
     final Content complete=new Content("A question",List.of("One","Two","Three","Four"),0,"skill","Skill",null,"Because one is correct","FOUNDATION",null,false);
     @BeforeEach void setup(){
         actor=new Actor(expert,org,"DOMAIN_EXPERT");bank=new QuestionBank();bank.id=UUID.randomUUID();bank.organization=org;bank.name="Bank";
         Store store=new Store(){public <T>T atomic(Actor a,Function<QuestionBank,T> operation){try{var copy=json.readValue(json.writeValueAsBytes(bank),QuestionBank.class);T out=operation.apply(copy);bank=copy;return out;}catch(Failure e){throw e;}catch(Exception e){throw new RuntimeException(e);}}};
         Catalog catalog=new Catalog(){public String requireKnowledge(Actor a,String skill,String level){ requireSkill(a,skill); if(!Set.of("FOUNDATION","INTERMEDIATE","ADVANCED").contains(level))throw new Failure(400,"Invalid knowledge");return "1.0";}public List<Choice>skills(Actor a){return List.of(new Choice("skill","Skill"));}public String requireSkill(Actor a,String id){if(!id.equals("skill"))throw new Failure(400,"Invalid skill");return skillName;}public List<Choice>experts(Actor a){return List.of(new Choice(expert.toString(),"Expert"),new Choice(peer.toString(),"Peer"));}public List<Choice>managers(Actor a){return List.of(new Choice(ld.toString(),"Manager"));}public void requireExpert(Actor a,UUID id){if(!List.of(expert,peer).contains(id))throw new Failure(409,"Inactive Expert");}};
-        service=new QuestionBankService(()->actor,catalog,store,Clock.fixed(Instant.parse("2026-10-30T00:00:00Z"),ZoneOffset.UTC));
+        notices=mock(com.adaptlearngraph.repository.ReviewSubmissionNotifications.class);
+        service=new QuestionBankService(()->actor,catalog,store,Clock.fixed(Instant.parse("2026-10-30T00:00:00Z"),ZoneOffset.UTC),500,10485760,notices);
     }
     Question create(){service.save(new Save(null,null,null,complete,false));return bank.questions.getFirst();}
     void expert(){actor=new Actor(expert,org,"DOMAIN_EXPERT");}
@@ -32,7 +35,7 @@ class QuestionBankServiceTest {
     void publish(){create();action("SUBMIT");manager();action("VIEW");action("APPROVE");}
     @Test void incompleteDraftIsRealAndCannotSubmit(){var c=new Content("Draft",List.of(),null,"skill",null,null,null);service.save(new Save(null,null,null,c,false));var q=bank.questions.getFirst();assertTrue(q.code.matches("Q-[0-9A-F-]{36}"));assertNull(q.versions.getFirst().content.correctAnswer());assertThrows(Failure.class,()->action("SUBMIT"));assertEquals("DRAFT",bank.questions.getFirst().versions.getFirst().state);}
     @Test void peerCannotEditAndCodeCannotChange(){var q=create();actor=new Actor(peer,org,"DOMAIN_EXPERT");assertEquals(403,assertThrows(Failure.class,()->service.save(new Save(q.id,q.revision,q.code,complete,false))).status());expert();assertEquals(409,assertThrows(Failure.class,()->service.save(new Save(q.id,q.revision,"OTHER",complete,false))).status());}
-    @Test void approvalRequiresViewedExactVersionAndPublishes(){create();action("SUBMIT");manager();assertThrows(Failure.class,()->action("APPROVE"));action("VIEW");action("APPROVE");assertEquals("PUBLISHED",bank.questions.getFirst().versions.getLast().state);assertEquals(ld,bank.questions.getFirst().versions.getLast().reviewedBy);assertTrue(bank.notices.stream().anyMatch(n->ld.equals(n.recipient)));}
+    @Test void approvalRequiresViewedExactVersionAndPublishes(){create();action("SUBMIT");manager();assertThrows(Failure.class,()->action("APPROVE"));action("VIEW");action("APPROVE");assertEquals("PUBLISHED",bank.questions.getFirst().versions.getLast().state);assertEquals(ld,bank.questions.getFirst().versions.getLast().reviewedBy);verify(notices).submitted(org.toString(),expert.toString(),"QUESTIONS",1);}
     @Test void catalogRenameCannotSilentlyRewriteViewedVersion(){create();action("SUBMIT");manager();action("VIEW");skillName="Renamed";assertEquals(409,assertThrows(Failure.class,()->action("APPROVE")).status());assertEquals("SUBMITTED",bank.questions.getFirst().versions.getLast().state);assertEquals("Skill",bank.questions.getFirst().versions.getLast().content.skillName());}
     @Test void bulkApprovalIsAtomicForStaleSelection(){create();action("SUBMIT");manager();action("VIEW");var q=bank.questions.getFirst();assertThrows(Failure.class,()->service.approve(new Bulk(List.of(new Command(q.id,q.revision,"APPROVE",null,null),new Command(UUID.randomUUID(),1,"APPROVE",null,null)))));assertEquals("SUBMITTED",bank.questions.getFirst().versions.getLast().state);}
     @Test void publishedVersionSurvivesSuccessorAndReturn(){publish();expert();action("SUCCESSOR");assertEquals(2,bank.questions.getFirst().versions.size());action("SUBMIT");manager();action("RETURN");assertEquals("PUBLISHED",bank.questions.getFirst().versions.getFirst().state);assertEquals("DRAFT",bank.questions.getFirst().versions.getLast().state);assertTrue(bank.history.stream().anyMatch(a->a.action().equals("RETURN")));}
@@ -48,4 +51,33 @@ class QuestionBankServiceTest {
     @Test void duplicateContentNeedsExplicitAcknowledgement(){create();assertThrows(Failure.class,()->service.save(new Save(null,null,null,complete,false)));service.save(new Save(null,null,null,complete,true));assertEquals(2,bank.questions.size());}
     @Test void legacyPublishedExplanationIsNotFabricatedOnReactivation(){publish();var v=bank.questions.getFirst().versions.getFirst();v.content=new Content(v.content.prompt(),v.content.options(),v.content.correctAnswer(),v.content.skillId(),v.content.skillName(),null,null,v.content.knowledgeLevel(),v.content.outcomeCode(),v.content.mandatory(),v.content.skillVersion());expert();action("REQUEST_RETIRE");manager();action("CONFIRM_AVAILABILITY");expert();action("REQUEST_REACTIVATE");manager();action("CONFIRM_AVAILABILITY");assertNull(bank.questions.getFirst().versions.getFirst().content.explanation());}
     @Test void learnerCannotReadKeys(){actor=new Actor(UUID.randomUUID(),org,"EMPLOYEE");assertEquals(403,assertThrows(Failure.class,service::read).status());}
+
+    Content numbered(int i){return new Content("Question "+i,List.of("A"+i,"B"+i,"C"+i,"D"+i),0,"skill","Skill",null,"Because "+i,"FOUNDATION",null,false);}
+    List<Row> rows(int n){var out=new ArrayList<Row>();for(int i=0;i<n;i++)out.add(new Row(null,numbered(i)));return out;}
+    @Test void importRejectsEmptyAndOverLimitFilesButAcceptsExactLimit(){
+        assertEquals(400,assertThrows(Failure.class,()->service.preview(new Preview(List.of()))).status());
+        var over=assertThrows(Failure.class,()->service.preview(new Preview(rows(501))));assertEquals(400,over.status());assertEquals("Import 1–500 rows",over.getMessage());
+        var exact=service.preview(new Preview(rows(500)));assertEquals(500,exact.rows.size());assertTrue(exact.errors.isEmpty());}
+    @Test void sameCommittedFileCannotBeImportedTwice(){
+        var p=service.preview(new Preview(List.of(new Row(null,complete)),"hash-07"));service.confirm(new Confirmation(p.id,false,false));
+        var again=assertThrows(Failure.class,()->service.preview(new Preview(List.of(new Row(null,numbered(1))),"hash-07")));
+        assertEquals(409,again.status());assertEquals("This exact file was already imported",again.getMessage());assertEquals(1,bank.questions.size());}
+    @Test void skippingDuplicatesWhenEveryRowExistsWritesNothing(){
+        create();var p=service.preview(new Preview(List.of(new Row(null,complete))));
+        var e=assertThrows(Failure.class,()->service.confirm(new Confirmation(p.id,false,false,false,true)));
+        assertEquals(409,e.status());assertEquals("No new questions to import (all rows already exist)",e.getMessage());assertEquals(1,bank.questions.size());}
+    @Test void promptLengthBoundaryIsTwentyThousandCharacters(){
+        var max=new Content("x".repeat(20000),List.of("One","Two","Three","Four"),0,"skill","Skill",null,"Because","FOUNDATION",null,false);
+        service.save(new Save(null,null,null,max,false));assertEquals(20000,bank.questions.getFirst().versions.getFirst().content.prompt().length());
+        var over=new Content("x".repeat(20001),List.of("One","Two","Three","Four"),0,"skill","Skill",null,"Because","FOUNDATION",null,false);
+        var e=assertThrows(Failure.class,()->service.save(new Save(null,null,null,over,true)));assertEquals(400,e.status());assertEquals("Prompt is required or too long",e.getMessage());assertEquals(1,bank.questions.size());}
+    @Test void bulkApprovalSelectionMustContainOneToFiveHundredQuestions(){
+        manager();
+        assertEquals("Select 1–500 questions",assertThrows(Failure.class,()->service.approve(new Bulk(List.of()))).getMessage());
+        var many=new ArrayList<Command>();for(int i=0;i<501;i++)many.add(new Command(UUID.randomUUID(),1,"APPROVE",null,null));
+        var e=assertThrows(Failure.class,()->service.approve(new Bulk(many)));assertEquals(400,e.status());assertEquals("Select 1–500 questions",e.getMessage());}
+    @Test void expertCannotBulkApprove(){
+        create();action("SUBMIT");var q=bank.questions.getFirst();
+        var e=assertThrows(Failure.class,()->service.approve(new Bulk(List.of(new Command(q.id,q.revision,"APPROVE",null,null)),true)));
+        assertEquals(403,e.status());assertEquals("L&D Manager required",e.getMessage());assertEquals("SUBMITTED",bank.questions.getFirst().versions.getLast().state);}
 }
