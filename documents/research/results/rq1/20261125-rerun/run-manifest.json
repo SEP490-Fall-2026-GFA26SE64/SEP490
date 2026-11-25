@@ -1,0 +1,22 @@
+{
+  "runId": "20261125-rerun",
+  "generatedAt": "2026-11-25T06:52:37.199Z",
+  "gitCommit": "eaa9d705",
+  "node": "v22.16.0",
+  "catalogStamp": "research-ad-0.1:8e87c444392e3c82",
+  "sha256": {
+    "documents/research/RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx": "37cbaad189775575322ac7ea4d7799a50da0419a110a219b786b4a23d31a6bff",
+    "documents/research/RQ1_Golden_Set_50_Dong_Thuan.xlsx": "b36fb73888d467a1177d2131dcf5fa7d50b2a0cece66fd57d15726e04ec3a839",
+    "frontend/public/fixtures/rq1-catalog/modules.json": "d0dcaf5cbad77f70ea1aba899d24bdb38e2fbe527bbad8ca2be62a3bbc238af3",
+    "frontend/public/fixtures/rq1-catalog/prerequisites.json": "4a06e1ab2d07fc64b4f4484877e079948baff1988569673908c99aafa10df4fc",
+    "frontend/public/fixtures/rq1-catalog/requirements.json": "bff77a3c112b8bd51d40332846928340872fff09626bbd41f245eb71ab5c46f5",
+    "frontend/public/fixtures/rq1-catalog/role.json": "45a7ff835b5182e0129a32874c5ff4ecfb6b733a0def46e5e60f0f72a881afae",
+    "frontend/public/fixtures/rq1-catalog/skills.json": "ebe552b512607a26474dc60c9cfdc72dd5eae2ddef753cdf1f10041ecbcdb94f",
+    "frontend/public/fixtures/rq1-catalog/teaching-bindings.json": "f98767d61c8c09b7156d7f95a613e72a9c7007a9d0a484a4038d7d1bd4392cce",
+    "frontend/public/fixtures/rq1-samples/gold50-profiles.jsonl": "8734a1f181d68e72351344d52465798f0012d5dd730637ff8d3c23248bb2efd2",
+    "frontend/src/features/platform-admin/rq1BenchmarkEngine.ts": "8bd15c5e8b1349609eec9940cbbc698e18974e2014f371f64b9b0b28fae0b6e7",
+    "frontend/src/features/platform-admin/rq1Top5Reference.ts": "73638ad3450a68e43fbab89c208294e192233dd116e027bf5b43f6ba9d07e2ee",
+    "frontend/src/features/platform-admin/rq1InputValidation.ts": "2932ad883c17faee571a1db2f55d15dd552ffd18209ff6d6eb9c0d9fcda82da2",
+    "documents/research/tools/run_rq1_shortlist_agreement.mjs": "4a7b0005407e259bfae7e42b7e55a245fc0c64ee3526a60d90b9d24d683fd629"
+  }
+}

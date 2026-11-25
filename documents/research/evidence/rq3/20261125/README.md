@@ -40,7 +40,7 @@ The integration fixture now separates its initial baseline target (A) from the p
 - **Runner & Test**: `com.adaptlearngraph.research.Rq3SimulationRunner` & `Rq3SimulationRunnerTest`.
 - **Actual Command**:
   `mvn -o -f backend/pom.xml -Dtest=Rq3DistanceTest,Rq3SimulationRunnerTest test`
-- **Actual Outcome**: **PASSED** (`3 tests run, 0 failures, 0 errors`). Re-executing `runFullExperiment(20261125L, 30, SimParams.defaults())` produced identical outputs across runs and wrote the immutable report to [../../../results/rq3-pilot100-20261125.json](../../../results/rq3-pilot100-20261125.json).
+- **Actual Outcome**: **PASSED** (`3 tests run, 0 failures, 0 errors`). Re-executing `runFullExperiment(20261125L, 30, SimParams.defaults())` produced identical outputs across runs and wrote the immutable report to [../../../results/rq3/20261125-r1-superseded/report.json](../../../results/rq3/20261125-r1-superseded/report.json).
 - **Summary Metrics (`100 profiles × 30 replicates`, `budget = 40`, checkpoints `0/10/20/30/40`)**:
   - `S0` (Primary Static) Target Distance $D(u, b)$: `0.7067` (0) → `0.6792` (10) → `0.6541` (20) → `0.6322` (30) → `0.6128` (40).
   - `A0` (Adaptive Recalculation) Target Distance $D(u, b)$: `0.7067` (0) → `0.6712` (10) → `0.6333` (20) → `0.5982` (30) → `0.5692` (40).
@@ -93,7 +93,7 @@ The integration fixture now separates its initial baseline target (A) from the p
 | Playwright (isolated harness, port 4183) | `node documents/research/tools/serve_rq3_browser_review.mjs`, then `RQ3_REVIEW_PAGE=http://127.0.0.1:4183/rq3-review.html npx --prefix frontend playwright test --config=frontend/playwright.system.config.ts frontend/system-tests/REQ-RQ3-pathway-efficiency-benchmark.spec.ts` | 1 passed (desktop and 390×844 mobile, secondary outcomes and 10-row sensitivity table visible, 0 page errors). The authenticated `/platform-admin/rq3-benchmark` route on the full stack was not exercised. |
 
 ### Results summary
-ΔD(40) S0 − A0 = +0.0427 [+0.0342, +0.0520]. ΔD(40) S1 − A0 = −0.0136 [−0.0177, −0.0098]. ΔD_gap(40) = +0.0695. Release rates 49.40% / 61.83% / 64.40% (S0 / A0 / S1). No run reached D = 0. Full tables are in the [protocol](../../RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.md).
+ΔD(40) S0 − A0 = +0.0427 [+0.0342, +0.0520]. ΔD(40) S1 − A0 = −0.0136 [−0.0177, −0.0098]. ΔD_gap(40) = +0.0695. Release rates 49.40% / 61.83% / 64.40% (S0 / A0 / S1). No run reached D = 0. Full tables are in the [protocol](../../../RQ3_PATHWAY_EFFICIENCY_EXPERIMENT_3.md).
 
 ### Still open
 - Independent expert review of the simulator, rubric and prerequisite relations. No review identity or timestamp is recorded, because none exists.

@@ -1,6 +1,6 @@
 # Experiment 1 Recommendation relevance
 
-Protocol version 0.2, updated 25 November 2026. **Status: executed on the 50 held-out Application Developer profiles against the 72-module catalog and consensus priority shortlist ([RQ1_Golden_Set_50_Dong_Thuan.xlsx](RQ1_Golden_Set_50_Dong_Thuan.xlsx)); interactive benchmark UI verified at `/platform-admin/rq1-benchmark`.**
+Protocol version 0.2, updated 25 November 2026. **Status: shortlist-agreement evaluation executed and reproduced on the 50 held-out Application Developer profiles against the 72-module catalog and the consensus priority shortlist ([RQ1_Golden_Set_50_Dong_Thuan.xlsx](RQ1_Golden_Set_50_Dong_Thuan.xlsx)). Rerun `results/rq1/20261125-rerun/` uses the same engine as `/platform-admin/rq1-benchmark`. The full-catalog graded evaluation (HR/Precision/Recall/nDCG against 0/1/2 labels) has not run, because no complete expert labels exist yet.**
 
 ## Registered question
 
@@ -55,21 +55,35 @@ Compute paired G0–C0 differences on the same profiles. Proposed analysis: 10,0
 
 ## Artifacts and verification gates
 
-Store versions under `data/rq1/<dataset-version>/`, runs under `results/rq1/<run-id>/` (created only when real data/runs exist). Required artifacts: catalog/profiles JSONL, split IDs, catalog review, preprocessing manifest, independent/adjudicated labels, full rankings or scores, per-profile metrics, paired analysis and exclusions. Use [DATA_AND_REPRODUCIBILITY.md](DATA_AND_REPRODUCIBILITY.md).
+Store versions under `data/rq1/<dataset-version>/` and runs under `results/rq1/<run-id>/`. The first run directory is `results/rq1/20261125-rerun/`. Required artifacts: catalog/profiles JSONL, split IDs, catalog review, preprocessing manifest, independent/adjudicated labels, full rankings or scores, per-profile metrics, paired analysis and exclusions. Use [DATA_AND_REPRODUCIBILITY.md](DATA_AND_REPRODUCIBILITY.md).
 
 Before a final run require: exact identity/version/tenant checks; 500 distinct profiles and 450/50 split; pilot/test disjointness; real annotations with no fabricated metadata; metric hand cases; duplicate/zero-vector/tie/no-candidate behavior; full-catalog candidate parity; no label leakage; deterministic ranking rerun. Pilot source and real-adapter mapping must agree. Final readiness is blocked by unresolved A1, module-specification validation or missing labels, not passed by an attractive chart.
 
-## Result boundary and observed shortlist agreement (25 November 2026)
+## Result boundary and observed shortlist agreement (rerun 25 November 2026)
 
-Evaluated against the exact-ID intersection of the two priority shortlists in [RQ1_Golden_Set_50_Dong_Thuan.xlsx](RQ1_Golden_Set_50_Dong_Thuan.xlsx) across the 50 held-out profiles ([RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx)):
+Reference: for each of the 50 held-out profiles ([RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx)), the exact-ID intersection of the two reviewer priority lists (EX-9 and EX-10) in [RQ1_Golden_Set_50_Dong_Thuan.xlsx](RQ1_Golden_Set_50_Dong_Thuan.xlsx). The lists were identical for 23 profiles and differed for 27. The 12 profiles with recorded equivalent alternatives are not credited for those alternatives.
 
-| Method | Profiles with at least one match | Hit Rate@5 | Mean exact matches per profile |
-|---|---:|---:|---:|
-| G0 structured graph matching | 48/50 | 96% | 2.30 out of 5 |
-| C0 content-based TF–IDF | 41/50 | 82% | 1.28 out of 5 |
-| G0 minus C0 | +7 profiles | +14 percentage points | +1.02 modules |
+Rerun: `node documents/research/tools/run_rq1_shortlist_agreement.mjs`. It loads the benchmark page's engine (`rq1BenchmarkEngine.ts`, `rq1Top5Reference.ts`), reads both workbooks, and writes [report.json](results/rq1/20261125-rerun/report.json) (per-profile top-5 lists, matches and paired bootstrap) and [run-manifest.json](results/rq1/20261125-rerun/run-manifest.json) (SHA-256 of workbooks, catalog fixtures and engine sources). The engine's own summary and the script's recomputation agree.
 
-These figures operationalize agreement with the consensus shortlist (`RESEARCH_MANUSCRIPT.md`, Section 4.1) and do not estimate full-catalog recall across unjudged alternatives. Expert relevance is not learning effectiveness; one Role cannot establish generalization to AI, IoT or all workforce occupations. References and positioning: [RELATED_WORK.md](RELATED_WORK.md).
+| Method | Profiles with at least one match | Hit Rate@5 | Mean exact matches | Precision@5 vs shortlist | Shortlist recall |
+|---|---:|---:|---:|---:|---:|
+| G0 structured graph matching | 48/50 | 96% | 2.30 | 0.460 | 0.836 |
+| C0 content-based TF–IDF | 41/50 | 82% | 1.28 | 0.256 | 0.548 |
+| G0 − C0 (paired, 95% bootstrap CI, 10,000 resamples) | +7 | +14 pp [+6, +24] | +1.02 [+0.72, +1.32] | — | +0.288 [+0.210, +0.369] |
+
+- **Per profile:** G0 had more matches on 29 profiles, tied on 21, and had fewer on 0.
+- **By level:**
+
+  | Level | G0 Hit Rate@5 | C0 Hit Rate@5 |
+  |---|---:|---:|
+  | Junior | 17/17 | 14/17 |
+  | Middle | 15/17 | 14/17 |
+  | Senior | 16/16 | 13/16 |
+
+- **G0 misses:** both are Middle profiles with 9 gaps (SYN-58C4FAE37081, SYN-58D3453003CF). All five G0 suggestions in each are exact gap modules, but the single consensus pick fell outside the five slots. 24 profiles have fewer than five exact-gap modules, so G0 fills the remaining slots by the deterministic tie rule.
+- **Interpretation:** precision and recall here are relative to the consensus shortlist only. They are not the protocol's full-catalog Precision@5, Recall@5 or nDCG@5, which require complete 0/1/2 labels (open gate A1).
+
+These figures operationalize agreement with the consensus shortlist (`RESEARCH_MANUSCRIPT.md`, Section 4.1) and do not estimate full-catalog recall across unjudged alternatives. The same role definitions build the catalog bindings that G0 matches on and the needs the reviewers saw, which favors G0. Expert relevance is not learning effectiveness; one Role cannot establish generalization to AI, IoT or all workforce occupations. References and positioning: [RELATED_WORK.md](RELATED_WORK.md).
 
 ## Catalog preparation update on 23 November 2026
 

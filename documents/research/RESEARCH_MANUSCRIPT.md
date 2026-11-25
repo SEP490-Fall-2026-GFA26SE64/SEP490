@@ -4,7 +4,7 @@ Manuscript draft · Adapt-Learn-Graph · SEP490 · FA26SE267 · 25 November 2026
 
 ## Abstract
 
-Workforce training platforms need to select learning modules that address gaps against a target role and update the pathway as new assessment evidence arrives. We evaluate a competency graph prototype through recommendation agreement, graph query latency, and a paired comparison of static and adaptive pathways. Using 50 synthetic Application Developer profiles and a 72-module catalog, graph matching produced at least one exact match to a consensus shortlist for 48 profiles (96%), compared with 41 (82%) for a content-based TF–IDF baseline. Mean overlap within the first five recommendations was 2.30 and 1.28 modules, respectively. Directed Neo4j prerequisite queries yielded median latencies of 9.24, 6.01 and 12.13 ms on separate 1,000-, 5,000- and 10,000-node synthetic graphs. These measurements describe individual runs, with no monotonic increase across all three sizes. Across 100 synthetic learners evaluated over 30 seeded replicates under a 40-unit activity budget, evidence-driven adaptive recalculation (A0), executed through the application's own recalculation transitions, reduced remaining target distance from 0.7067 to 0.5701, compared with 0.6128 for the fixed static pathway (S0). The mean paired gain was 0.0427 (95% bootstrap CI [0.0342, 0.0520]), and pathway completion rose from 49.40% to 61.83%. A static curriculum that expands all unachieved prerequisites up front (S1) reached 0.5565, lower than A0. The evidence supports descriptive conclusions about shortlist agreement, the measured query workload, and prerequisite remediation under the modeled learner dynamics.
+Workforce training platforms need to select learning modules that address gaps against a target role and update the pathway as new assessment evidence arrives. We evaluate a competency graph prototype through recommendation agreement, graph query latency, and a paired comparison of static and adaptive pathways. Using 50 synthetic Application Developer profiles and a 72-module catalog, graph matching produced at least one exact match to a consensus shortlist for 48 profiles (96%), compared with 41 (82%) for a content-based TF–IDF baseline. Mean overlap within the first five recommendations was 2.30 and 1.28 modules, respectively. Directed Neo4j prerequisite queries on separate 1,000-, 5,000- and 10,000-node synthetic graphs had median latencies between 6 and 20 ms across four runs per scale. Run-to-run variation was as large as the differences between sizes, and latency did not increase monotonically with size. Across 100 synthetic learners evaluated over 30 seeded replicates under a 40-unit activity budget, evidence-driven adaptive recalculation (A0), executed through the application's own recalculation transitions, reduced remaining target distance from 0.7067 to 0.5701, compared with 0.6128 for the fixed static pathway (S0). The mean paired gain was 0.0427 (95% bootstrap CI [0.0342, 0.0520]), and pathway completion rose from 49.40% to 61.83%. A static curriculum that expands all unachieved prerequisites up front (S1) reached 0.5565, lower than A0. The evidence supports descriptive conclusions about shortlist agreement, the measured query workload, and prerequisite remediation under the modeled learner dynamics.
 
 ## 1 Introduction
 
@@ -24,11 +24,11 @@ The Application Developer catalog contains 20 skills and 72 synthetic module spe
 
 Both methods ranked the same 72 candidates. **G0** scores an exact match to an unmet skill, knowledge level and version using the module teaching relationship. **C0** ranks by cosine similarity between TF–IDF representations of the learning needs and module text. Both produce five suggestions. The reference is the exact-ID intersection of the two submitted priority lists used in the [consensus workbook](RQ1_Golden_Set_50_Dong_Thuan.xlsx). The lists were identical for 23 profiles and differed for 27. For the latter, only their common selections entered the reference. Alternative module IDs were recorded separately and did not contribute to the reported scores.
 
-For each profile, the match count is the number of exact module IDs shared by the method's Top 5 and the consensus list. We report the percentage of profiles with at least one match (Hit Rate@5 against the consensus list) and the mean match count per profile. Modules outside the reference remain unjudged. These measures operationalize agreement with priority selections and do not measure relevance across the entire catalog.
+For each profile, the match count is the number of exact module IDs shared by the method's Top 5 and the consensus list. We report the percentage of profiles with at least one match (Hit Rate@5 against the consensus list), the mean match count per profile, and shortlist recall (matches divided by shortlist size). Paired G0 − C0 differences use a 10,000-resample percentile bootstrap over profiles. Modules outside the reference remain unjudged. These measures operationalize agreement with priority selections and do not measure relevance across the entire catalog.
 
 ### 3.2 Directed prerequisite query latency
 
-The RQ2 runner used Neo4j Community 5.26.33 on three separate synthetic graphs composed of MicroSkill nodes. Prerequisite edges run from a dependent skill to its prerequisite. All graphs had 1.8 directed relationships per node. The workload validated eligible directed shortest paths of 3, 4 and 5 hops before timing. Each scale used 50 warm-up queries and 100 measured queries. The Neo4j driver timer covered query execution and full consumption of results. We report P50, P95 and mean wall-clock latency from the saved responses. Each scale has one available run.
+The RQ2 runner used Neo4j Community 5.26.33 on three separate synthetic graphs composed of MicroSkill nodes. Prerequisite edges run from a dependent skill to its prerequisite. All graphs had 1.8 directed relationships per node. The workload validated eligible directed shortest paths of 3, 4 and 5 hops before timing. Each scale used 50 warm-up queries and 100 measured queries. The Neo4j driver timer covered query execution and full consumption of results. We report P50, P95 and mean wall-clock latency from the saved responses. Each scale was run once on 24 November and in three further rounds on 25 November, with the scale order rotated each round; we report the median and range across those three rounds.
 
 ### 3.3 Adaptive pathway efficiency
 
@@ -40,23 +40,23 @@ For each checkpoint, primary target distance $D(u, b)$ equals the fraction of ta
 
 ### 4.1 RQ1 agreement with consensus module selections
 
-| Method | Profiles with at least one match | Hit Rate@5 | Mean exact matches per profile |
-|---|---:|---:|---:|
-| G0 structured graph matching | 48/50 | 96% | 2.30 out of 5 |
-| C0 content-based TF–IDF | 41/50 | 82% | 1.28 out of 5 |
-| G0 minus C0 | 7 profiles | 14 percentage points | 1.02 modules |
+| Method | Profiles with at least one match | Hit Rate@5 | Mean exact matches per profile | Shortlist recall |
+|---|---:|---:|---:|---:|
+| G0 structured graph matching | 48/50 | 96% | 2.30 out of 5 | 0.836 |
+| C0 content-based TF–IDF | 41/50 | 82% | 1.28 out of 5 | 0.548 |
+| G0 minus C0 (paired, 95% bootstrap CI) | 7 profiles | +14 pp [+6, +24] | +1.02 [+0.72, +1.32] | +0.288 [+0.210, +0.369] |
 
-G0 agreed more frequently with the consensus shortlist on this cohort and had greater average overlap. The result is descriptive. The reference contains only common selections, so a recommendation missing from it may still be suitable. This result does not establish superiority against every acceptable recommendation or across other roles or catalogs.
+G0 agreed more frequently with the consensus shortlist on this cohort and had greater average overlap. Per profile, G0 had more matches on 29 profiles, tied on 21 and had fewer on none. Both G0 misses are Middle profiles with nine gaps, where all five G0 suggestions taught a gap but the single consensus pick fell outside the five slots. The figures were reproduced on 25 November 2026 from the two workbooks with the benchmark engine ([report](results/rq1/20261125-rerun/report.json)). The result is descriptive. The reference contains only common selections, so a recommendation missing from it may still be suitable. This result does not establish superiority against every acceptable recommendation or across other roles or catalogs.
 
 ### 4.2 RQ2 latency on the three measured graphs
 
-| Nodes | Prerequisite relationships | Measured queries | P50 (ms) | P95 (ms) | Mean (ms) |
+| Nodes | Prerequisite relationships | 24 Nov run: P50 / P95 / Mean (ms) | 25 Nov, 3 rounds: P50 median [range] | P95 median [range] | Mean median [range] |
 |---:|---:|---:|---:|---:|---:|
-| 1,000 | 1,800 | 100 | 9.24 | 37.16 | 13.51 |
-| 5,000 | 9,000 | 100 | 6.01 | 17.25 | 7.65 |
-| 10,000 | 18,000 | 100 | 12.13 | 51.82 | 18.73 |
+| 1,000 | 1,800 | 9.24 / 37.16 / 13.51 | 12.77 [11.10–16.25] | 45.29 [35.78–67.42] | 16.90 [16.67–24.06] |
+| 5,000 | 9,000 | 6.01 / 17.25 / 7.65 | 17.79 [15.79–20.27] | 58.67 [56.84–76.24] | 24.83 [23.47–31.07] |
+| 10,000 | 18,000 | 12.13 / 51.82 / 18.73 | 16.34 [15.39–16.54] | 53.11 [47.36–53.19] | 21.50 [21.00–23.13] |
 
-The 10,000-node graph had the highest observed median and tail latency. The 5,000-node graph was faster than the 1,000-node graph in the available runs. The data therefore do not show a monotonic size effect. Differences in runtime conditions and query pairs cannot be separated from graph size with one run per condition. The result applies to this prerequisite workload and graph generator.
+Each run used 50 warm-up and 100 measured queries. Latency stayed in the same range at all three sizes and did not increase monotonically. The spread between rounds at one size was comparable to the differences between sizes. All 25 November rounds were slower than the 24 November runs, which indicates that host state affected absolute values more than graph size did. The result applies to this prerequisite workload, one graph seed per size and the graph generator used; it is not an asymptotic complexity estimate.
 
 ### 4.3 RQ3 adaptive pathway outcomes
 
@@ -84,13 +84,13 @@ Across the 25 profiles where all prerequisite requirements were already official
 
 The RQ1 evidence suggests that structured skill and level matching can reproduce more of the shared priority selections in the current synthetic catalog than the implemented text baseline. The same role definitions structure the catalog and the displayed learner needs, which may favor graph matching. Cases with many unmet requirements also force reviewers to prioritize some valid needs within a five-module limit. Reporting exact module IDs excludes alternative modules that achieve equivalent objectives. The reference records agreement between the two included submissions and does not estimate the full set of relevant modules.
 
-RQ2 shows that the implementation can execute the specified 3–5-hop workload across three distinct graph sizes. Repeated runs with recorded runtime conditions and additional graph instances would support stronger conclusions about a size effect. The synthetic graph contains only prerequisite edges and MicroSkill nodes, so the reported figures do not describe a mixed production ontology or simultaneous users.
+RQ2 shows that the implementation can execute the specified 3–5-hop workload across three distinct graph sizes. Three rotated rounds per size show that run-to-run variation is of the same magnitude as the differences between sizes. Additional graph seeds, larger query blocks and full raw-sample export would be needed for a firmer conclusion about a size effect. The synthetic graph contains only prerequisite edges and MicroSkill nodes, so the reported figures do not describe a mixed production ontology or simultaneous users.
 
 RQ3 distinguishes official achievement from diagnostic baseline exemption. Because baseline passes exempt initial learning without awarding official achievement evidence, baseline-exempt target requirements remain outside $E(u, b)$ unless studied as a prerequisite; consequently, S1 achieves a lower final target distance than A0 ($0.5565$ vs $0.5701$) by forcing upfront study of all unachieved prerequisites, whereas A0 adheres to the application rule of supplementing a prerequisite only after an assessment failure reveals a gap. Any observed difference from this simulation depends on the modeled learning and assessment dynamics and does not establish that real employees learn faster. The simulator assumptions, rubric and prerequisite relations have not yet been reviewed by an independent expert, so the RQ3 results are a pilot.
 
 ## 6 Conclusion
 
-The RQ1 comparison shows higher exact agreement for G0 on the 50-profile consensus reference. RQ2 provides measured latency for three isolated Neo4j prerequisite graphs, with the highest observed P50 and P95 at 10,000 nodes. RQ3 demonstrates that under the modeled prerequisite assessment rules and a 40-unit activity budget, evidence-driven pathway recalculation (A0) reduces remaining target distance more than a fixed static curriculum (S0) on profiles with unachieved prerequisites, but less than a static curriculum that expands all unachieved prerequisites up front (S1). These findings characterize the current prototype under the documented synthetic inputs.
+The RQ1 comparison shows higher exact agreement for G0 on the 50-profile consensus reference. RQ2 measured median latencies of roughly 6–20 ms on three isolated Neo4j prerequisite graphs, without a monotonic increase from 1,000 to 10,000 nodes. RQ3 demonstrates that under the modeled prerequisite assessment rules and a 40-unit activity budget, evidence-driven pathway recalculation (A0) reduces remaining target distance more than a fixed static curriculum (S0) on profiles with unachieved prerequisites, but less than a static curriculum that expands all unachieved prerequisites up front (S1). These findings characterize the current prototype under the documented synthetic inputs.
 
 ## References
 
@@ -101,6 +101,6 @@ The RQ1 comparison shows higher exact agreement for G0 on the 50-profile consens
 
 ## Reproducibility artifacts
 
-- RQ1: [baseline workbook](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx), [consensus workbook](RQ1_Golden_Set_50_Dong_Thuan.xlsx), [profile manifest](data/rq1/profiles-v0.1/manifest.json).
-- RQ2: [1k run](results/rq2-standalone-20261124-172324-1k.json), [5k run](results/rq2-standalone-20261124-172832-5k.json), [10k run](results/rq2-standalone-20261124-173041-10k.json), [runner instructions](RQ2_LOCAL_SETUP.md).
+- RQ1: [baseline workbook](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx), [consensus workbook](RQ1_Golden_Set_50_Dong_Thuan.xlsx), [profile manifest](data/rq1/profiles-v0.1/manifest.json), [rerun report](results/rq1/20261125-rerun/report.json), [run manifest](results/rq1/20261125-rerun/run-manifest.json).
+- RQ2: [25 Nov rounds and summary](results/rq2/20261125-rerun/summary.json), [1k run](results/rq2/20261124-standalone/rq2-standalone-20261124-172324-1k.json), [5k run](results/rq2/20261124-standalone/rq2-standalone-20261124-172832-5k.json), [10k run](results/rq2/20261124-standalone/rq2-standalone-20261124-173041-10k.json), [runner instructions](RQ2_LOCAL_SETUP.md).
 - RQ3: [pilot cohort manifest](data/rq3/pilot-v0.1/manifest.json), [100-profile 30-replicate result r2](results/rq3/20261125-r2-runtime-parity/report.json), [event log](results/rq3/20261125-r2-runtime-parity/events.jsonl.gz), [run manifest](results/rq3/20261125-r2-runtime-parity/run-manifest.json), [runtime and UI verification record](evidence/rq3/20261125/README.md).

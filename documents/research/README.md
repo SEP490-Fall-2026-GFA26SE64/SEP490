@@ -1,6 +1,6 @@
 # Research workspace
 
-Cập nhật 25/11/2026. Toàn bộ 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**, **RQ3**) đã có tài liệu đặc tả, dữ liệu đầu vào, kết quả chạy thực nghiệm và bản thảo bài báo tổng hợp (RQ3 ở mức pilot, chờ chuyên gia rà soát) ([RESEARCH_MANUSCRIPT.md](RESEARCH_MANUSCRIPT.md) / [RESEARCH_MANUSCRIPT.docx](RESEARCH_MANUSCRIPT.docx)). Bắt đầu bằng [hướng dẫn thực hiện bằng tiếng Việt](HUONG_DAN_THUC_HIEN_RESEARCH.md).
+Cập nhật 25/11/2026. Cả 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**, **RQ3**) đã có đặc tả, dữ liệu, kết quả chạy lại được và bản thảo bài báo. Tất cả đều ở mức **pilot**, chờ chuyên gia rà soát ([RESEARCH_MANUSCRIPT.md](RESEARCH_MANUSCRIPT.md) / [RESEARCH_MANUSCRIPT.docx](RESEARCH_MANUSCRIPT.docx)). Bắt đầu bằng [hướng dẫn thực hiện bằng tiếng Việt](HUONG_DAN_THUC_HIEN_RESEARCH.md).
 
 ## Tài liệu chính
 
@@ -17,17 +17,21 @@ Cập nhật 25/11/2026. Toàn bộ 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**
 
 ## Trạng thái bằng chứng & kết quả thực nghiệm (25/11/2026)
 
-1. **RQ1 (Recommendation Agreement — 50 Golden Profiles × 72 Modules)**:
-   - So sánh `G0` (Structured Graph Matching) và `C0` (Content-based TF-IDF) trên [bộ đồng thuận](RQ1_Golden_Set_50_Dong_Thuan.xlsx) và [bộ baseline](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx).
-   - Kết quả: `G0` đạt **Hit Rate@5 = 96% (48/50 hồ sơ)**, trung bình trùng **2.30 / 5** module; `C0` đạt **Hit Rate@5 = 82% (41/50 hồ sơ)**, trung bình trùng **1.28 / 5** module (`+14 điểm phần trăm`, `+1.02 module/hồ sơ`).
-   - Giao diện đối chiếu: `/platform-admin/rq1-benchmark`.
+1. **RQ1 (Recommendation Agreement — 50 Golden Profiles × 72 Modules) — pilot**:
+   - So sánh `G0` (Structured Graph Matching) và `C0` (Content-based TF-IDF) với [danh sách đồng thuận Top 5](RQ1_Golden_Set_50_Dong_Thuan.xlsx) trên [bộ baseline](RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx). Đã chạy lại ngày 25/11 bằng `tools/run_rq1_shortlist_agreement.mjs` và ra đúng kết quả cũ ([report](results/rq1/20261125-rerun/report.json), [evidence](evidence/rq1/20261125/README.md)).
+   - `G0` đạt **Hit Rate@5 = 96% (48/50)**, trung bình trùng **2.30/5** module; `C0` đạt **82% (41/50)**, trung bình **1.28/5**. Chênh lệch so cặp: +14 điểm % [CI 95% +6, +24], +1.02 module [+0.72, +1.32]. G0 nhiều hơn ở 29 hồ sơ, bằng ở 21, ít hơn ở 0.
+   - Chưa có nhãn 0/1/2 đầy đủ, nên chưa tính Recall/nDCG trên toàn catalog. Giao diện: `/platform-admin/rq1-benchmark`.
 
-2. **RQ2 (Directed Prerequisite Query Latency — 1,000 / 5,000 / 10,000 Nodes)**:
-   - Sau khi ghi nhận [audit bộ service cũ](evidence/rq2/20261122-current-service-audit/RESULTS.md) (giữ cố định 1.059 nodes), đã chạy thực nghiệm độc lập trên Neo4j Community `5.26.33` với 3 đồ thị tách biệt thật (`1,000`, `5,000`, `10,000` `MicroSkill` nodes; tỷ lệ `1.8` prerequisite edges/node; 50 warm-up + 100 measured queries 3–5 hops):
-     - [1,000 nodes](results/rq2-standalone-20261124-172324-1k.json): **P50 = 9.24 ms**, **P95 = 37.16 ms**, **Mean = 13.51 ms**
-     - [5,000 nodes](results/rq2-standalone-20261124-172832-5k.json): **P50 = 6.01 ms**, **P95 = 17.25 ms**, **Mean = 7.65 ms**
-     - [10,000 nodes](results/rq2-standalone-20261124-173041-10k.json): **P50 = 12.13 ms**, **P95 = 51.82 ms**, **Mean = 18.73 ms**
-   - Giao diện benchmark: `/platform-admin/graph-benchmark`.
+2. **RQ2 (Directed Prerequisite Query Latency — 1,000 / 5,000 / 10,000 Nodes) — pilot**:
+   - Ba graph Neo4j Community `5.26.33` riêng biệt, 1.8 cạnh/node, 50 warm-up + 100 truy vấn đo 3–5 hops. Ngày 24/11 chạy 1 lần mỗi quy mô ([files](results/rq2/20261124-standalone/)); ngày 25/11 chạy 3 vòng đổi thứ tự ([summary](results/rq2/20261125-rerun/summary.json), [evidence](evidence/rq2/20261125-rerun/README.md)).
+   - P50 theo vòng 25/11, dạng trung vị [min–max]:
+     - 1k: **12.77** [11.10–16.25] ms
+     - 5k: **17.79** [15.79–20.27] ms
+     - 10k: **16.34** [15.39–16.54] ms
+
+     P50 ngày 24/11: 9.24 / 6.01 / 12.13 ms.
+   - Độ trễ không tăng theo kích thước. Dao động giữa các lần chạy lớn ngang chênh lệch giữa các quy mô.
+   - Còn thiếu so với protocol: nhiều seed graph, 1.000 truy vấn mỗi khối, xuất đủ thời gian đo thô (hiện chỉ giữ 30 mẫu). Giao diện: `/platform-admin/graph-benchmark`.
 
 3. **RQ3 (Adaptive Pathway Efficiency — 100 Profiles × 30 Seeded Replicates, Budget 40) — pilot, chưa final**:
    - Lần chạy r2 có runtime parity: `A0` gọi đúng transition runtime `RequirementPathwayRecalculationService.supplement`. Cả ba chính sách refresh qua `RequirementPathwayGenerationService.step` + `RequirementPathwayPlanningService.refreshedStep` và chấm điểm bằng `RuleAssessment.score` + `RuleAssessmentDecision.decide`. Lần chạy r1 trước đó tự cài lại logic bổ sung nên bị thay thế.
@@ -41,7 +45,7 @@ Cập nhật 25/11/2026. Toàn bộ 3 câu hỏi nghiên cứu (**RQ1**, **RQ2**
 
 ## Lưu trữ
 
-[data](data/README.md) lưu snapshot/nhãn/fixture; [results](results/README.md) lưu từng lần chạy bất biến; `evidence` lưu kiểm tra và audit; `tools` lưu công cụ tài liệu và runner.
+[data](data/README.md) lưu snapshot/nhãn/fixture; [results](results/README.md) lưu từng lần chạy bất biến theo `results/<rq>/<run-id>/`; `evidence/<rq>/<ngày>/` lưu lệnh đã chạy, kết quả kiểm thử và giới hạn; [tools](tools/README.md) lưu công cụ dựng dữ liệu, runner và harness.
 
 ## Catalog & Bộ hồ sơ Benchmark
 

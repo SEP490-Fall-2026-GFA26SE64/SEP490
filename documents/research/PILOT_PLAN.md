@@ -36,14 +36,20 @@ Days are planning slots, not promises. Catalog review, code/environment readines
 | P6 | Simulator costs, probabilities, learning rates and horizon | Expert review plus bias/sensitivity pilot |
 | P7 | Final inference plan and artifact completeness | Valid statistical units, missingness policy, manifests |
 
-All P1–P7 are **pending** at creation. Proposed numerical values in protocols are starting designs, not frozen confirmed parameters. The document package can be complete while these empirical gates remain pending.
+Status on 25 November 2026: P1, P2 and P6 are **pending** because no expert review or real labels exist. P3 is fixed in code (G0 seeded tie hash, C0 TF–IDF settings) but not formally frozen. P4 is a single-seed generator with 50 warm-ups, 100 measured queries and three repeated rounds per scale; the multi-seed, 1,000-query design is not run. P5 is resolved for RQ3 by runtime tests. P7 is partly met: manifests and hashes exist for RQ1 and RQ3, but RQ2 exports keep only 30 raw timings per run. All P1–P7 were **pending** at creation. Proposed numerical values in protocols are starting designs, not frozen confirmed parameters. The document package can be complete while these empirical gates remain pending.
 
 ## Exit criteria for the preparation week
 
 Complete preparation means the English framework, literature map, protocols, guide and evidence organization are usable and unresolved empirical questions are explicit. Complete pilot means real records demonstrate mechanics and feasibility, with failures retained. A pilot finding requiring repair is a useful result, but does not make the final RQ passed. No-positive-effect is not a failure of scientific reporting.
 
-Current measured evidence is only the [old-service RQ2 diagnostic audit](evidence/rq2/20261122-current-service-audit/RESULTS.md). RQ1/RQ3 and corrected three-scale RQ2 pilots remain not run. Do not copy that diagnostic audit into final result tables.
+Current measured evidence (25 November 2026):
+
+- **RQ1:** shortlist-agreement rerun, [evidence](evidence/rq1/20261125/README.md).
+- **RQ2:** standalone three-scale runs on 24 November and repeated rounds on 25 November, [evidence](evidence/rq2/20261125-rerun/README.md).
+- **RQ3:** pilot with runtime parity, [evidence](evidence/rq3/20261125/README.md).
+
+All three are pilot-level. The [old-service RQ2 diagnostic audit](evidence/rq2/20261122-current-service-audit/RESULTS.md) is history only; do not copy it into result tables.
 
 ## Catalog preparation completed
 
-A [draft catalog](data/rq1/application-developer-v0.1/README.md) now contains 20 skills, 72 module specifications and 31 prerequisite edges, with structural checks. P1 remains pending real expert review. Version 3 excludes full-course authoring; review descriptions and outcomes. No profiles, pilot annotations or final RQ1 runs were produced by catalog preparation.
+A [draft catalog](data/rq1/application-developer-v0.1/README.md) now contains 20 skills, 72 module specifications and 31 prerequisite edges, with structural checks. P1 remains pending real expert review. Version 3 excludes full-course authoring; review descriptions and outcomes. Catalog preparation itself produced no profiles, annotations or runs; those were added later as described above.

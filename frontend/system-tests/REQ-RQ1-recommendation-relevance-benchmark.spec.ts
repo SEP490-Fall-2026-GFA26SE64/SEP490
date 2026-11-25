@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const REPO_ROOT = path.resolve(__dirname, '../..')
 const STEP1_EXCEL_PATH = path.join(REPO_ROOT, 'documents/research/RQ1_Input_1_50_Golden_Profiles_Baseline.xlsx')
+const GOLDEN_SET_PATH = path.join(REPO_ROOT, 'documents/research/RQ1_Golden_Set_50_Dong_Thuan.xlsx')
 
 const expect = baseExpect.configure({ timeout: 15000 })
 test.setTimeout(180000)
@@ -43,7 +44,7 @@ test.describe('Experiment 1 (RQ1) Recommendation Relevance Benchmark Page', () =
 
     // 1. Verify stored catalog KPI (20 Skills • 72 Modules) and initial locked Step 2 state
     await expect(page.getByText('20 Skills • 72 Modules')).toBeVisible()
-    await expect(page.getByText(/Chờ Bước 2|Pending Step 2/i).first()).toBeVisible()
+    await expect(page.getByText(/Chờ nộp phiếu chuyên gia|Awaiting Expert File/i)).toBeVisible()
     await expect(page.getByTestId('rq1-step2-upload-btn')).toBeDisabled()
 
     // 2. Step 1: Upload the 50 Golden Set Baseline Profiles Excel file
@@ -59,12 +60,14 @@ test.describe('Experiment 1 (RQ1) Recommendation Relevance Benchmark Page', () =
     // Click second profile SYN-0E35D5A7A52B (Middle, 7 skill gaps)
     await page.getByTestId('rq1-profile-item-SYN-0E35D5A7A52B').click()
     await expect(page.getByTestId('rq1-active-gap-count')).toHaveText('7')
+    // Top-5 lists for G0 and C0 are shown in the comparison tab.
+    await page.getByRole('tab', { name: /2\. So sánh G0 và CBF|2\. Compare G0 and CBF/i }).click()
     await expect(page.getByText(/Graph-Traversal của Hệ thống \(G0 Top-5\)|System Graph-Traversal/i)).toBeVisible()
     await expect(page.getByText(/Content-Based Filtering \(C0 TF-IDF Top-5\)/i)).toBeVisible()
 
     // Before Step 2 upload, expert scoring badge shows awaiting Step 2
     await expect(
-      page.getByText(/Chờ Bước 2: Upload Phiếu chấm Chuyên gia|Awaiting Step 2/i)
+      page.getByText(/Chờ file đối chiếu ở Bước 2|Awaiting a reference file in Step 2/i)
     ).toBeVisible()
 
     // 3. Step 2: Upload the Expert Golden Set Evaluation Excel file
@@ -99,9 +102,7 @@ test.describe('Experiment 1 (RQ1) Recommendation Relevance Benchmark Page', () =
     await expect(page.getByText(/Chuyên gia: Grade|Expert: Grade/i).first()).toBeVisible()
 
     // 4. Switch to Tab 2: 50 Golden Set Expert Comparison & RQ1 Metrics
-    const tab2 = page.getByRole('tab', {
-      name: /2\. Bảng Đối Chiếu 50 Golden Set|2\. 50 Golden Set Expert Comparison/i,
-    })
+    const tab2 = page.getByRole('tab', { name: /2\. So sánh G0 và CBF|2\. Compare G0 and CBF/i })
     await tab2.click()
     await expect(page.getByText('Hit Rate@5 (HR@5 — Primary Metric)')).toBeVisible()
     await expect(page.getByText('Graded nDCG@5 (Linear Gain)')).toBeVisible()
@@ -133,7 +134,8 @@ test.describe('Experiment 1 (RQ1) Recommendation Relevance Benchmark Page', () =
     await page.setViewportSize({ width: 390, height: 844 })
     const collapseNav = page.getByRole('button', { name: /Thu gọn thanh điều hướng|Collapse navigation/i })
     if (await collapseNav.isVisible()) await collapseNav.click()
-    for (const button of await page.getByRole('button', { name: /Đóng thông báo|Dismiss notification/i }).all()) await button.click()
+    // Toasts may auto-dismiss between listing and clicking.
+    for (const button of await page.getByRole('button', { name: /Đóng thông báo|Dismiss notification/i }).all()) await button.click({ timeout: 2000 }).catch(() => {})
     await page.getByTestId('rq1-step2-template-btn').scrollIntoViewIfNeeded()
     await expect(page.getByTestId('rq1-step2-template-btn')).toBeVisible()
     const templateBounds = await page.getByTestId('rq1-step2-template-btn').boundingBox()
@@ -141,5 +143,19 @@ test.describe('Experiment 1 (RQ1) Recommendation Relevance Benchmark Page', () =
     await page.screenshot({ path: testInfo.outputPath('rq1-mobile.png'), fullPage: false })
     expect(browserErrors).toEqual([])
     expect(failedCatalogRequests).toEqual([])
+  })
+
+  test('compares G0/C0 top-5 with the consensus Golden Set workbook and reproduces 48/50 vs 41/50', async ({ page }) => {
+    const browserErrors: string[] = []
+    page.on('pageerror', error => browserErrors.push(error.message))
+    await ensureBenchmarkRouteReady(page, '/platform-admin/rq1-benchmark')
+    await page.getByTestId('rq1-step1-file-input').setInputFiles(STEP1_EXCEL_PATH)
+    await expect(page.getByText('50 Profiles')).toBeVisible()
+    await page.getByTestId('rq1-step2-file-input').setInputFiles(GOLDEN_SET_PATH)
+    await expect(page.getByText(/Đã đối chiếu 50 hồ sơ|50 profiles compared/i)).toBeVisible()
+    await page.getByRole('tab', { name: /2\. So sánh G0 và CBF|2\. Compare G0 and CBF/i }).click()
+    await expect(page.getByText('48/50 · 96%')).toBeVisible()
+    await expect(page.getByText('41/50 · 82%')).toBeVisible()
+    expect(browserErrors).toEqual([])
   })
 })

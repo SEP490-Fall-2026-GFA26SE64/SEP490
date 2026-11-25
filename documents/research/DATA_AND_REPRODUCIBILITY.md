@@ -20,10 +20,11 @@ research/
   templates/                    # Empty schemas/forms, not collected evidence
   data/<rq>/<version>/           # Future frozen datasets and annotations
   results/<rq>/<run-id>/         # Future real run artifacts
-  evidence/rq2/20261122-current-service-audit/
-  evidence/document-qa/         # Document checks, not scientific results
-  archive/pre-framework-20261122/
-  tools/                        # Document tooling; future research tools clearly distinguished
+  RESEARCH_MANUSCRIPT.md / .docx  # Manuscript draft (docx built with pandoc, git-ignored)
+  data/rq1/application-developer-v0.1/  data/rq1/profiles-v0.1/  data/rq3/pilot-v0.1/
+  results/rq1/<run-id>/  results/rq2/<run-id>/  results/rq3/<run-id>/
+  evidence/{catalog,profiles,rq1,rq2,rq3}/<date>/  # Verification records, not results
+  tools/                        # Builders, validators and runners (see README.md)
 ```
 
 Never overwrite a frozen dataset or historical run. Record a new version and the reason for change. Use relative paths and SHA-256 checksums. Store only consented/pseudonymous expert IDs; real names/contact details and credentials do not belong in public artifacts. Keep restricted annotation material in an access-controlled research location if needed and publish a sanitized manifest. “All under research” does not authorize public release of personal data or third-party copyrighted resources.
@@ -70,13 +71,13 @@ The existing RQ2 audit executed successfully as a diagnostic invocation but fail
 |---|---|---|
 | D1 Reviewed catalog | Expert review of requirements, mappings, prerequisites and synthetic module specifications | Pending |
 | D2 Independent gold | Pilot effort assessed; final judgment coverage fixed; real labels/adjudication | Pending |
-| D3 RQ2 measurement integrity | Real isolated scale graphs, validated fixture distances, all unaltered timings | Repair needed |
-| D4 RQ3 policy/model validity | Resolved ASSESSED_SATISFIED policy, runtime trace parity, expert model review | Pending |
-| D5 Scientific reproducibility | Complete manifests, raw-to-summary checks and rerun reports | Pending |
-| D6 Document package | Reference/link/content checks and rendered Word review | See evidence/document-qa/20261123/README.md |
+| D3 RQ2 measurement integrity | Real isolated scale graphs, validated fixture distances, all unaltered timings | Partial: real isolated graphs and Cypher-validated 3/4/5-hop fixtures; exports keep only 30 of 100 timings |
+| D4 RQ3 policy/model validity | Resolved ASSESSED_SATISFIED policy, runtime trace parity, expert model review | Policy and parity done; expert review pending |
+| D5 Scientific reproducibility | Complete manifests, raw-to-summary checks and rerun reports | RQ1 and RQ3 have manifests with SHA-256 and reruns; RQ2 has repeated rounds without full raw samples |
+| D6 Document package | Reference/link/content checks and rendered Word review | Relative links checked on 25 November 2026; rendered Word not reviewed |
 
 No application tests or production-readiness claims are implied by D6.
 
 ## Current draft catalog
 
-[data/rq1/application-developer-v0.1](data/rq1/application-developer-v0.1/README.md) contains a synthetic catalog only. Structural validation passed; expert review and freeze remain pending. No 500-profile dataset exists. Per-group skill versions and outcomes are research-specific and not assumed API-import compatible.
+[data/rq1/application-developer-v0.1](data/rq1/application-developer-v0.1/README.md) contains a synthetic catalog only. Structural validation passed; expert review and freeze remain pending. The 500-profile dataset is in [profiles-v0.1](data/rq1/profiles-v0.1/README.md). Per-group skill versions and outcomes are research-specific and not assumed API-import compatible.

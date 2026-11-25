@@ -1,0 +1,1735 @@
+{
+  "runId": "20261125-rerun",
+  "method": "Exact-module-ID agreement of G0/C0 top-5 with the consensus priority shortlist (two reviewer submissions)",
+  "seedForBootstrap": 20261125,
+  "bootstrapResamples": 10000,
+  "engineSummary": {
+    "profiles": 50,
+    "graph": {
+      "profilesWithMatch": 48,
+      "meanMatches": 2.3
+    },
+    "cbf": {
+      "profilesWithMatch": 41,
+      "meanMatches": 1.28
+    }
+  },
+  "overall": {
+    "profiles": 50,
+    "g0Hits": 48,
+    "c0Hits": 41,
+    "g0HitRateAt5": 0.96,
+    "c0HitRateAt5": 0.82,
+    "g0MeanMatches": 2.3,
+    "c0MeanMatches": 1.28,
+    "g0PrecisionAt5": 0.46,
+    "c0PrecisionAt5": 0.256,
+    "g0ShortlistRecall": 0.8363,
+    "c0ShortlistRecall": 0.5483
+  },
+  "pairedDifferenceG0minusC0": {
+    "hitRateAt5": {
+      "mean": 0.14,
+      "ci95Low": 0.06,
+      "ci95High": 0.24
+    },
+    "meanMatches": {
+      "mean": 1.02,
+      "ci95Low": 0.72,
+      "ci95High": 1.32
+    },
+    "shortlistRecall": {
+      "mean": 0.288,
+      "ci95Low": 0.2097,
+      "ci95High": 0.3687
+    }
+  },
+  "winsTiesLossesOnMatches": {
+    "g0Better": 29,
+    "tie": 21,
+    "c0Better": 0
+  },
+  "byRoleLevel": {
+    "Junior": {
+      "profiles": 17,
+      "g0Hits": 17,
+      "c0Hits": 14,
+      "g0HitRateAt5": 1,
+      "c0HitRateAt5": 0.8235,
+      "g0MeanMatches": 2.6471,
+      "c0MeanMatches": 1.2941,
+      "g0PrecisionAt5": 0.5294,
+      "c0PrecisionAt5": 0.2588,
+      "g0ShortlistRecall": 0.8441,
+      "c0ShortlistRecall": 0.4971
+    },
+    "Middle": {
+      "profiles": 17,
+      "g0Hits": 15,
+      "c0Hits": 14,
+      "g0HitRateAt5": 0.8824,
+      "c0HitRateAt5": 0.8235,
+      "g0MeanMatches": 2.0588,
+      "c0MeanMatches": 1.2941,
+      "g0PrecisionAt5": 0.4118,
+      "c0PrecisionAt5": 0.2588,
+      "g0ShortlistRecall": 0.799,
+      "c0ShortlistRecall": 0.5627
+    },
+    "Senior": {
+      "profiles": 16,
+      "g0Hits": 16,
+      "c0Hits": 13,
+      "g0HitRateAt5": 1,
+      "c0HitRateAt5": 0.8125,
+      "g0MeanMatches": 2.1875,
+      "c0MeanMatches": 1.25,
+      "g0PrecisionAt5": 0.4375,
+      "c0PrecisionAt5": 0.25,
+      "g0ShortlistRecall": 0.8677,
+      "c0ShortlistRecall": 0.5875
+    }
+  },
+  "profilesWithFewerThan5ExactGraphCandidates": 24,
+  "perProfile": [
+    {
+      "profileId": "SYN-0DBAA5DE1F7F",
+      "roleLevel": "Junior",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-FD5BC7D33325"
+      ],
+      "g0Top5": [
+        "RQM-FD5BC7D33325",
+        "RQM-162A3783727F",
+        "RQM-94EF97152E2B",
+        "RQM-5266FC1A2CC8",
+        "RQM-6ED110AAFBB0"
+      ],
+      "c0Top5": [
+        "RQM-19EB174400CE",
+        "RQM-FD5BC7D33325",
+        "RQM-9FAD42B7BAA5",
+        "RQM-215EA3B96152",
+        "RQM-935D1D6EBEFD"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-0E35D5A7A52B",
+      "roleLevel": "Middle",
+      "gapCount": 7,
+      "shortlist": [
+        "RQM-3576E488BF31",
+        "RQM-94EF97152E2B",
+        "RQM-FD5BC7D33325"
+      ],
+      "g0Top5": [
+        "RQM-3CBE1C18D90D",
+        "RQM-FD5BC7D33325",
+        "RQM-A805E6072730",
+        "RQM-9FDABE9A3731",
+        "RQM-3576E488BF31"
+      ],
+      "c0Top5": [
+        "RQM-9FDABE9A3731",
+        "RQM-25E84C5FDDBA",
+        "RQM-FE3734588299",
+        "RQM-94EF97152E2B",
+        "RQM-19EB174400CE"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 2,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.6666666666666666,
+      "c0ShortlistRecall": 0.3333333333333333
+    },
+    {
+      "profileId": "SYN-14C4A6646A8F",
+      "roleLevel": "Junior",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-1F23A4315BCA",
+        "RQM-36A294466D67",
+        "RQM-5266FC1A2CC8",
+        "RQM-54F0D846F365"
+      ],
+      "g0Top5": [
+        "RQM-5EC010180AD5",
+        "RQM-36A294466D67",
+        "RQM-1A1E535ADE00",
+        "RQM-54F0D846F365",
+        "RQM-1F23A4315BCA"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-E809B874333E",
+        "RQM-0B270FCE7190",
+        "RQM-5EC010180AD5",
+        "RQM-67572E5548A5"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.75,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-1B914983A423",
+      "roleLevel": "Senior",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-991380A07B3B"
+      ],
+      "g0Top5": [
+        "RQM-991380A07B3B",
+        "RQM-19EB174400CE",
+        "RQM-7C96DA007C29",
+        "RQM-E227DD0C9E1B",
+        "RQM-69EFF23103D5"
+      ],
+      "c0Top5": [
+        "RQM-991380A07B3B",
+        "RQM-69EFF23103D5",
+        "RQM-6379AC5A32BF",
+        "RQM-A6D56EBA3698",
+        "RQM-070396F558FD"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-1EB1436EEC35",
+      "roleLevel": "Senior",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-1A1E535ADE00"
+      ],
+      "g0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-47C78D8480BF",
+        "RQM-CDFE062DD04E",
+        "RQM-3EB85A87E1C3",
+        "RQM-9FDABE9A3731"
+      ],
+      "c0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-56B6C1293FA2",
+        "RQM-E227DD0C9E1B",
+        "RQM-9AD7623CFB27",
+        "RQM-215EA3B96152"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-2243BCD301AD",
+      "roleLevel": "Middle",
+      "gapCount": 3,
+      "shortlist": [
+        "RQM-9913EA625E9E",
+        "RQM-9FAD42B7BAA5",
+        "RQM-FE3734588299"
+      ],
+      "g0Top5": [
+        "RQM-A20690381438",
+        "RQM-9913EA625E9E",
+        "RQM-9FAD42B7BAA5",
+        "RQM-FE3734588299",
+        "RQM-BAD2447DD7AB"
+      ],
+      "c0Top5": [
+        "RQM-19EB174400CE",
+        "RQM-9913EA625E9E",
+        "RQM-FE3734588299",
+        "RQM-FD5BC7D33325",
+        "RQM-A20690381438"
+      ],
+      "g0ExactGraphMatches": 4,
+      "g0Matches": 3,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.6666666666666666
+    },
+    {
+      "profileId": "SYN-23A22471592F",
+      "roleLevel": "Middle",
+      "gapCount": 3,
+      "shortlist": [
+        "RQM-460DAAB7C11C",
+        "RQM-5EC010180AD5",
+        "RQM-F9F7B9FAA3B4"
+      ],
+      "g0Top5": [
+        "RQM-F9F7B9FAA3B4",
+        "RQM-5EC010180AD5",
+        "RQM-460DAAB7C11C",
+        "RQM-1C35929CF055",
+        "RQM-4C1B281AD645"
+      ],
+      "c0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-F9F7B9FAA3B4",
+        "RQM-9FDABE9A3731",
+        "RQM-B7884284AF1C",
+        "RQM-5EC010180AD5"
+      ],
+      "g0ExactGraphMatches": 3,
+      "g0Matches": 3,
+      "c0Matches": 3,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.6,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-34A4786ED68A",
+      "roleLevel": "Junior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-1A1E535ADE00",
+        "RQM-935D1D6EBEFD"
+      ],
+      "g0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-935D1D6EBEFD",
+        "RQM-5BFAC5D874C2",
+        "RQM-36A294466D67",
+        "RQM-467E1AF9AF41"
+      ],
+      "c0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-56B6C1293FA2",
+        "RQM-E227DD0C9E1B",
+        "RQM-94EF97152E2B",
+        "RQM-935D1D6EBEFD"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-38C5AC39C21B",
+      "roleLevel": "Senior",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-991380A07B3B"
+      ],
+      "g0Top5": [
+        "RQM-C97FCC59875C",
+        "RQM-B7884284AF1C",
+        "RQM-6ED110AAFBB0",
+        "RQM-070396F558FD",
+        "RQM-3CBE1C18D90D"
+      ],
+      "c0Top5": [
+        "RQM-9FDABE9A3731",
+        "RQM-5EC010180AD5",
+        "RQM-A6D56EBA3698",
+        "RQM-25E84C5FDDBA",
+        "RQM-B7884284AF1C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.5,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-39D02BB15E6E",
+      "roleLevel": "Senior",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-1A1E535ADE00",
+        "RQM-25E84C5FDDBA",
+        "RQM-5EC010180AD5",
+        "RQM-A13EFC8777BB"
+      ],
+      "g0Top5": [
+        "RQM-5EC010180AD5",
+        "RQM-A13EFC8777BB",
+        "RQM-1A1E535ADE00",
+        "RQM-25E84C5FDDBA",
+        "RQM-AEC0B7987AFC"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-1A1E535ADE00",
+        "RQM-386342038EA4",
+        "RQM-9B283985D80E",
+        "RQM-5F28225F4C98"
+      ],
+      "g0ExactGraphMatches": 4,
+      "g0Matches": 4,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-3B1B2010187A",
+      "roleLevel": "Junior",
+      "gapCount": 5,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-1A1E535ADE00",
+        "RQM-54F0D846F365",
+        "RQM-5EC010180AD5",
+        "RQM-991380A07B3B"
+      ],
+      "g0Top5": [
+        "RQM-070396F558FD",
+        "RQM-54F0D846F365",
+        "RQM-991380A07B3B",
+        "RQM-5EC010180AD5",
+        "RQM-1A1E535ADE00"
+      ],
+      "c0Top5": [
+        "RQM-A6D56EBA3698",
+        "RQM-1A1E535ADE00",
+        "RQM-F9F7B9FAA3B4",
+        "RQM-070396F558FD",
+        "RQM-B7884284AF1C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 5,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 1,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.4
+    },
+    {
+      "profileId": "SYN-3B4B64E88818",
+      "roleLevel": "Middle",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-1ED251ADA864"
+      ],
+      "g0Top5": [
+        "RQM-1ED251ADA864",
+        "RQM-815D6FC46FF7",
+        "RQM-6ED110AAFBB0",
+        "RQM-095282DD9FC2",
+        "RQM-FE3734588299"
+      ],
+      "c0Top5": [
+        "RQM-1ED251ADA864",
+        "RQM-815D6FC46FF7",
+        "RQM-1F23A4315BCA",
+        "RQM-8DB140806477",
+        "RQM-F0EA6C643C74"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-3FE75B2003FC",
+      "roleLevel": "Junior",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-991380A07B3B",
+        "RQM-9AD7623CFB27",
+        "RQM-F0EA6C643C74"
+      ],
+      "g0Top5": [
+        "RQM-070396F558FD",
+        "RQM-9AD7623CFB27",
+        "RQM-1F23A4315BCA",
+        "RQM-991380A07B3B",
+        "RQM-F0EA6C643C74"
+      ],
+      "c0Top5": [
+        "RQM-A6D56EBA3698",
+        "RQM-070396F558FD",
+        "RQM-CC34569CE6A5",
+        "RQM-1ED251ADA864",
+        "RQM-815D6FC46FF7"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.25
+    },
+    {
+      "profileId": "SYN-49F0F65DC74D",
+      "roleLevel": "Senior",
+      "gapCount": 6,
+      "shortlist": [
+        "RQM-162A3783727F",
+        "RQM-45F1034C455E",
+        "RQM-815D6FC46FF7",
+        "RQM-CC34569CE6A5"
+      ],
+      "g0Top5": [
+        "RQM-162A3783727F",
+        "RQM-45F1034C455E",
+        "RQM-CC34569CE6A5",
+        "RQM-3EB85A87E1C3",
+        "RQM-9AD7623CFB27"
+      ],
+      "c0Top5": [
+        "RQM-A6D56EBA3698",
+        "RQM-1ED251ADA864",
+        "RQM-815D6FC46FF7",
+        "RQM-94EF97152E2B",
+        "RQM-53338A249C50"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.75,
+      "c0ShortlistRecall": 0.25
+    },
+    {
+      "profileId": "SYN-4C98AAF3BE00",
+      "roleLevel": "Junior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-460DAAB7C11C",
+        "RQM-FD5BC7D33325"
+      ],
+      "g0Top5": [
+        "RQM-FD5BC7D33325",
+        "RQM-460DAAB7C11C",
+        "RQM-935D1D6EBEFD",
+        "RQM-095282DD9FC2",
+        "RQM-5EC010180AD5"
+      ],
+      "c0Top5": [
+        "RQM-19EB174400CE",
+        "RQM-460DAAB7C11C",
+        "RQM-FD5BC7D33325",
+        "RQM-FD52058090D1",
+        "RQM-4C1B281AD645"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-54F5EA278B11",
+      "roleLevel": "Senior",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-6ED110AAFBB0"
+      ],
+      "g0Top5": [
+        "RQM-C97FCC59875C",
+        "RQM-6ED110AAFBB0",
+        "RQM-095282DD9FC2",
+        "RQM-6379AC5A32BF",
+        "RQM-162A3783727F"
+      ],
+      "c0Top5": [
+        "RQM-C97FCC59875C",
+        "RQM-6ED110AAFBB0",
+        "RQM-5DD6DD6878EC",
+        "RQM-1C35929CF055",
+        "RQM-095282DD9FC2"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-58C4FAE37081",
+      "roleLevel": "Middle",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-4C1B281AD645"
+      ],
+      "g0Top5": [
+        "RQM-FE3734588299",
+        "RQM-1ED251ADA864",
+        "RQM-815D6FC46FF7",
+        "RQM-47EB270FF841",
+        "RQM-467E1AF9AF41"
+      ],
+      "c0Top5": [
+        "RQM-1ED251ADA864",
+        "RQM-9FDABE9A3731",
+        "RQM-815D6FC46FF7",
+        "RQM-1F23A4315BCA",
+        "RQM-460DAAB7C11C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 0,
+      "c0Matches": 0,
+      "g0Hit": 0,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-58D3453003CF",
+      "roleLevel": "Middle",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-54F0D846F365"
+      ],
+      "g0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-4C1B281AD645",
+        "RQM-C97FCC59875C",
+        "RQM-8DD629D58323",
+        "RQM-6ED110AAFBB0"
+      ],
+      "c0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-5DD6DD6878EC",
+        "RQM-C97FCC59875C",
+        "RQM-6ED110AAFBB0",
+        "RQM-1C35929CF055"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 0,
+      "c0Matches": 0,
+      "g0Hit": 0,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-5A475596F3F1",
+      "roleLevel": "Senior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-0BF6C9E304D5",
+        "RQM-D3B28CE0F87E"
+      ],
+      "g0Top5": [
+        "RQM-3CF437DB0428",
+        "RQM-D3B28CE0F87E",
+        "RQM-0BF6C9E304D5",
+        "RQM-9555C97CBC43",
+        "RQM-9FAD42B7BAA5"
+      ],
+      "c0Top5": [
+        "RQM-47EB270FF841",
+        "RQM-F6DB2919E556",
+        "RQM-8DD629D58323",
+        "RQM-45F1034C455E",
+        "RQM-53338A249C50"
+      ],
+      "g0ExactGraphMatches": 3,
+      "g0Matches": 2,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-5D5FD777C1BB",
+      "roleLevel": "Middle",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-9FDABE9A3731"
+      ],
+      "g0Top5": [
+        "RQM-9FDABE9A3731",
+        "RQM-47C78D8480BF",
+        "RQM-A20690381438",
+        "RQM-67572E5548A5",
+        "RQM-0BF6C9E304D5"
+      ],
+      "c0Top5": [
+        "RQM-9FDABE9A3731",
+        "RQM-5EC010180AD5",
+        "RQM-B7884284AF1C",
+        "RQM-94EF97152E2B",
+        "RQM-935D1D6EBEFD"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-62832411D0A0",
+      "roleLevel": "Junior",
+      "gapCount": 5,
+      "shortlist": [
+        "RQM-3CBE1C18D90D",
+        "RQM-460DAAB7C11C",
+        "RQM-54F0D846F365",
+        "RQM-C97FCC59875C",
+        "RQM-FD5BC7D33325"
+      ],
+      "g0Top5": [
+        "RQM-54F0D846F365",
+        "RQM-A805E6072730",
+        "RQM-FD5BC7D33325",
+        "RQM-3CBE1C18D90D",
+        "RQM-460DAAB7C11C"
+      ],
+      "c0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-19EB174400CE",
+        "RQM-FD5BC7D33325",
+        "RQM-A20690381438",
+        "RQM-C97FCC59875C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 3,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.6,
+      "g0ShortlistRecall": 0.8,
+      "c0ShortlistRecall": 0.6
+    },
+    {
+      "profileId": "SYN-66B71DB27D98",
+      "roleLevel": "Senior",
+      "gapCount": 3,
+      "shortlist": [
+        "RQM-0B270FCE7190",
+        "RQM-1A1E535ADE00",
+        "RQM-9B283985D80E"
+      ],
+      "g0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-0B270FCE7190",
+        "RQM-9B283985D80E",
+        "RQM-935D1D6EBEFD",
+        "RQM-5DD6DD6878EC"
+      ],
+      "c0Top5": [
+        "RQM-E809B874333E",
+        "RQM-0B270FCE7190",
+        "RQM-9B283985D80E",
+        "RQM-1A1E535ADE00",
+        "RQM-5F28225F4C98"
+      ],
+      "g0ExactGraphMatches": 3,
+      "g0Matches": 3,
+      "c0Matches": 3,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.6,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-6C5FD2963A35",
+      "roleLevel": "Junior",
+      "gapCount": 5,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-1F23A4315BCA",
+        "RQM-5266FC1A2CC8",
+        "RQM-54F0D846F365",
+        "RQM-FD5BC7D33325"
+      ],
+      "g0Top5": [
+        "RQM-FD5BC7D33325",
+        "RQM-F0EA6C643C74",
+        "RQM-070396F558FD",
+        "RQM-54F0D846F365",
+        "RQM-5266FC1A2CC8"
+      ],
+      "c0Top5": [
+        "RQM-E809B874333E",
+        "RQM-0B270FCE7190",
+        "RQM-19EB174400CE",
+        "RQM-A6D56EBA3698",
+        "RQM-FD5BC7D33325"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.8,
+      "c0ShortlistRecall": 0.2
+    },
+    {
+      "profileId": "SYN-6D1C38ECFDB9",
+      "roleLevel": "Junior",
+      "gapCount": 7,
+      "shortlist": [
+        "RQM-460DAAB7C11C",
+        "RQM-54F0D846F365",
+        "RQM-9AD7623CFB27"
+      ],
+      "g0Top5": [
+        "RQM-9AD7623CFB27",
+        "RQM-54F0D846F365",
+        "RQM-935D1D6EBEFD",
+        "RQM-25E84C5FDDBA",
+        "RQM-460DAAB7C11C"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-460DAAB7C11C",
+        "RQM-E809B874333E",
+        "RQM-0B270FCE7190",
+        "RQM-1A1E535ADE00"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.3333333333333333
+    },
+    {
+      "profileId": "SYN-7B2F73E9C465",
+      "roleLevel": "Junior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-0BF6C9E304D5",
+        "RQM-991380A07B3B"
+      ],
+      "g0Top5": [
+        "RQM-991380A07B3B",
+        "RQM-0BF6C9E304D5",
+        "RQM-54F0D846F365",
+        "RQM-6ED110AAFBB0",
+        "RQM-25E84C5FDDBA"
+      ],
+      "c0Top5": [
+        "RQM-991380A07B3B",
+        "RQM-45F1034C455E",
+        "RQM-53338A249C50",
+        "RQM-0BF6C9E304D5",
+        "RQM-69EFF23103D5"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-7BC6D5012B89",
+      "roleLevel": "Senior",
+      "gapCount": 5,
+      "shortlist": [
+        "RQM-1A1E535ADE00",
+        "RQM-1C35929CF055",
+        "RQM-36A294466D67",
+        "RQM-9B283985D80E",
+        "RQM-CDFE062DD04E"
+      ],
+      "g0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-CDFE062DD04E",
+        "RQM-36A294466D67",
+        "RQM-5DD6DD6878EC",
+        "RQM-9B283985D80E"
+      ],
+      "c0Top5": [
+        "RQM-9B283985D80E",
+        "RQM-5F28225F4C98",
+        "RQM-1A1E535ADE00",
+        "RQM-E227DD0C9E1B",
+        "RQM-C97FCC59875C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 0.8,
+      "c0ShortlistRecall": 0.4
+    },
+    {
+      "profileId": "SYN-7EFFF0FBC869",
+      "roleLevel": "Middle",
+      "gapCount": 7,
+      "shortlist": [
+        "RQM-36A294466D67",
+        "RQM-5266FC1A2CC8",
+        "RQM-9AD7623CFB27"
+      ],
+      "g0Top5": [
+        "RQM-5266FC1A2CC8",
+        "RQM-4C1B281AD645",
+        "RQM-9AD7623CFB27",
+        "RQM-9B283985D80E",
+        "RQM-47EB270FF841"
+      ],
+      "c0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-E809B874333E",
+        "RQM-0B270FCE7190",
+        "RQM-9913EA625E9E",
+        "RQM-1ED251ADA864"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 2,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.6666666666666666,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-854B6073CACF",
+      "roleLevel": "Middle",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-5F28225F4C98",
+        "RQM-9AD7623CFB27"
+      ],
+      "g0Top5": [
+        "RQM-5F28225F4C98",
+        "RQM-9AD7623CFB27",
+        "RQM-45F1034C455E",
+        "RQM-F0EA6C643C74",
+        "RQM-5DD6DD6878EC"
+      ],
+      "c0Top5": [
+        "RQM-5F28225F4C98",
+        "RQM-9B283985D80E",
+        "RQM-3576E488BF31",
+        "RQM-215EA3B96152",
+        "RQM-A13EFC8777BB"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-870163C753B7",
+      "roleLevel": "Junior",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-36A294466D67",
+        "RQM-460DAAB7C11C",
+        "RQM-54F0D846F365",
+        "RQM-F0EA6C643C74"
+      ],
+      "g0Top5": [
+        "RQM-5EC010180AD5",
+        "RQM-460DAAB7C11C",
+        "RQM-47EB270FF841",
+        "RQM-991380A07B3B",
+        "RQM-9B283985D80E"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-47EB270FF841",
+        "RQM-460DAAB7C11C",
+        "RQM-9B283985D80E",
+        "RQM-386342038EA4"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.25,
+      "c0ShortlistRecall": 0.25
+    },
+    {
+      "profileId": "SYN-922CDCAE9337",
+      "roleLevel": "Senior",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-9913EA625E9E",
+        "RQM-CDFE062DD04E",
+        "RQM-F0EA6C643C74",
+        "RQM-F9F7B9FAA3B4"
+      ],
+      "g0Top5": [
+        "RQM-F0EA6C643C74",
+        "RQM-9913EA625E9E",
+        "RQM-CDFE062DD04E",
+        "RQM-F9F7B9FAA3B4",
+        "RQM-1F23A4315BCA"
+      ],
+      "c0Top5": [
+        "RQM-F9F7B9FAA3B4",
+        "RQM-1ED251ADA864",
+        "RQM-9913EA625E9E",
+        "RQM-815D6FC46FF7",
+        "RQM-1F23A4315BCA"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-9528E037FEA7",
+      "roleLevel": "Junior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-1A1E535ADE00",
+        "RQM-1F23A4315BCA"
+      ],
+      "g0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-1F23A4315BCA",
+        "RQM-F0EA6C643C74",
+        "RQM-45F1034C455E",
+        "RQM-9913EA625E9E"
+      ],
+      "c0Top5": [
+        "RQM-1A1E535ADE00",
+        "RQM-E227DD0C9E1B",
+        "RQM-1ED251ADA864",
+        "RQM-56B6C1293FA2",
+        "RQM-1F23A4315BCA"
+      ],
+      "g0ExactGraphMatches": 3,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-98A481B50634",
+      "roleLevel": "Senior",
+      "gapCount": 9,
+      "shortlist": [
+        "RQM-25E84C5FDDBA"
+      ],
+      "g0Top5": [
+        "RQM-F0EA6C643C74",
+        "RQM-6ED110AAFBB0",
+        "RQM-1A1E535ADE00",
+        "RQM-25E84C5FDDBA",
+        "RQM-C97FCC59875C"
+      ],
+      "c0Top5": [
+        "RQM-5F28225F4C98",
+        "RQM-9B283985D80E",
+        "RQM-25E84C5FDDBA",
+        "RQM-A13EFC8777BB",
+        "RQM-67572E5548A5"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-A07D4C2FABDF",
+      "roleLevel": "Middle",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-467E1AF9AF41",
+        "RQM-53338A249C50",
+        "RQM-69EFF23103D5",
+        "RQM-CDFE062DD04E"
+      ],
+      "g0Top5": [
+        "RQM-CDFE062DD04E",
+        "RQM-53338A249C50",
+        "RQM-69EFF23103D5",
+        "RQM-467E1AF9AF41",
+        "RQM-36A294466D67"
+      ],
+      "c0Top5": [
+        "RQM-467E1AF9AF41",
+        "RQM-B6B672688C49",
+        "RQM-C728A8009DCD",
+        "RQM-45F1034C455E",
+        "RQM-53338A249C50"
+      ],
+      "g0ExactGraphMatches": 4,
+      "g0Matches": 4,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-ABFA1E9A372B",
+      "roleLevel": "Junior",
+      "gapCount": 3,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-935D1D6EBEFD",
+        "RQM-C97FCC59875C"
+      ],
+      "g0Top5": [
+        "RQM-C97FCC59875C",
+        "RQM-6ED110AAFBB0",
+        "RQM-935D1D6EBEFD",
+        "RQM-070396F558FD",
+        "RQM-386342038EA4"
+      ],
+      "c0Top5": [
+        "RQM-A6D56EBA3698",
+        "RQM-C97FCC59875C",
+        "RQM-070396F558FD",
+        "RQM-6ED110AAFBB0",
+        "RQM-5DD6DD6878EC"
+      ],
+      "g0ExactGraphMatches": 4,
+      "g0Matches": 3,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.6666666666666666
+    },
+    {
+      "profileId": "SYN-B305B1C0F9D1",
+      "roleLevel": "Junior",
+      "gapCount": 8,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-36A294466D67",
+        "RQM-54F0D846F365",
+        "RQM-F0EA6C643C74"
+      ],
+      "g0Top5": [
+        "RQM-F0EA6C643C74",
+        "RQM-070396F558FD",
+        "RQM-36A294466D67",
+        "RQM-1F23A4315BCA",
+        "RQM-25E84C5FDDBA"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-A6D56EBA3698",
+        "RQM-FE3734588299",
+        "RQM-67572E5548A5",
+        "RQM-CC34569CE6A5"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.75,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-C39F87566C3B",
+      "roleLevel": "Middle",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-69EFF23103D5",
+        "RQM-9AD7623CFB27"
+      ],
+      "g0Top5": [
+        "RQM-69EFF23103D5",
+        "RQM-9AD7623CFB27",
+        "RQM-7C96DA007C29",
+        "RQM-9FAD42B7BAA5",
+        "RQM-19EB174400CE"
+      ],
+      "c0Top5": [
+        "RQM-991380A07B3B",
+        "RQM-9AD7623CFB27",
+        "RQM-215EA3B96152",
+        "RQM-3576E488BF31",
+        "RQM-69EFF23103D5"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-C5BBB5EC68A2",
+      "roleLevel": "Junior",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-0BF6C9E304D5",
+        "RQM-1F23A4315BCA",
+        "RQM-25E84C5FDDBA",
+        "RQM-3CBE1C18D90D"
+      ],
+      "g0Top5": [
+        "RQM-F0EA6C643C74",
+        "RQM-1F23A4315BCA",
+        "RQM-A805E6072730",
+        "RQM-0BF6C9E304D5",
+        "RQM-3CBE1C18D90D"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-FE3734588299",
+        "RQM-67572E5548A5",
+        "RQM-A20690381438",
+        "RQM-1ED251ADA864"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.75,
+      "c0ShortlistRecall": 0.25
+    },
+    {
+      "profileId": "SYN-CBED36504900",
+      "roleLevel": "Middle",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-36A294466D67",
+        "RQM-467E1AF9AF41"
+      ],
+      "g0Top5": [
+        "RQM-467E1AF9AF41",
+        "RQM-36A294466D67",
+        "RQM-CDFE062DD04E",
+        "RQM-A6D56EBA3698",
+        "RQM-69EFF23103D5"
+      ],
+      "c0Top5": [
+        "RQM-B6B672688C49",
+        "RQM-C728A8009DCD",
+        "RQM-467E1AF9AF41",
+        "RQM-9913EA625E9E",
+        "RQM-E404CAA61743"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-CF601836CDAE",
+      "roleLevel": "Middle",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-1C35929CF055",
+        "RQM-25E84C5FDDBA",
+        "RQM-460DAAB7C11C",
+        "RQM-815D6FC46FF7"
+      ],
+      "g0Top5": [
+        "RQM-460DAAB7C11C",
+        "RQM-25E84C5FDDBA",
+        "RQM-5DD6DD6878EC",
+        "RQM-1C35929CF055",
+        "RQM-1ED251ADA864"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-460DAAB7C11C",
+        "RQM-67572E5548A5",
+        "RQM-1ED251ADA864",
+        "RQM-5DD6DD6878EC"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 0.75,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-D446285BF762",
+      "roleLevel": "Middle",
+      "gapCount": 5,
+      "shortlist": [
+        "RQM-0B270FCE7190",
+        "RQM-36A294466D67",
+        "RQM-47C78D8480BF",
+        "RQM-5EC010180AD5",
+        "RQM-5F28225F4C98"
+      ],
+      "g0Top5": [
+        "RQM-5EC010180AD5",
+        "RQM-47C78D8480BF",
+        "RQM-0B270FCE7190",
+        "RQM-5F28225F4C98",
+        "RQM-36A294466D67"
+      ],
+      "c0Top5": [
+        "RQM-0B270FCE7190",
+        "RQM-E809B874333E",
+        "RQM-5F28225F4C98",
+        "RQM-9913EA625E9E",
+        "RQM-47EB270FF841"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 5,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 1,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.4
+    },
+    {
+      "profileId": "SYN-D4BDAAEFC8F0",
+      "roleLevel": "Senior",
+      "gapCount": 4,
+      "shortlist": [
+        "RQM-460DAAB7C11C",
+        "RQM-67572E5548A5",
+        "RQM-7C96DA007C29",
+        "RQM-F9F7B9FAA3B4"
+      ],
+      "g0Top5": [
+        "RQM-9555C97CBC43",
+        "RQM-460DAAB7C11C",
+        "RQM-F9F7B9FAA3B4",
+        "RQM-7C96DA007C29",
+        "RQM-67572E5548A5"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-FE3734588299",
+        "RQM-A20690381438",
+        "RQM-F9F7B9FAA3B4",
+        "RQM-460DAAB7C11C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 4,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.8,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-DB813A2E8BCA",
+      "roleLevel": "Middle",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-070396F558FD"
+      ],
+      "g0Top5": [
+        "RQM-070396F558FD",
+        "RQM-8DD629D58323",
+        "RQM-19EB174400CE",
+        "RQM-935D1D6EBEFD",
+        "RQM-E809B874333E"
+      ],
+      "c0Top5": [
+        "RQM-A6D56EBA3698",
+        "RQM-070396F558FD",
+        "RQM-CC34569CE6A5",
+        "RQM-FE3734588299",
+        "RQM-CDFE062DD04E"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-E0A849DA064A",
+      "roleLevel": "Junior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-0BF6C9E304D5",
+        "RQM-9AD7623CFB27"
+      ],
+      "g0Top5": [
+        "RQM-9AD7623CFB27",
+        "RQM-0BF6C9E304D5",
+        "RQM-54F0D846F365",
+        "RQM-070396F558FD",
+        "RQM-386342038EA4"
+      ],
+      "c0Top5": [
+        "RQM-45F1034C455E",
+        "RQM-9AD7623CFB27",
+        "RQM-3576E488BF31",
+        "RQM-215EA3B96152",
+        "RQM-53338A249C50"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-E5252CC72DAB",
+      "roleLevel": "Senior",
+      "gapCount": 6,
+      "shortlist": [
+        "RQM-1C35929CF055",
+        "RQM-25E84C5FDDBA",
+        "RQM-47EB270FF841",
+        "RQM-F0EA6C643C74"
+      ],
+      "g0Top5": [
+        "RQM-45F1034C455E",
+        "RQM-F0EA6C643C74",
+        "RQM-53338A249C50",
+        "RQM-1F23A4315BCA",
+        "RQM-47EB270FF841"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-53338A249C50",
+        "RQM-45F1034C455E",
+        "RQM-67572E5548A5",
+        "RQM-1ED251ADA864"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 2,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.5,
+      "c0ShortlistRecall": 0.25
+    },
+    {
+      "profileId": "SYN-E5D5946ABA4F",
+      "roleLevel": "Senior",
+      "gapCount": 2,
+      "shortlist": [
+        "RQM-53338A249C50",
+        "RQM-CDFE062DD04E"
+      ],
+      "g0Top5": [
+        "RQM-CDFE062DD04E",
+        "RQM-53338A249C50",
+        "RQM-69EFF23103D5",
+        "RQM-AEC0B7987AFC",
+        "RQM-095282DD9FC2"
+      ],
+      "c0Top5": [
+        "RQM-45F1034C455E",
+        "RQM-53338A249C50",
+        "RQM-AEC0B7987AFC",
+        "RQM-CDFE062DD04E",
+        "RQM-0BF6C9E304D5"
+      ],
+      "g0ExactGraphMatches": 2,
+      "g0Matches": 2,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.4,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-E72D831EEABD",
+      "roleLevel": "Middle",
+      "gapCount": 8,
+      "shortlist": [
+        "RQM-460DAAB7C11C",
+        "RQM-54F0D846F365"
+      ],
+      "g0Top5": [
+        "RQM-5F28225F4C98",
+        "RQM-9B283985D80E",
+        "RQM-3CBE1C18D90D",
+        "RQM-54F0D846F365",
+        "RQM-A805E6072730"
+      ],
+      "c0Top5": [
+        "RQM-5F28225F4C98",
+        "RQM-9B283985D80E",
+        "RQM-A13EFC8777BB",
+        "RQM-B6B672688C49",
+        "RQM-460DAAB7C11C"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 0.5,
+      "c0ShortlistRecall": 0.5
+    },
+    {
+      "profileId": "SYN-EDE60B9F7ED5",
+      "roleLevel": "Senior",
+      "gapCount": 1,
+      "shortlist": [
+        "RQM-54F0D846F365"
+      ],
+      "g0Top5": [
+        "RQM-54F0D846F365",
+        "RQM-CC34569CE6A5",
+        "RQM-F6DB2919E556",
+        "RQM-C97FCC59875C",
+        "RQM-A20690381438"
+      ],
+      "c0Top5": [
+        "RQM-F9F7B9FAA3B4",
+        "RQM-54F0D846F365",
+        "RQM-49A8B9DC554E",
+        "RQM-47EB270FF841",
+        "RQM-45F1034C455E"
+      ],
+      "g0ExactGraphMatches": 1,
+      "g0Matches": 1,
+      "c0Matches": 1,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0.2,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 1
+    },
+    {
+      "profileId": "SYN-F0A7807BE0F1",
+      "roleLevel": "Middle",
+      "gapCount": 3,
+      "shortlist": [
+        "RQM-53338A249C50",
+        "RQM-F0EA6C643C74",
+        "RQM-FE3734588299"
+      ],
+      "g0Top5": [
+        "RQM-A20690381438",
+        "RQM-1F23A4315BCA",
+        "RQM-FE3734588299",
+        "RQM-F0EA6C643C74",
+        "RQM-53338A249C50"
+      ],
+      "c0Top5": [
+        "RQM-FE3734588299",
+        "RQM-A20690381438",
+        "RQM-1ED251ADA864",
+        "RQM-53338A249C50",
+        "RQM-1F23A4315BCA"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 3,
+      "c0Matches": 2,
+      "g0Hit": 1,
+      "c0Hit": 1,
+      "g0PrecisionAt5": 0.6,
+      "c0PrecisionAt5": 0.4,
+      "g0ShortlistRecall": 1,
+      "c0ShortlistRecall": 0.6666666666666666
+    },
+    {
+      "profileId": "SYN-F25754402CF9",
+      "roleLevel": "Junior",
+      "gapCount": 8,
+      "shortlist": [
+        "RQM-070396F558FD",
+        "RQM-1F23A4315BCA",
+        "RQM-54F0D846F365",
+        "RQM-935D1D6EBEFD"
+      ],
+      "g0Top5": [
+        "RQM-5EC010180AD5",
+        "RQM-47EB270FF841",
+        "RQM-54F0D846F365",
+        "RQM-25E84C5FDDBA",
+        "RQM-F0EA6C643C74"
+      ],
+      "c0Top5": [
+        "RQM-25E84C5FDDBA",
+        "RQM-47EB270FF841",
+        "RQM-A6D56EBA3698",
+        "RQM-67572E5548A5",
+        "RQM-CC34569CE6A5"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.25,
+      "c0ShortlistRecall": 0
+    },
+    {
+      "profileId": "SYN-F7852D2BB591",
+      "roleLevel": "Senior",
+      "gapCount": 7,
+      "shortlist": [
+        "RQM-935D1D6EBEFD",
+        "RQM-9FAD42B7BAA5",
+        "RQM-F9F7B9FAA3B4"
+      ],
+      "g0Top5": [
+        "RQM-5266FC1A2CC8",
+        "RQM-E404CAA61743",
+        "RQM-47EB270FF841",
+        "RQM-9FAD42B7BAA5",
+        "RQM-69EFF23103D5"
+      ],
+      "c0Top5": [
+        "RQM-47EB270FF841",
+        "RQM-E809B874333E",
+        "RQM-19EB174400CE",
+        "RQM-FD5BC7D33325",
+        "RQM-0B270FCE7190"
+      ],
+      "g0ExactGraphMatches": 5,
+      "g0Matches": 1,
+      "c0Matches": 0,
+      "g0Hit": 1,
+      "c0Hit": 0,
+      "g0PrecisionAt5": 0.2,
+      "c0PrecisionAt5": 0,
+      "g0ShortlistRecall": 0.3333333333333333,
+      "c0ShortlistRecall": 0
+    }
+  ]
+}

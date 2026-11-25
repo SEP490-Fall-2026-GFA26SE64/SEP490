@@ -1,6 +1,6 @@
 # Experiment 2 Directed prerequisite query latency
 
-Protocol version 0.2, updated 25 November 2026. **Status: corrected research design, diagnostic audit recorded, and standalone three-scale measurements (1,000 / 5,000 / 10,000 MicroSkill nodes) executed on Neo4j Community 5.26.33.**
+Protocol version 0.2, updated 25 November 2026. **Status: pilot. Standalone measurements on three real isolated graphs (1,000 / 5,000 / 10,000 MicroSkill nodes) on Neo4j Community 5.26.33: one run per scale on 24 November and three rotated rounds per scale on 25 November. The multi-seed, 1,000-query design and full raw-sample export are not done.**
 
 ## Registered question
 
@@ -83,7 +83,7 @@ This is a proposed repair plan, not implementation approval or a claim that repa
 
 Use `data/rq2/<generator-version>/<scale>/<seed>/` for graph manifests and fixtures, and `results/rq2/<run-id>/` for all raw timings, query text, environment and summaries. Dataset loader files/scripts belong under `research` when implemented; application fixes retain their existing backend/frontend owners and are referenced from the run manifest.
 
-A pilot may use 100 measured queries per scale to validate the pipeline. It cannot replace a multi-seed 1,000-query protocol. Current status: **Standalone 100-query three-scale benchmark executed (24 November 2026)**.
+A pilot may use 100 measured queries per scale to validate the pipeline. It cannot replace a multi-seed 1,000-query protocol. Current status: **pilot. 100-query runs on three scales, repeated in three rounds (25 November 2026)**.
 
 ## Standalone three-scale measured results (24 November 2026)
 
@@ -91,6 +91,22 @@ Executed via [tools/Rq2Standalone.java](tools/Rq2Standalone.java) and [RQ2_LOCAL
 
 | Nodes | Prerequisite relationships | Measured queries | P50 (ms) | P95 (ms) | Mean (ms) | Artifact |
 |---:|---:|---:|---:|---:|---:|---|
-| 1,000 | 1,800 | 100 | 9.24 | 37.16 | 13.51 | [results/rq2-standalone-20261124-172324-1k.json](results/rq2-standalone-20261124-172324-1k.json) |
-| 5,000 | 9,000 | 100 | 6.01 | 17.25 | 7.65 | [results/rq2-standalone-20261124-172832-5k.json](results/rq2-standalone-20261124-172832-5k.json) |
-| 10,000 | 18,000 | 100 | 12.13 | 51.82 | 18.73 | [results/rq2-standalone-20261124-173041-10k.json](results/rq2-standalone-20261124-173041-10k.json) |
+| 1,000 | 1,800 | 100 | 9.24 | 37.16 | 13.51 | [results/rq2/20261124-standalone/rq2-standalone-20261124-172324-1k.json](results/rq2/20261124-standalone/rq2-standalone-20261124-172324-1k.json) |
+| 5,000 | 9,000 | 100 | 6.01 | 17.25 | 7.65 | [results/rq2/20261124-standalone/rq2-standalone-20261124-172832-5k.json](results/rq2/20261124-standalone/rq2-standalone-20261124-172832-5k.json) |
+| 10,000 | 18,000 | 100 | 12.13 | 51.82 | 18.73 | [results/rq2/20261124-standalone/rq2-standalone-20261124-173041-10k.json](results/rq2/20261124-standalone/rq2-standalone-20261124-173041-10k.json) |
+
+## Repeated rounds (25 November 2026)
+
+Three rounds per scale with rotated order (1k→5k→10k, 5k→10k→1k, 10k→1k→5k), same runner, image `neo4j@sha256:c5fd91e4…` and freshly seeded graphs. One 1k run that overlapped with browser tests on the same host was redone and excluded. Details are in the [evidence](evidence/rq2/20261125-rerun/README.md); the per-run files and [summary.json](results/rq2/20261125-rerun/summary.json) are under `results/rq2/20261125-rerun/`.
+
+| Nodes | Edges | Runs | P50 median [min–max] ms | P95 median [min–max] ms | Mean median [min–max] ms |
+|---:|---:|---:|---:|---:|---:|
+| 1,000 | 1,800 | 3 | 12.77 [11.10–16.25] | 45.29 [35.78–67.42] | 16.90 [16.67–24.06] |
+| 5,000 | 9,000 | 3 | 17.79 [15.79–20.27] | 58.67 [56.84–76.24] | 24.83 [23.47–31.07] |
+| 10,000 | 18,000 | 3 | 16.34 [15.39–16.54] | 53.11 [47.36–53.19] | 21.50 [21.00–23.13] |
+
+The spread between rounds at one scale is as large as the difference between scales. Latency does not rise monotonically from 1k to 10k. Today's runs were all slower than the single 24 November runs, so host state matters more than graph size in this range. Remaining gaps against this protocol:
+- One graph seed per scale.
+- 100 instead of 1,000 measured queries.
+- Only 30 raw timings are kept per export.
+- No per-depth breakdown.

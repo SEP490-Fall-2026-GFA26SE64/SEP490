@@ -1,5 +1,11 @@
 # RQ1: nộp hai file cùng hồ sơ và baseline
 
+> Bước 2 nhận một trong hai loại file:
+> - **Phiếu đồng thuận Top 5** [RQ1_Golden_Set_50_Dong_Thuan.xlsx](RQ1_Golden_Set_50_Dong_Thuan.xlsx) (sheet `Golden Set 50`): cho ra kết quả RQ1 hiện tại, 48/50 so với 41/50.
+> - **Phiếu chấm đầy đủ 0/1/2:** dùng để tính Recall/nDCG khi đã có nhãn thật, theo hướng dẫn bên dưới.
+>
+> Chạy lại không cần giao diện bằng `node documents/research/tools/run_rq1_shortlist_agreement.mjs`.
+
 Luồng này là công cụ benchmark offline trên catalog research. Nó không ghi kết quả vào hồ sơ người học thật, không gọi Neo4j để sinh pathway ứng dụng, và không thay thế quy trình đánh giá chuyên gia độc lập.
 
 ## Cách dùng
@@ -27,7 +33,7 @@ Phiên bản này thực thi phương án **chấm đầy đủ catalog** của 
 
 Hồ sơ không có Grade 2 nằm ngoài tập positive-query của phép so sánh chính. Hệ thống báo rõ Recall không áp dụng và yêu cầu báo cáo riêng; không tự gán Recall/nDCG bằng 0 hoặc tự loại hồ sơ để làm đẹp điểm. Giao diện hiện chưa cung cấp báo cáo robustness riêng này.
 
-File `RQ1_Input_2_50_Golden_Expert_Evaluation.xlsx` cũ, fixture `gold50-expert-evaluation.jsonl` và cột module khớp trong file tổng quan **không được chấp nhận làm phiếu chuẩn mới**. Chúng được giữ nguyên để bảo toàn lịch sử, không phải bằng chứng đã có chuyên gia chấm. Hãy tải mẫu mới từ Bước 1; không chuyển nhãn minh họa thành nhãn chuyên gia bằng cách đổi tên trường.
+File `RQ1_Input_2_50_Golden_Expert_Evaluation.xlsx` cũ và cột module khớp trong file tổng quan **không được chấp nhận làm phiếu chuẩn mới**. File `RQ1_Input_2` được giữ trong thư mục này để test kiểm tra rằng hệ thống từ chối nó; đây không phải bằng chứng đã có chuyên gia chấm. Các bản sao trong `frontend/public/fixtures/rq1-samples/` (`RQ1_Input_2_...xlsx`, `gold50-expert-evaluation.jsonl`) đã bị xoá ngày 25/11/2026 vì không được dùng và dễ gây nhầm. Hãy tải mẫu mới từ Bước 1; không chuyển nhãn minh họa thành nhãn chuyên gia bằng cách đổi tên trường.
 
 ## JSON/JSONL tương đương
 
