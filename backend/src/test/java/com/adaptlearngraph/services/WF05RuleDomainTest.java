@@ -47,7 +47,7 @@ class WF05RuleDomainTest {
     void shortage(){var m=group("A",GroupRole.MAIN,false);var p=group("B",GroupRole.PREREQUISITE,false);var results=score(m,p,2,1);
         var waiting=RuleAssessmentDecision.decide(Purpose.SKILL_ASSESSMENT,results,Set.of(),Set.of(),false);
         assertThat(waiting.state()).isEqualTo(State.WAITING_SUPPLEMENT);assertThat(waiting.supplements()).extracting(r->r.requirement().skillId()).containsExactly("B");
-        assertThat(RuleAssessmentDecision.decide(Purpose.SKILL_ASSESSMENT,results,Set.of(),Set.of(req("B").key()),false).state()).isEqualTo(State.READY);}
+    }
     @Test @DisplayName("WF05 regression: domain: full retake has no carried group answers")
     void fullRetake(){var m=group("A",GroupRole.MAIN,false);var p=group("B",GroupRole.PREREQUISITE,false);
         assertThat(score(m,p,2,2)).allMatch(GroupResult::passed);

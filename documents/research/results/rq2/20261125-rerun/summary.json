@@ -1,0 +1,220 @@
+{
+  "runDirectory": "documents/research/results/rq2/20261125-rerun",
+  "excluded": [
+    "rq2-1k-round1.json"
+  ],
+  "files": {
+    "rq2-10k-round1.json": {
+      "sha256": "2102f1cb947cffee6ecf3f8fb5e4446da74a680f9af7ec55102ff3ae09947a19",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 15.39,
+      "p95Ms": 53.19,
+      "meanMs": 21.0,
+      "minMs": 10.24,
+      "maxMs": 149.78,
+      "executedAt": "2026-11-25T07:08:11.830681Z"
+    },
+    "rq2-10k-round2.json": {
+      "sha256": "1ba3e0504cf2244fbd176e9896cf0e50122fc0411fbdc67f762d34802899235c",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 16.34,
+      "p95Ms": 47.36,
+      "meanMs": 21.5,
+      "minMs": 10.21,
+      "maxMs": 132.68,
+      "executedAt": "2026-11-25T07:14:55.793482Z"
+    },
+    "rq2-10k-round3.json": {
+      "sha256": "820f8a1848a6a43c464ee8f2ba970812891b697ccc08a1d829b21ca548029524",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 16.54,
+      "p95Ms": 53.11,
+      "meanMs": 23.13,
+      "minMs": 9.98,
+      "maxMs": 104.16,
+      "executedAt": "2026-11-25T07:20:58.059640Z"
+    },
+    "rq2-1k-round1-redo.json": {
+      "sha256": "1f83db4c8778b9aac7e571dae6b5188ceb8e9625e76b8881442f6e68bf49226e",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 11.1,
+      "p95Ms": 45.29,
+      "meanMs": 16.67,
+      "minMs": 7.21,
+      "maxMs": 186.03,
+      "executedAt": "2026-11-25T07:45:33.811735Z"
+    },
+    "rq2-1k-round1.json": {
+      "sha256": "bd58281ba9a47b660d42bbbf4d44a58231f2a754452b3f1b48996e357389214d",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 16.19,
+      "p95Ms": 101.07,
+      "meanMs": 32.14,
+      "minMs": 7.8,
+      "maxMs": 334.08,
+      "executedAt": "2026-11-25T06:59:02.692506Z"
+    },
+    "rq2-1k-round2.json": {
+      "sha256": "9a9fbab7aa4c254cf3d95e3240e801248dc48bce3c7cef202c7d974f13591b15",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 12.77,
+      "p95Ms": 35.78,
+      "meanMs": 16.9,
+      "minMs": 7.84,
+      "maxMs": 88.39,
+      "executedAt": "2026-11-25T07:18:00.163313Z"
+    },
+    "rq2-1k-round3.json": {
+      "sha256": "28d19fd8a9f3d69eabda99093edeae6b8ab3512d59d01abeab34971927d14b5c",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 16.25,
+      "p95Ms": 67.42,
+      "meanMs": 24.06,
+      "minMs": 10.23,
+      "maxMs": 104.2,
+      "executedAt": "2026-11-25T07:23:48.873773Z"
+    },
+    "rq2-5k-round1.json": {
+      "sha256": "75b2f3ecc64e2a5536e2116d5bc215602aa9e4ffdc68b7dc91061dd7ade272a5",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 17.79,
+      "p95Ms": 56.84,
+      "meanMs": 24.83,
+      "minMs": 10.71,
+      "maxMs": 125.58,
+      "executedAt": "2026-11-25T07:04:35.916419Z"
+    },
+    "rq2-5k-round2.json": {
+      "sha256": "4be718117b4619f2900f575ff18fd2e76d48379c75ed335048f61cb9e35f663b",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 20.27,
+      "p95Ms": 76.24,
+      "meanMs": 31.07,
+      "minMs": 11.5,
+      "maxMs": 173.45,
+      "executedAt": "2026-11-25T07:11:19.342095Z"
+    },
+    "rq2-5k-round3.json": {
+      "sha256": "13a07e63a3d09da7ea2d28a403227114c89a065a1231edbfb1c51ef5901a306b",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 15.79,
+      "p95Ms": 58.67,
+      "meanMs": 23.47,
+      "minMs": 10.1,
+      "maxMs": 150.75,
+      "executedAt": "2026-11-25T07:30:40.314418Z"
+    }
+  },
+  "byScale": {
+    "1k": {
+      "runs": 3,
+      "nodes": 1000,
+      "relationships": 1800,
+      "p50Ms": {
+        "median": 12.77,
+        "min": 11.1,
+        "max": 16.25
+      },
+      "p95Ms": {
+        "median": 45.29,
+        "min": 35.78,
+        "max": 67.42
+      },
+      "meanMs": {
+        "median": 16.9,
+        "min": 16.67,
+        "max": 24.06
+      }
+    },
+    "5k": {
+      "runs": 3,
+      "nodes": 5000,
+      "relationships": 9000,
+      "p50Ms": {
+        "median": 17.79,
+        "min": 15.79,
+        "max": 20.27
+      },
+      "p95Ms": {
+        "median": 58.67,
+        "min": 56.84,
+        "max": 76.24
+      },
+      "meanMs": {
+        "median": 24.83,
+        "min": 23.47,
+        "max": 31.07
+      }
+    },
+    "10k": {
+      "runs": 3,
+      "nodes": 10000,
+      "relationships": 18000,
+      "p50Ms": {
+        "median": 16.34,
+        "min": 15.39,
+        "max": 16.54
+      },
+      "p95Ms": {
+        "median": 53.11,
+        "min": 47.36,
+        "max": 53.19
+      },
+      "meanMs": {
+        "median": 21.5,
+        "min": 21.0,
+        "max": 23.13
+      }
+    }
+  }
+}

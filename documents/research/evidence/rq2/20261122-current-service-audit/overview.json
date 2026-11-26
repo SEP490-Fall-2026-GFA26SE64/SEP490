@@ -1,0 +1,9 @@
+{
+  "neo4jVersion" : "5.26.32",
+  "totalNodes" : 1059,
+  "totalRelationships" : 4795,
+  "availableScales" : [ "1k", "5k", "10k" ],
+  "defaultRuns" : 100,
+  "defaultWarmupRuns" : 50,
+  "ready" : true
+}

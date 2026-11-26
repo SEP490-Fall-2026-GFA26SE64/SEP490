@@ -1,0 +1,203 @@
+{
+  "runDirectory": "documents/research/results/rq2/20261126-rerun",
+  "excluded": [],
+  "files": {
+    "rq2-10k-round1.json": {
+      "sha256": "079719e2c423ab94aba5fda84412184917a536724ffd6e5c5b3a0ca3e75097a6",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 10.0,
+      "p95Ms": 18.35,
+      "meanMs": 12.25,
+      "minMs": 7.52,
+      "maxMs": 105.41,
+      "executedAt": "2026-11-25T19:16:22.782634Z"
+    },
+    "rq2-10k-round2.json": {
+      "sha256": "9b24f16995c762f9d5e9fa94e5bcafd266a5033829d97a973690f2166cbb8ef2",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 10.13,
+      "p95Ms": 16.86,
+      "meanMs": 10.82,
+      "minMs": 6.49,
+      "maxMs": 26.19,
+      "executedAt": "2026-11-25T19:19:36.064081Z"
+    },
+    "rq2-10k-round3.json": {
+      "sha256": "ef9d202a487efc379af091d8d4d987c7fb5b9794a2dcd27eaf83fd333e85c049",
+      "scale": "10k",
+      "nodes": 10000,
+      "relationships": 18000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 12.84,
+      "p95Ms": 31.45,
+      "meanMs": 17.14,
+      "minMs": 8.28,
+      "maxMs": 142.11,
+      "executedAt": "2026-11-25T19:23:04.772722Z"
+    },
+    "rq2-1k-round1.json": {
+      "sha256": "a19dff40402c9fb1e502842fbb1eeb0270e76e6d0b5a396a232ef453784472d0",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 8.23,
+      "p95Ms": 27.61,
+      "meanMs": 10.08,
+      "minMs": 5.65,
+      "maxMs": 33.8,
+      "executedAt": "2026-11-25T19:12:44.972083Z"
+    },
+    "rq2-1k-round2.json": {
+      "sha256": "706d87a1456429f6febae124de665a416a16da0ec8fa897476f64f7117d6d5e5",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 9.26,
+      "p95Ms": 30.82,
+      "meanMs": 14.01,
+      "minMs": 6.0,
+      "maxMs": 125.16,
+      "executedAt": "2026-11-25T19:21:21.443075Z"
+    },
+    "rq2-1k-round3.json": {
+      "sha256": "e92220ab5b5ef80b9a228e9f8c19551d17e6d4f486d67e86d35897a84ec4bbd1",
+      "scale": "1k",
+      "nodes": 1000,
+      "relationships": 1800,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 8.02,
+      "p95Ms": 13.79,
+      "meanMs": 8.82,
+      "minMs": 5.9,
+      "maxMs": 28.74,
+      "executedAt": "2026-11-25T19:24:42.567901Z"
+    },
+    "rq2-5k-round1.json": {
+      "sha256": "b4b1fbed9a1d968eb89c79e8accda22ccdc65c79d45f7e02baac02dc971e3dcc",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 10.52,
+      "p95Ms": 27.32,
+      "meanMs": 13.16,
+      "minMs": 7.47,
+      "maxMs": 48.87,
+      "executedAt": "2026-11-25T19:14:32.459210Z"
+    },
+    "rq2-5k-round2.json": {
+      "sha256": "fa34a6067e13989092fd0e80a3fb7e656860ba265a45d529ff19813017286140",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 11.45,
+      "p95Ms": 28.65,
+      "meanMs": 14.94,
+      "minMs": 8.04,
+      "maxMs": 84.57,
+      "executedAt": "2026-11-25T19:17:58.186460Z"
+    },
+    "rq2-5k-round3.json": {
+      "sha256": "5beb7d099efb8a38021de95b88dde7742dbc4adc482574f64e7f09fd77e93773",
+      "scale": "5k",
+      "nodes": 5000,
+      "relationships": 9000,
+      "neo4jVersion": "5.26.33",
+      "measured": 100,
+      "warmups": 50,
+      "p50Ms": 9.45,
+      "p95Ms": 17.95,
+      "meanMs": 10.59,
+      "minMs": 7.2,
+      "maxMs": 50.91,
+      "executedAt": "2026-11-25T19:26:20.559665Z"
+    }
+  },
+  "byScale": {
+    "1k": {
+      "runs": 3,
+      "nodes": 1000,
+      "relationships": 1800,
+      "p50Ms": {
+        "median": 8.23,
+        "min": 8.02,
+        "max": 9.26
+      },
+      "p95Ms": {
+        "median": 27.61,
+        "min": 13.79,
+        "max": 30.82
+      },
+      "meanMs": {
+        "median": 10.08,
+        "min": 8.82,
+        "max": 14.01
+      }
+    },
+    "5k": {
+      "runs": 3,
+      "nodes": 5000,
+      "relationships": 9000,
+      "p50Ms": {
+        "median": 10.52,
+        "min": 9.45,
+        "max": 11.45
+      },
+      "p95Ms": {
+        "median": 27.32,
+        "min": 17.95,
+        "max": 28.65
+      },
+      "meanMs": {
+        "median": 13.16,
+        "min": 10.59,
+        "max": 14.94
+      }
+    },
+    "10k": {
+      "runs": 3,
+      "nodes": 10000,
+      "relationships": 18000,
+      "p50Ms": {
+        "median": 10.13,
+        "min": 10.0,
+        "max": 12.84
+      },
+      "p95Ms": {
+        "median": 18.35,
+        "min": 16.86,
+        "max": 31.45
+      },
+      "meanMs": {
+        "median": 12.25,
+        "min": 10.82,
+        "max": 17.14
+      }
+    }
+  }
+}

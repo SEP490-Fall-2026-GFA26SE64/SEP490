@@ -1,0 +1,78 @@
+{
+  "datasetId": "rq1-application-developer-profiles",
+  "version": "rq1-profiles-0.1",
+  "createdOn": "2026-11-23",
+  "schemaVersion": 1,
+  "protocolVersion": "0.2",
+  "seed": 20261123,
+  "profileCount": 500,
+  "developmentCount": 450,
+  "goldProfileCount": 50,
+  "pilotCount": 10,
+  "expertJudgmentCount": 0,
+  "goldStatus": "AWAITING_EXPERT_LABELS",
+  "phase": "DRAFT_PRE_EXPERT_REVIEW",
+  "frozen": false,
+  "catalogReviewStatus": "NEEDS_EXPERT_REVIEW",
+  "catalogManifestSha256": "dbf6f957c256c5e6c6ff98f355aebab208e93ca9cde135d7df5f04834929eeac",
+  "generatorSha256": "2282a14e44d0a4126c9c32510ec42b372301e762b8d46f0523d944117b801b79",
+  "samplingAttempts": 550,
+  "nearDuplicateRule": "Same-role gap-set Jaccard must be strictly below 0.8 across all accepted profiles, regardless of split. This is a structural similarity screen, not proof of semantic independence.",
+  "gapBandDefinitions": {
+    "LOW": [
+      1,
+      2
+    ],
+    "MEDIUM": [
+      3,
+      5
+    ],
+    "HIGH": [
+      6,
+      9
+    ]
+  },
+  "officialEvidenceFractionsOfNonGapGroups": {
+    "BASELINE_ONLY": 0,
+    "MIXED": 0.35,
+    "OFFICIAL_RICH": 0.7
+  },
+  "runtimeParity": "NOT_VERIFIED",
+  "limitations": [
+    "Draft catalog has no expert approval; later catalog changes require a new dataset version.",
+    "All profiles have 1–9 module-based initial needs; no-gap, certificate-only, missing-provision, conflicting and incompatible-evidence robustness cases are outside this cohort.",
+    "Only selected role target groups are modeled; no carried/lower-history supplementary work.",
+    "Synthetic group outcomes are not scored quiz attempts or real achievements.",
+    "The same prespecified sampler generates both splits; this is not evidence of out-of-distribution generalization.",
+    "No ranking results or human relevance labels exist."
+  ],
+  "files": {
+    "GOLD50_REVIEW_CARDS.md": "aae453526b5f068537097f351f2cc8ab87263566589f0c4d95ec0c590b82ec35",
+    "PILOT10_REVIEW_CARDS.md": "b3fa4b7d6ec723f513b6d91ed425344de48b97e8348d882031e99461b1f6624e",
+    "PROFILE_INDEX.md": "c0a8e128954333465bd7593af0533835c4f105c32719c77d5c06d8961a4a2e8a",
+    "README.md": "2846559d056bf4e44e02accf9004ce04fc3e236c75298bdc1ddf89939c23fc71",
+    "annotation/adjudication.template.jsonl": "78b3e21a04237dd34c21b4021e74eadff2614765381d4510664fdd39d0155815",
+    "annotation/reviewer-A.template.jsonl": "4652072803372aef7d5c3e59668279e1efa0c829c8f7f5a8ef59ca74a15e5e68",
+    "annotation/reviewer-B.template.jsonl": "982a4ece4d81b2291ca746576be55402d95c4eb2945d574ff3972ed562de0e59",
+    "catalog-snapshot/COMPETENCY_MATRIX.md": "1b7a26bae2fb00682fbbf472f2036c94bc33d0e34967e5756b2bf07f6e06c6e3",
+    "catalog-snapshot/MODULE_CARDS.md": "73596117b6344058f9f5373c32b75d7d206db34f2647e202ecf5eaf6706d09be",
+    "catalog-snapshot/PREREQUISITES.md": "a3f708d0a952f46fcfcdf6b4ee7c4283e54c64e36a64bd9b45ed0aa2ac9ddaf0",
+    "catalog-snapshot/README.md": "882ba7b108025fe291ed3011dc393b39917f480ed2baf05845952454dee22638",
+    "catalog-snapshot/change-log.json": "1d14e2afd7153ac7d949464d2aadd5bc32401017a609695597bbe9eb9204c871",
+    "catalog-snapshot/legacy-requirements.json": "0fd327e27feaa3f13c31666f10156bac86a6b25d7c6aa949c3ad59312bbb931a",
+    "catalog-snapshot/modules.json": "d0dcaf5cbad77f70ea1aba899d24bdb38e2fbe527bbad8ca2be62a3bbc238af3",
+    "catalog-snapshot/prerequisites.json": "4a06e1ab2d07fc64b4f4484877e079948baff1988569673908c99aafa10df4fc",
+    "catalog-snapshot/requirements.json": "bff77a3c112b8bd51d40332846928340872fff09626bbd41f245eb71ab5c46f5",
+    "catalog-snapshot/review-items.json": "68c49c958c5b5e06787a8fabfb7181f4b19ab48034f3c5667711458d07e60222",
+    "catalog-snapshot/role.json": "45a7ff835b5182e0129a32874c5ff4ecfb6b733a0def46e5e60f0f72a881afae",
+    "catalog-snapshot/skills.json": "ebe552b512607a26474dc60c9cfdc72dd5eae2ddef753cdf1f10041ecbcdb94f",
+    "catalog-snapshot/source-catalog-manifest.json": "dbf6f957c256c5e6c6ff98f355aebab208e93ca9cde135d7df5f04834929eeac",
+    "catalog-snapshot/sources.json": "2d7cff18395ce4dd37554c60d7d31da5bf87add0016457ef9a3d8e832f16a85d",
+    "catalog-snapshot/teaching-bindings.json": "f98767d61c8c09b7156d7f95a613e72a9c7007a9d0a484a4038d7d1bd4392cce",
+    "development450.jsonl": "efd924d88839c2bcc0d60bec328e7edf5ca6f2047aa01675ddd82874bb886ed9",
+    "distribution.json": "05a7e733769689db5e3197775a364e6e2d7b422c7b97bc4cb0cc7f5a7f844b81",
+    "gold50-profiles.jsonl": "8734a1f181d68e72351344d52465798f0012d5dd730637ff8d3c23248bb2efd2",
+    "profiles.jsonl": "4235e9467cc475c8bd9e40d2bb0333e34aa30cfd9e75dc907a40d872b5e2a510",
+    "splits.json": "3c4e89c1cbb6bf5fa286c46695e03e8b357dcd7ce96a2030606a077007c62023"
+  }
+}

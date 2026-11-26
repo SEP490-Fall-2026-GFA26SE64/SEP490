@@ -1,0 +1,33 @@
+{
+  "assessment_cost": 1,
+  "budget": 40,
+  "checkpoints": [
+    0,
+    10,
+    20,
+    30,
+    40
+  ],
+  "count": 100,
+  "learning_cost": 1,
+  "profiles_sha256": "82f0783f7d123a66d27f5bc5b8b986bd7292de99dcd4a7ce163ab8ac2d13bfdf",
+  "role_counts": {
+    "Junior": 34,
+    "Middle": 33,
+    "Senior": 33
+  },
+  "seed": 20261125,
+  "source_sha256": "efd924d88839c2bcc0d60bec328e7edf5ca6f2047aa01675ddd82874bb886ed9",
+  "status": "DRAFT_PILOT_INPUTS",
+  "strata": {
+    "Junior/HIGH": 11,
+    "Junior/LOW": 12,
+    "Junior/MEDIUM": 11,
+    "Middle/HIGH": 11,
+    "Middle/LOW": 11,
+    "Middle/MEDIUM": 11,
+    "Senior/HIGH": 11,
+    "Senior/LOW": 11,
+    "Senior/MEDIUM": 11
+  }
+}

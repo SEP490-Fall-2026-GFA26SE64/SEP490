@@ -1,0 +1,43 @@
+{
+  "runId" : "20261125-r2-runtime-parity",
+  "experimentId" : "rq3-pilot100-20261125-r2-runtime-parity",
+  "generatedAt" : "2026-11-25T19:10:23.974986Z",
+  "gitCommit" : "74be9cfd",
+  "gitWorkingTree" : "uncommitted changes may be present; engineSourceSha256 identifies the exact sources",
+  "runtimeSeconds" : 163,
+  "baseSeed" : 20261125,
+  "replicates" : 30,
+  "profiles" : 100,
+  "primaryParameters" : {
+    "eta" : 0.2,
+    "guess" : 0.2,
+    "slip" : 0.1,
+    "lambda" : 0.5,
+    "budget" : 40,
+    "learningCost" : 1.0,
+    "assessmentCost" : 1.0,
+    "equalKnowledge" : false
+  },
+  "policyEvents" : 265904,
+  "hiddenStateEvents" : 256904,
+  "eventLogScope" : "primary configuration only; sensitivity rows are summarized in report.json",
+  "hiddenStateSeparation" : "hidden-state.jsonl.gz is evaluator-only; events.jsonl.gz contains observed outcomes only",
+  "engineSourceSha256" : {
+    "backend/src/main/java/com/adaptlearngraph/entities/domain/RequirementPathway.java" : "d17baae78973a1350a5c0a08705043bbb794d47a15bc6a4928f4514550dbb8ad",
+    "backend/src/main/java/com/adaptlearngraph/entities/domain/RuleAssessment.java" : "15d27d973a7401f34b58dd97cfd4561da98a0bea91f4de71ad83450ecc0e4496",
+    "backend/src/main/java/com/adaptlearngraph/entities/domain/RuleAssessmentDecision.java" : "2565b9053ae0ae2c76f5a69efb973c1be6f65ba42cacbdf231856d8aaff237fd",
+    "backend/src/main/java/com/adaptlearngraph/research/Rq3Distance.java" : "11918cffd2ec3c2b9cd89687e06a738a53cc66ae18ec52f95eabc4971e2bae11",
+    "backend/src/main/java/com/adaptlearngraph/research/Rq3SimulationRunner.java" : "da0db2b556b174fde6d1585a4566f7e626f914c4f3fef7a3c3c9e9afb3c2d517",
+    "backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayGenerationService.java" : "0087d7569c7c7d1e357b90ae6b5ef65dacd2b11c04fd3803d37a73771564e362",
+    "backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayPlanningService.java" : "17d5010aea4c131b6b8184b9defcf376cfc89cddb903393d38e70697c319f667",
+    "backend/src/main/java/com/adaptlearngraph/services/RequirementPathwayRecalculationService.java" : "743c0642593411bf986f5b91fa11b48a037f5811efb71540201e9385ef914dce"
+  },
+  "inputSha256" : {
+    "documents/research/data/rq1/application-developer-v0.1/modules.json" : "d0dcaf5cbad77f70ea1aba899d24bdb38e2fbe527bbad8ca2be62a3bbc238af3",
+    "documents/research/data/rq1/application-developer-v0.1/prerequisites.json" : "4a06e1ab2d07fc64b4f4484877e079948baff1988569673908c99aafa10df4fc",
+    "documents/research/data/rq1/application-developer-v0.1/teaching-bindings.json" : "f98767d61c8c09b7156d7f95a613e72a9c7007a9d0a484a4038d7d1bd4392cce",
+    "documents/research/data/rq3/pilot-v0.1/manifest.json" : "61bfdd71c8396a593ecfc738d23f6b8091879efed3b590a1bc66e7fa4bf91247",
+    "documents/research/data/rq3/pilot-v0.1/profiles.jsonl" : "82f0783f7d123a66d27f5bc5b8b986bd7292de99dcd4a7ce163ab8ac2d13bfdf"
+  },
+  "reviewStatus" : "SIMULATOR_AND_RUBRIC_PENDING_EXPERT_REVIEW"
+}

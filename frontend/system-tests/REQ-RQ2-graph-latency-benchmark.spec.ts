@@ -113,7 +113,7 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
 
   test('sidebar displays Graph Benchmark (RQ2) link under Platform Admin', async ({ page }) => {
     await page.goto('/platform-admin/organizations')
-    const sidebarLink = page.getByRole('link', { name: /Graph Engine Benchmark|Graph Performance|Graph Benchmark \(RQ2\)|Graph Latency \(RQ2\)|Hiệu năng Đồ thị/i })
+    const sidebarLink = page.getByRole('link', { name: /RQ2 · Graph Latency|RQ2 · Độ trễ đồ thị/i })
     await expect(sidebarLink).toBeVisible()
     await expect(sidebarLink).toHaveAttribute('href', '/platform-admin/graph-benchmark')
   })

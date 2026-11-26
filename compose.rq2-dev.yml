@@ -1,0 +1,21 @@
+# Run with: docker compose -f compose.dev.yml -f compose.rq2-dev.yml up --build -d
+x-rq2-neo4j: &rq2-neo4j
+  image: neo4j:5.26-community
+  environment:
+    NEO4J_AUTH: neo4j/${RQ2_NEO4J_PASSWORD:?Set RQ2_NEO4J_PASSWORD for the local benchmark}
+  volumes:
+    - ./documents/research/tools/rq2-seed.cypher:/rq2-seed.cypher:ro
+
+services:
+  api:
+    environment:
+      RQ2_NEO4J_URI_1K: bolt://rq2-1k:7687
+      RQ2_NEO4J_URI_5K: bolt://rq2-5k:7687
+      RQ2_NEO4J_URI_10K: bolt://rq2-10k:7687
+      RQ2_NEO4J_PASSWORD: ${RQ2_NEO4J_PASSWORD}
+  rq2-1k:
+    <<: *rq2-neo4j
+  rq2-5k:
+    <<: *rq2-neo4j
+  rq2-10k:
+    <<: *rq2-neo4j

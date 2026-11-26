@@ -1,0 +1,560 @@
+[
+  {
+    "id": "RQP-001",
+    "dependentSkillId": "MS-FS01",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE03",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Interface states require an understood user task.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-002",
+    "dependentSkillId": "MS-FS02",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-FS10",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Accessible controls depend on native element meanings.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-003",
+    "dependentSkillId": "MS-FS02",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS10",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Focus and naming decisions require semantic control knowledge.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-004",
+    "dependentSkillId": "MS-FS09",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-FS10",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Layout changes must preserve document structure.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-005",
+    "dependentSkillId": "MS-FS09",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS10",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Responsive composition requires meaningful source order.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-006",
+    "dependentSkillId": "MS-FS03",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Request processing examples assume basic executable logic.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-007",
+    "dependentSkillId": "MS-FS03",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-CORE03",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "API behavior must reflect stated requirements.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-008",
+    "dependentSkillId": "MS-FS05",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Integration interpretation requires an interface contract.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-009",
+    "dependentSkillId": "MS-FS05",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Independent coordination requires explicit failure contracts.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-010",
+    "dependentSkillId": "MS-FS11",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Request callbacks assume basic control-flow understanding.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-011",
+    "dependentSkillId": "MS-FS11",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Client failures must distinguish response contract meanings.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-012",
+    "dependentSkillId": "MS-FS12",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Validation examples rely on predicates and branches.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-013",
+    "dependentSkillId": "MS-FS13",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Permission decisions require conditional logic.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-014",
+    "dependentSkillId": "MS-FS13",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Protected operations need a defined request boundary.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-015",
+    "dependentSkillId": "MS-FS14",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-FS04",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Atomic updates assume knowledge of data manipulation.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-016",
+    "dependentSkillId": "MS-FS14",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS04",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Concurrent update scenarios require independent query construction.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-017",
+    "dependentSkillId": "MS-FS06",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Diagnosis requires interpreting the failing program.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-018",
+    "dependentSkillId": "MS-FS07",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Unit assertions require understanding program outputs.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-019",
+    "dependentSkillId": "MS-FS08",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-CORE01",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Review of implementation depends on independent code comprehension.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-020",
+    "dependentSkillId": "MS-FS15",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS07",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Restructuring relies on regression checks around collaborators.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-021",
+    "dependentSkillId": "MS-FS16",
+    "dependentKnowledgeLevel": "FOUNDATION",
+    "prerequisiteSkillId": "MS-CORE02",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Pipeline triggers refer to identifiable source changes.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-022",
+    "dependentSkillId": "MS-FS16",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-FS07",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Build verification needs interpretable automated test results.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-023",
+    "dependentSkillId": "MS-CORE04",
+    "dependentKnowledgeLevel": "INTERMEDIATE",
+    "prerequisiteSkillId": "MS-CORE02",
+    "prerequisiteKnowledgeLevel": "FOUNDATION",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "A repeatable release requires an identifiable revision.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-024",
+    "dependentSkillId": "MS-FS03",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-CORE03",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Compatibility decisions depend on explicit workflow constraints.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-025",
+    "dependentSkillId": "MS-FS05",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Recovery across services requires stable failure contracts.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-026",
+    "dependentSkillId": "MS-FS11",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Client coordination must respect repeat-request behavior.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-027",
+    "dependentSkillId": "MS-FS13",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-FS03",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Distributed permission checks need explicit operation contracts.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-028",
+    "dependentSkillId": "MS-FS14",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-FS04",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Isolation analysis depends on understanding concurrent queries.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-029",
+    "dependentSkillId": "MS-FS15",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-FS07",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Legacy restructuring requires independent regression-test design.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-030",
+    "dependentSkillId": "MS-FS16",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-CORE02",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Pipeline isolation depends on branch and change provenance.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "RQP-031",
+    "dependentSkillId": "MS-CORE04",
+    "dependentKnowledgeLevel": "ADVANCED",
+    "prerequisiteSkillId": "MS-CORE02",
+    "prerequisiteKnowledgeLevel": "INTERMEDIATE",
+    "skillVersion": "research-ad-0.1",
+    "relationType": "HAS_SKILL_PREREQUISITE",
+    "rationale": "Coexisting releases require reliable revision management.",
+    "sourceIds": [
+      "LOCAL"
+    ],
+    "origin": "LOCAL_RESEARCH_ORDERING_PROPOSAL",
+    "applyToInitialGapExpansion": false,
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  }
+]

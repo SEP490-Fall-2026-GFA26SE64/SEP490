@@ -189,38 +189,41 @@ public class PlatformGraphBenchmarkService {
         int testRuns = request != null && request.testRuns() != null ? Math.max(10, Math.min(1000, request.testRuns())) : 100;
         int warmupRuns = request != null && request.warmupRuns() != null ? Math.max(5, Math.min(100, request.warmupRuns())) : 50;
 
-        List<Map<String, Object>> fixture = loadTestFixture(scale, fixtureSet);
+        List<Map<String, Object>> fixture = new ArrayList<>(loadTestFixture(scale, fixtureSet));
 
-        String scaleLabel = switch (scale) {
-            case "5k" -> "Medium Scale (~5,000 Nodes, ~25,800 Relationships)";
-            case "10k" -> "Target Scale (~10,000 Nodes, ~52,400 Relationships)";
-            default -> "Baseline Scale (~1,000 Nodes, ~5,100 Relationships)";
+        int expectedNodes = switch (scale) {
+            case "1k" -> 1000;
+            case "5k" -> 5000;
+            case "10k" -> 10000;
+            default -> throw new IllegalArgumentException("Unsupported RQ2 scale: " + scale);
         };
-
-        long catalogNodes = switch (scale) {
-            case "5k" -> 5000L;
-            case "10k" -> 10000L;
-            default -> 1098L;
-        };
-
-        long catalogRelationships = switch (scale) {
-            case "5k" -> 25800L;
-            case "10k" -> 52400L;
-            default -> 4486L;
-        };
+        String scaleLabel = expectedNodes + " nodes";
+        long catalogNodes;
+        long catalogRelationships;
+        String environmentKey = "RQ2_NEO4J_URI_" + scale.toUpperCase(Locale.ROOT);
+        String uri = System.getenv(environmentKey);
+        if (uri == null || uri.isBlank()) {
+            throw new IllegalStateException("Missing isolated graph configuration: " + environmentKey);
+        }
+        if (Set.of("1K", "5K", "10K").stream()
+                .filter(other -> uri.equals(System.getenv("RQ2_NEO4J_URI_" + other))).count() != 1) {
+            throw new IllegalStateException("RQ2 graph endpoints must be distinct");
+        }
 
         String version = "5.26.31 Community";
         List<Double> timings = new ArrayList<>();
         List<PathSample> samples = new ArrayList<>();
 
         // 1. Execute against Neo4j with Pure Latency timing
-        try {
-            Driver driver = acquireDriver();
-            if (driver == null) {
-                throw new IllegalStateException("Neo4j driver could not be acquired");
-            }
-
-            try (Session session = driver.session()) {
+        try (Driver driver = GraphDatabase.driver(uri, AuthTokens.basic(
+                    System.getenv().getOrDefault("RQ2_NEO4J_USER", "neo4j"),
+                    Objects.requireNonNull(System.getenv("RQ2_NEO4J_PASSWORD"), "Missing RQ2_NEO4J_PASSWORD")));
+             Session session = driver.session()) {
+                catalogNodes = session.run("MATCH (n) RETURN count(n) AS total").single().get("total").asLong();
+                catalogRelationships = session.run("MATCH ()-[r]->() RETURN count(r) AS total").single().get("total").asLong();
+                if (catalogNodes != expectedNodes) {
+                    throw new IllegalStateException("RQ2 expected " + expectedNodes + " nodes but found " + catalogNodes);
+                }
                 Result verRes = session.run("CALL dbms.components() YIELD versions RETURN versions[0] AS v;");
                 if (verRes.hasNext()) {
                     version = verRes.next().get("v").asString();
@@ -228,15 +231,53 @@ public class PlatformGraphBenchmarkService {
 
                 // Stage 3: Warm-up Cache (runs executed and discarded)
                 String shortestPathCypher = """
-                        MATCH (start), (target)
+                        MATCH (start:MicroSkill), (target:MicroSkill)
                         WHERE (start.id = $startId OR start.code = $startId)
                           AND (target.id = $targetId OR target.code = $targetId)
-                        MATCH p = shortestPath((start)-[:HAS_JOB_POSITION|HAS_ROLE|HAS_LEVEL|HAS_COMPETENCY|HAS_SKILL|REQUIRES_SKILL|TEACHES|HAS_SKILL_PREREQUISITE*1..5]-(target))
+                        MATCH p = shortestPath((start)-[:HAS_SKILL_PREREQUISITE*1..5]->(target))
                         RETURN p, length(p) AS hops
                         LIMIT 1
                         """;
 
-                for (int w = 0; w < warmupRuns && w < fixture.size(); w++) {
+                var byDepth = new TreeMap<Integer, List<Map<String, Object>>>();
+                for (int depth = 3; depth <= 5; depth++) byDepth.put(depth, new ArrayList<>());
+                // Sample across the pinned synthetic graph with a reproducible order.
+                var generatedPairs = new ArrayList<Map<String, Object>>();
+                int chains = expectedNodes / 10;
+                for (int offset = 0; offset < chains; offset++) {
+                    int chain = Math.floorMod(offset + 31 * (fixtureSet - 1), chains);
+                    for (int depth = 3; depth <= 5; depth++) {
+                        for (int level = depth; level < 10; level++) {
+                            generatedPairs.add(Map.of("startId", "RQ2-" + (chain * 10 + level),
+                                    "targetId", "RQ2-" + (chain * 10 + level - depth)));
+                        }
+                    }
+                }
+                Collections.shuffle(generatedPairs, new Random(17L + fixtureSet));
+                fixture.addAll(generatedPairs);
+                var seen = new HashSet<List<String>>();
+                int requiredPerDepth = (testRuns + 2) / 3;
+                for (var pair : fixture) {
+                    if (byDepth.values().stream().allMatch(pairs -> pairs.size() >= requiredPerDepth)) break;
+                    String startId = String.valueOf(pair.get("startId"));
+                    String targetId = String.valueOf(pair.get("targetId"));
+                    if (!seen.add(List.of(startId, targetId))) continue;
+                    var records = session.run(shortestPathCypher, Map.of("startId", startId, "targetId", targetId)).list();
+                    if (records.size() != 1) continue;
+                    int depth = records.getFirst().get("hops").asInt();
+                    if (byDepth.containsKey(depth)) byDepth.get(depth).add(pair);
+                }
+                if (byDepth.values().stream().anyMatch(pairs -> pairs.size() < requiredPerDepth)) {
+                    throw new IllegalStateException("RQ2 needs " + requiredPerDepth
+                            + " distinct directed pairs at each depth 3, 4 and 5");
+                }
+                var balanced = new ArrayList<Map<String, Object>>(3 * requiredPerDepth);
+                for (int i = 0; i < requiredPerDepth; i++) {
+                    for (var pairs : byDepth.values()) balanced.add(pairs.get(i));
+                }
+                fixture = balanced;
+
+                for (int w = 0; w < warmupRuns; w++) {
                     Map<String, Object> pair = fixture.get(w % fixture.size());
                     Result r = session.run(shortestPathCypher, Map.of(
                             "startId", String.valueOf(pair.get("startId")),
@@ -258,13 +299,9 @@ public class PlatformGraphBenchmarkService {
 
                     double ms = elapsedNanos / 1_000_000.0;
                     
-                    // For scaled 5k/10k fixtures on live 1k catalog, apply Index-Free Adjacency complexity factor
-                    if ("5k".equals(scale)) {
-                        ms = ms + 4.20 + ((i % 7) - 3) * 0.15;
-                    } else if ("10k".equals(scale)) {
-                        ms = ms + 8.50 + ((i % 11) - 5) * 0.22;
+                    if (records.size() != 1 || records.getFirst().get("hops").asInt() != 3 + i % 3) {
+                        throw new IllegalStateException("RQ2 graph changed after fixture validation");
                     }
-                    ms = Math.max(1.5, ms);
                     timings.add(ms);
 
                     if (samples.size() < 10) {
@@ -288,7 +325,6 @@ public class PlatformGraphBenchmarkService {
                 }
                 log.info("Live Neo4j benchmark completed successfully: scale={}, runs={}, warmups={}, meanLatency={}",
                         scale, testRuns, warmupRuns, timings.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
-            }
         } catch (Exception e) {
             log.error("Live Neo4j benchmark execution failed: {}", e.getMessage(), e);
             throw new IllegalStateException("Failed to execute live Neo4j benchmark query: " + e.getMessage(), e);
@@ -303,7 +339,7 @@ public class PlatformGraphBenchmarkService {
         double sum = 0;
         for (double t : timings) sum += t;
         double mean = sum / timings.size();
-        double p50 = sorted.get(sorted.size() / 2);
+        double p50 = (sorted.get((sorted.size() - 1) / 2) + sorted.get(sorted.size() / 2)) / 2;
         int p95Idx = (int) Math.ceil(0.95 * sorted.size()) - 1;
         double p95 = sorted.get(Math.min(sorted.size() - 1, Math.max(0, p95Idx)));
 
@@ -313,42 +349,16 @@ public class PlatformGraphBenchmarkService {
         }
         double stdDev = Math.sqrt(varianceSum / timings.size());
 
-        // 4-Step Bidirectional BFS Runtime Breakdown
-        double step1IndexLookup = Math.round((mean * 0.022) * 100.0) / 100.0;
-        double step2QueueInit = Math.round((mean * 0.014) * 100.0) / 100.0;
-        double step4Reconstruction = Math.round((mean * 0.083) * 100.0) / 100.0;
-        double step3Traversal = Math.round((mean - step1IndexLookup - step2QueueInit - step4Reconstruction) * 100.0) / 100.0;
+        // Only total wall-clock latency is measured by this runner.
+        StepBreakdown stepBreakdown = new StepBreakdown(0, 0, 0, 0, mean);
 
-        StepBreakdown stepBreakdown = new StepBreakdown(
-                step1IndexLookup,
-                step2QueueInit,
-                step3Traversal,
-                step4Reconstruction,
-                Math.round(mean * 100.0) / 100.0
-        );
-
-        // Gap analysis of ~8.5ms difference
-        DifferenceBreakdown differenceBreakdown = new DifferenceBreakdown(
-                65.0,
-                5.5,
-                25.0,
-                2.1,
-                10.0,
-                0.9,
-                8.5
-        );
-
-        List<ScaleComparisonItem> comparisonRows = List.of(
-                new ScaleComparisonItem("1k", "1,000 Nodes (Baseline)", 1000, 5100, 8.40, 14.20, 1.0),
-                new ScaleComparisonItem("5k", "5,000 Nodes (Medium)", 5000, 25800, 12.60, 22.80, 3.3),
-                new ScaleComparisonItem("10k", "10,000 Nodes (Target Scale)", 10000, 52400, 16.90, 31.50, 5.0)
-        );
-
+        // Legacy response fields retained for the existing JSON schema.
+        DifferenceBreakdown differenceBreakdown = new DifferenceBreakdown(0, 0, 0, 0, 0, 0, 0);
+        List<ScaleComparisonItem> comparisonRows = List.of(new ScaleComparisonItem(
+                scale, scaleLabel, Math.toIntExact(catalogNodes), Math.toIntExact(catalogRelationships), mean, p95, 0));
         List<String> defenseArguments = List.of(
-                "Scientific Methodology: Experiment 2 uses pre-sampled test fixtures with guaranteed 3–5 hop depth and 50 cache warm-up queries to ensure reproducibility and benchmark purity.",
-                "Runtime Breakdown: The bidirectional BFS algorithm performs an immediate B-Tree index lookup (O(log N)) and traverses physical memory pointers (Index-Free Adjacency O(k)). 85–90% of latency is traversal.",
-                "Scalability Gap Analysis: A 10x catalog expansion incurs only an 8.5 ms increase (8.4 ms -> 16.9 ms) primarily due to local branching factor (65%) and page cache pressure (25%), confirming Neo4j sub-linear scalability."
-        );
+                "Measured directed prerequisite queries at 3, 4 and 5 hops on the selected isolated graph.",
+                "Latency includes query execution and result consumption through the Neo4j driver.");
 
         List<Double> recentRuns = timings.stream()
                 .limit(30)
@@ -369,7 +379,7 @@ public class PlatformGraphBenchmarkService {
                 Math.round(min * 100.0) / 100.0,
                 Math.round(max * 100.0) / 100.0,
                 Math.round(stdDev * 100.0) / 100.0,
-                2.01,
+                0,
                 stepBreakdown,
                 differenceBreakdown,
                 samples,

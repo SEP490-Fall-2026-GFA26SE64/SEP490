@@ -1,0 +1,982 @@
+[
+  {
+    "id": "MS-CORE01",
+    "version": "research-ad-0.1",
+    "name": "Implement programs and scripts",
+    "definition": "Write and check executable logic for a specified software or automation task.",
+    "researchFocus": "Executable business logic",
+    "competencyGroup": "Implementation",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-CORE01-FOUNDATION-01",
+          "text": "Trace branching and collection operations for a small order calculator"
+        },
+        {
+          "code": "MS-CORE01-FOUNDATION-02",
+          "text": "Identify boundary inputs and explain the expected result"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-CORE01-INTERMEDIATE-01",
+          "text": "Implement decomposed pricing logic with explicit error handling"
+        },
+        {
+          "code": "MS-CORE01-INTERMEDIATE-02",
+          "text": "Verify empty, invalid and boundary cases without changing the stated rules"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-CORE01-ADVANCED-01",
+          "text": "Evaluate alternative implementations under changing discount policies"
+        },
+        {
+          "code": "MS-CORE01-ADVANCED-02",
+          "text": "Justify complexity and maintainability trade-offs using failure cases"
+        }
+      ]
+    },
+    "excludedScope": "Framework deployment and architecture selection",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-CORE02",
+    "version": "research-ad-0.1",
+    "name": "Manage source changes with version control",
+    "definition": "Record and review source changes so a tested version can be identified and recovered.",
+    "researchFocus": "Version-controlled collaboration",
+    "competencyGroup": "Delivery",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-CORE02-FOUNDATION-01",
+          "text": "Explain commits, branches and working-tree changes"
+        },
+        {
+          "code": "MS-CORE02-FOUNDATION-02",
+          "text": "Recover a mistaken local edit without losing unrelated work"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-CORE02-INTERMEDIATE-01",
+          "text": "Resolve a conflicting feature change while preserving both intended behaviors"
+        },
+        {
+          "code": "MS-CORE02-INTERMEDIATE-02",
+          "text": "Prepare a reviewable history and identify the tested revision"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-CORE02-ADVANCED-01",
+          "text": "Design a branching and hotfix strategy for concurrent releases"
+        },
+        {
+          "code": "MS-CORE02-ADVANCED-02",
+          "text": "Evaluate rollback and traceability risks across maintained versions"
+        }
+      ]
+    },
+    "excludedScope": "Build pipeline authoring and application debugging",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-CORE03",
+    "version": "research-ad-0.1",
+    "name": "Translate requirements into verifiable changes",
+    "definition": "Connect a stated user or service need to a bounded implementation and explicit checks.",
+    "researchFocus": "Verifiable software requirements",
+    "competencyGroup": "Requirements",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-CORE03-FOUNDATION-01",
+          "text": "Identify actors, inputs and outputs in a small user request"
+        },
+        {
+          "code": "MS-CORE03-FOUNDATION-02",
+          "text": "Write observable acceptance examples including one failure case"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-CORE03-INTERMEDIATE-01",
+          "text": "Resolve ambiguities in a multi-step user workflow"
+        },
+        {
+          "code": "MS-CORE03-INTERMEDIATE-02",
+          "text": "Define testable business rules and boundaries before implementation"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-CORE03-ADVANCED-01",
+          "text": "Reconcile conflicting functional and quality constraints"
+        },
+        {
+          "code": "MS-CORE03-ADVANCED-02",
+          "text": "Prioritize a bounded release with traceable acceptance and explicit residual risk"
+        }
+      ]
+    },
+    "excludedScope": "UI styling and implementation of the whole feature",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-CORE04",
+    "version": "research-ad-0.1",
+    "name": "Deploy a controlled software release",
+    "definition": "Apply an agreed deployment procedure and verify the released service and rollback path.",
+    "researchFocus": "Controlled application release",
+    "competencyGroup": "Delivery",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-CORE04-FOUNDATION-01",
+          "text": "Explain configuration, artifact and health-check roles in a release"
+        },
+        {
+          "code": "MS-CORE04-FOUNDATION-02",
+          "text": "Identify the rollback point in a supplied deployment procedure"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-CORE04-INTERMEDIATE-01",
+          "text": "Plan a reproducible application rollout with environment-specific configuration"
+        },
+        {
+          "code": "MS-CORE04-INTERMEDIATE-02",
+          "text": "Verify service health and define rollback triggers"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-CORE04-ADVANCED-01",
+          "text": "Evaluate staged rollout alternatives under migration and availability constraints"
+        },
+        {
+          "code": "MS-CORE04-ADVANCED-02",
+          "text": "Specify evidence for safe rollback when versions coexist"
+        }
+      ]
+    },
+    "excludedScope": "Cloud platform administration and continuous-integration pipeline design",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS01",
+    "version": "research-ad-0.1",
+    "name": "design user interface",
+    "definition": "Specify user interface structure and interactions for a user task.",
+    "researchFocus": "User interaction design",
+    "competencyGroup": "Frontend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS01-FOUNDATION-01",
+          "text": "Identify interface states and navigation for a simple user task"
+        },
+        {
+          "code": "MS-FS01-FOUNDATION-02",
+          "text": "Explain the purpose of clear labels and actionable feedback"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS01-INTERMEDIATE-01",
+          "text": "Specify interaction states for an interrupted multi-step task"
+        },
+        {
+          "code": "MS-FS01-INTERMEDIATE-02",
+          "text": "Resolve navigation and error-recovery ambiguities with a flow model"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS01-ADVANCED-01",
+          "text": "Compare interaction alternatives for conflicting user needs"
+        },
+        {
+          "code": "MS-FS01-ADVANCED-02",
+          "text": "Justify recovery and consistency decisions across complex workflows"
+        }
+      ]
+    },
+    "excludedScope": "Semantic HTML implementation and visual branding",
+    "sourceIds": [
+      "LOCAL",
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS02",
+    "version": "research-ad-0.1",
+    "name": "Implement accessible user interfaces",
+    "definition": "Implement interfaces that support keyboard and assistive technology use.",
+    "researchFocus": "Accessible web interaction",
+    "competencyGroup": "Frontend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS02-FOUNDATION-01",
+          "text": "Explain semantic controls, accessible names and keyboard order"
+        },
+        {
+          "code": "MS-FS02-FOUNDATION-02",
+          "text": "Identify inaccessible interactions in a small form"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS02-INTERMEDIATE-01",
+          "text": "Specify keyboard and focus behavior for a dialog and validation flow"
+        },
+        {
+          "code": "MS-FS02-INTERMEDIATE-02",
+          "text": "Check accessible names and dynamic feedback against observable criteria"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS02-ADVANCED-01",
+          "text": "Evaluate accessibility trade-offs in a complex interactive widget"
+        },
+        {
+          "code": "MS-FS02-ADVANCED-02",
+          "text": "Design a verification strategy across input methods and assistive use"
+        }
+      ]
+    },
+    "excludedScope": "Full accessibility certification and purely visual layout work",
+    "sourceIds": [
+      "LOCAL",
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS03",
+    "version": "research-ad-0.1",
+    "name": "design application interfaces",
+    "definition": "Define interfaces through which application components exchange information.",
+    "researchFocus": "Application API contracts",
+    "competencyGroup": "Backend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS03-FOUNDATION-01",
+          "text": "Explain request, response and error conventions for a resource API"
+        },
+        {
+          "code": "MS-FS03-FOUNDATION-02",
+          "text": "Select suitable operations and response meanings for basic CRUD"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS03-INTERMEDIATE-01",
+          "text": "Specify pagination, validation and repeat-request behavior for an API"
+        },
+        {
+          "code": "MS-FS03-INTERMEDIATE-02",
+          "text": "Check examples for consistent success and failure contracts"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS03-ADVANCED-01",
+          "text": "Evaluate versioning and compatibility strategies for changing consumers"
+        },
+        {
+          "code": "MS-FS03-ADVANCED-02",
+          "text": "Justify idempotency and failure semantics under partial completion"
+        }
+      ]
+    },
+    "excludedScope": "Database schema design and UI implementation",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS04",
+    "version": "research-ad-0.1",
+    "name": "use query languages",
+    "definition": "Retrieve and manipulate data using a query language.",
+    "researchFocus": "Relational data queries",
+    "competencyGroup": "Data",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS04-FOUNDATION-01",
+          "text": "Explain filtering, joining and aggregation on related tables"
+        },
+        {
+          "code": "MS-FS04-FOUNDATION-02",
+          "text": "Predict the result of a query with missing or duplicate rows"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS04-INTERMEDIATE-01",
+          "text": "Construct queries for grouped business reports with explicit null handling"
+        },
+        {
+          "code": "MS-FS04-INTERMEDIATE-02",
+          "text": "Check result correctness against a small reference dataset"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS04-ADVANCED-01",
+          "text": "Compare equivalent query formulations under skewed data and access constraints"
+        },
+        {
+          "code": "MS-FS04-ADVANCED-02",
+          "text": "Justify an optimization while preserving result semantics"
+        }
+      ]
+    },
+    "excludedScope": "Database administration and transaction-isolation design",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS05",
+    "version": "research-ad-0.1",
+    "name": "integrate system components",
+    "definition": "Connect components and verify their combined behaviour.",
+    "researchFocus": "Component integration",
+    "competencyGroup": "Backend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS05-FOUNDATION-01",
+          "text": "Identify producer, consumer and exchanged data in an integration"
+        },
+        {
+          "code": "MS-FS05-FOUNDATION-02",
+          "text": "Explain how a failed dependency affects a user operation"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS05-INTERMEDIATE-01",
+          "text": "Specify component coordination with timeouts and partial-failure handling"
+        },
+        {
+          "code": "MS-FS05-INTERMEDIATE-02",
+          "text": "Define contract and integration checks for the combined workflow"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS05-ADVANCED-01",
+          "text": "Evaluate recovery strategies for repeated or out-of-order messages"
+        },
+        {
+          "code": "MS-FS05-ADVANCED-02",
+          "text": "Justify consistency and coupling trade-offs across service boundaries"
+        }
+      ]
+    },
+    "excludedScope": "Individual function implementation and API naming conventions alone",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS06",
+    "version": "research-ad-0.1",
+    "name": "debug software",
+    "definition": "Locate and correct causes of software defects.",
+    "researchFocus": "Systematic defect diagnosis",
+    "competencyGroup": "Quality",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS06-FOUNDATION-01",
+          "text": "Reproduce a defect from a bounded input and observed output"
+        },
+        {
+          "code": "MS-FS06-FOUNDATION-02",
+          "text": "Distinguish symptoms from a testable causal hypothesis"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS06-INTERMEDIATE-01",
+          "text": "Trace a failure across UI, API and persistence boundaries"
+        },
+        {
+          "code": "MS-FS06-INTERMEDIATE-02",
+          "text": "Verify the smallest justified correction with a regression case"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS06-ADVANCED-01",
+          "text": "Evaluate competing explanations for an intermittent production-like fault"
+        },
+        {
+          "code": "MS-FS06-ADVANCED-02",
+          "text": "Design discriminating observations and validate a fix under recurrence conditions"
+        }
+      ]
+    },
+    "excludedScope": "Broad monitoring infrastructure and feature redesign",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS07",
+    "version": "research-ad-0.1",
+    "name": "perform software unit testing",
+    "definition": "Verify individual units of software with repeatable automated checks.",
+    "researchFocus": "Automated unit verification",
+    "competencyGroup": "Quality",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS07-FOUNDATION-01",
+          "text": "Explain assertions, test isolation and boundary cases"
+        },
+        {
+          "code": "MS-FS07-FOUNDATION-02",
+          "text": "Identify useful tests for a pure validation function"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS07-INTERMEDIATE-01",
+          "text": "Design deterministic unit tests around service collaborators"
+        },
+        {
+          "code": "MS-FS07-INTERMEDIATE-02",
+          "text": "Verify error behavior without coupling tests to private implementation details"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS07-ADVANCED-01",
+          "text": "Evaluate a unit-test suite for blind spots and brittle doubles"
+        },
+        {
+          "code": "MS-FS07-ADVANCED-02",
+          "text": "Select high-value cases for complex state transitions and mutation risks"
+        }
+      ]
+    },
+    "excludedScope": "Full end-to-end browser testing and performance benchmarking",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS08",
+    "version": "research-ad-0.1",
+    "name": "conduct ICT code review",
+    "definition": "Review source changes and give actionable technical feedback.",
+    "researchFocus": "Code review decisions",
+    "competencyGroup": "Quality",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS08-FOUNDATION-01",
+          "text": "Distinguish correctness defects from style preferences in a patch"
+        },
+        {
+          "code": "MS-FS08-FOUNDATION-02",
+          "text": "Write actionable feedback tied to an observable risk"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS08-INTERMEDIATE-01",
+          "text": "Review a feature diff for boundary behavior, tests and maintainability"
+        },
+        {
+          "code": "MS-FS08-INTERMEDIATE-02",
+          "text": "Prioritize blocking findings and explain suggested corrections"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS08-ADVANCED-01",
+          "text": "Evaluate cross-cutting design and security risks in a large change"
+        },
+        {
+          "code": "MS-FS08-ADVANCED-02",
+          "text": "Justify review decisions with evidence and proportionate verification"
+        }
+      ]
+    },
+    "excludedScope": "Writing a new feature and managing Git conflicts",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS09",
+    "version": "research-ad-0.1",
+    "name": "Implement responsive layouts",
+    "definition": "Adapt layout and content to different viewport sizes.",
+    "researchFocus": "Responsive interface layout",
+    "competencyGroup": "Frontend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS09-FOUNDATION-01",
+          "text": "Explain flexible sizing, flow and viewport-dependent layout"
+        },
+        {
+          "code": "MS-FS09-FOUNDATION-02",
+          "text": "Identify overflow causes in a simple page"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS09-INTERMEDIATE-01",
+          "text": "Specify a responsive layout across narrow and wide viewports"
+        },
+        {
+          "code": "MS-FS09-INTERMEDIATE-02",
+          "text": "Preserve content order and usable controls with long text and tables"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS09-ADVANCED-01",
+          "text": "Evaluate layout strategies for dense data and localization constraints"
+        },
+        {
+          "code": "MS-FS09-ADVANCED-02",
+          "text": "Define checks for content loss, reflow and interaction stability"
+        }
+      ]
+    },
+    "excludedScope": "Visual brand design and keyboard accessibility verification",
+    "sourceIds": [
+      "LOCAL",
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS10",
+    "version": "research-ad-0.1",
+    "name": "Use semantic HTML",
+    "definition": "Choose elements whose meaning matches the content and interaction.",
+    "researchFocus": "Semantic HTML structure",
+    "competencyGroup": "Frontend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS10-FOUNDATION-01",
+          "text": "Choose elements matching headings, navigation and form intent"
+        },
+        {
+          "code": "MS-FS10-FOUNDATION-02",
+          "text": "Explain the difference between a link and an action control"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS10-INTERMEDIATE-01",
+          "text": "Structure a complex document and form with meaningful relationships"
+        },
+        {
+          "code": "MS-FS10-INTERMEDIATE-02",
+          "text": "Validate labels, groups and native interaction semantics"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS10-ADVANCED-01",
+          "text": "Evaluate competing markup structures for reusable components"
+        },
+        {
+          "code": "MS-FS10-ADVANCED-02",
+          "text": "Justify native-element choices and semantic constraints during composition"
+        }
+      ]
+    },
+    "excludedScope": "CSS layout and custom-widget interaction programming",
+    "sourceIds": [
+      "LOCAL",
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS11",
+    "version": "research-ad-0.1",
+    "name": "Handle asynchronous web requests",
+    "definition": "Handle successful responses, HTTP failures and request cancellation in the interface.",
+    "researchFocus": "Asynchronous browser requests",
+    "competencyGroup": "Frontend",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS11-FOUNDATION-01",
+          "text": "Explain pending, success and failure states of a browser request"
+        },
+        {
+          "code": "MS-FS11-FOUNDATION-02",
+          "text": "Distinguish HTTP failure from a successful empty response"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS11-INTERMEDIATE-01",
+          "text": "Handle cancellation and stale responses in an interactive search"
+        },
+        {
+          "code": "MS-FS11-INTERMEDIATE-02",
+          "text": "Specify consistent loading, empty and retry states"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS11-ADVANCED-01",
+          "text": "Evaluate coordination strategies for overlapping browser operations"
+        },
+        {
+          "code": "MS-FS11-ADVANCED-02",
+          "text": "Justify freshness and recovery rules under races and intermittent connectivity"
+        }
+      ]
+    },
+    "excludedScope": "Server API design and distributed-message processing",
+    "sourceIds": [
+      "LOCAL",
+      "MDN"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS12",
+    "version": "research-ad-0.1",
+    "name": "Validate application inputs",
+    "definition": "Enforce input constraints and provide usable validation feedback on client and server.",
+    "researchFocus": "Application input validation",
+    "competencyGroup": "Security",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS12-FOUNDATION-01",
+          "text": "Distinguish required, malformed and out-of-range input"
+        },
+        {
+          "code": "MS-FS12-FOUNDATION-02",
+          "text": "Explain why client checks do not replace server validation"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS12-INTERMEDIATE-01",
+          "text": "Specify consistent validation and feedback at request boundaries"
+        },
+        {
+          "code": "MS-FS12-INTERMEDIATE-02",
+          "text": "Check nested, missing and adversarial input without trusting the client"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS12-ADVANCED-01",
+          "text": "Evaluate validation policy across multiple entry points and schema versions"
+        },
+        {
+          "code": "MS-FS12-ADVANCED-02",
+          "text": "Justify canonicalization and compatibility decisions against ambiguous input"
+        }
+      ]
+    },
+    "excludedScope": "Authorization policy and cryptographic implementation",
+    "sourceIds": [
+      "LOCAL",
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS13",
+    "version": "research-ad-0.1",
+    "name": "Enforce application authorization",
+    "definition": "Check permissions for protected actions and resources.",
+    "researchFocus": "Resource authorization",
+    "competencyGroup": "Security",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS13-FOUNDATION-01",
+          "text": "Distinguish authentication from permission to act on a resource"
+        },
+        {
+          "code": "MS-FS13-FOUNDATION-02",
+          "text": "Identify missing ownership checks in a simple access scenario"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS13-INTERMEDIATE-01",
+          "text": "Specify trusted actor, organization and resource checks for protected operations"
+        },
+        {
+          "code": "MS-FS13-INTERMEDIATE-02",
+          "text": "Verify allowed and denied cases including cross-organization access"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS13-ADVANCED-01",
+          "text": "Evaluate authorization consistency across delegated and asynchronous actions"
+        },
+        {
+          "code": "MS-FS13-ADVANCED-02",
+          "text": "Justify policy decisions under stale grants and concurrent changes"
+        }
+      ]
+    },
+    "excludedScope": "Identity-provider setup and general authentication implementation",
+    "sourceIds": [
+      "LOCAL",
+      "OWASP"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS14",
+    "version": "research-ad-0.1",
+    "name": "Use database transactions",
+    "definition": "Commit related updates atomically and roll back unsuccessful operations.",
+    "researchFocus": "Atomic data updates",
+    "competencyGroup": "Data",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS14-FOUNDATION-01",
+          "text": "Explain commit and rollback for related database changes"
+        },
+        {
+          "code": "MS-FS14-FOUNDATION-02",
+          "text": "Identify a partial-update failure that violates a business invariant"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS14-INTERMEDIATE-01",
+          "text": "Define transaction boundaries for a concurrent reservation"
+        },
+        {
+          "code": "MS-FS14-INTERMEDIATE-02",
+          "text": "Check rollback and competing updates against a stated invariant"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS14-ADVANCED-01",
+          "text": "Evaluate isolation, lock and retry alternatives under contention"
+        },
+        {
+          "code": "MS-FS14-ADVANCED-02",
+          "text": "Justify correctness and throughput trade-offs for overlapping transactions"
+        }
+      ]
+    },
+    "excludedScope": "Standalone SQL reporting and distributed consensus",
+    "sourceIds": [
+      "LOCAL",
+      "PG"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS15",
+    "version": "research-ad-0.1",
+    "name": "Improve existing software structure",
+    "definition": "Revise existing implementation while checking that required behaviour is preserved.",
+    "researchFocus": "Behavior-preserving restructuring",
+    "competencyGroup": "Implementation",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS15-FOUNDATION-01",
+          "text": "Identify duplication and mixed responsibilities in a small function"
+        },
+        {
+          "code": "MS-FS15-FOUNDATION-02",
+          "text": "Explain how characterization checks protect existing behavior"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS15-INTERMEDIATE-01",
+          "text": "Plan incremental restructuring of a coupled service"
+        },
+        {
+          "code": "MS-FS15-INTERMEDIATE-02",
+          "text": "Preserve public behavior with focused regression checks"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS15-ADVANCED-01",
+          "text": "Evaluate alternative decompositions for a legacy subsystem"
+        },
+        {
+          "code": "MS-FS15-ADVANCED-02",
+          "text": "Justify migration steps and compatibility checks under ongoing change"
+        }
+      ]
+    },
+    "excludedScope": "New business features and architecture replacement",
+    "sourceIds": [
+      "LOCAL",
+      "GOV"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  },
+  {
+    "id": "MS-FS16",
+    "version": "research-ad-0.1",
+    "name": "Configure continuous integration",
+    "definition": "Run build and test steps automatically when code changes.",
+    "researchFocus": "Continuous integration workflows",
+    "competencyGroup": "Delivery",
+    "provisionMode": "MODULE_ONLY",
+    "knowledgeOutcomes": {
+      "FOUNDATION": [
+        {
+          "code": "MS-FS16-FOUNDATION-01",
+          "text": "Explain triggers, jobs and build-test artifacts in a pipeline"
+        },
+        {
+          "code": "MS-FS16-FOUNDATION-02",
+          "text": "Identify how a failing check blocks an unsafe merge"
+        }
+      ],
+      "INTERMEDIATE": [
+        {
+          "code": "MS-FS16-INTERMEDIATE-01",
+          "text": "Specify a reproducible build and test workflow for a web application"
+        },
+        {
+          "code": "MS-FS16-INTERMEDIATE-02",
+          "text": "Handle dependency setup and diagnostic artifacts on failure"
+        }
+      ],
+      "ADVANCED": [
+        {
+          "code": "MS-FS16-ADVANCED-01",
+          "text": "Evaluate pipeline isolation, caching and parallelization trade-offs"
+        },
+        {
+          "code": "MS-FS16-ADVANCED-02",
+          "text": "Justify reliable checks under untrusted changes and constrained runners"
+        }
+      ]
+    },
+    "excludedScope": "Production rollout and infrastructure provisioning",
+    "sourceIds": [
+      "LOCAL",
+      "GH"
+    ],
+    "reviewStatus": "NEEDS_EXPERT_REVIEW",
+    "reviewedBy": null,
+    "reviewedAt": null
+  }
+]

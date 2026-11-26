@@ -48,6 +48,7 @@ public final class Neo4jAssessmentPolicyCatalog implements AssessmentPolicyCatal
     @Override public Discovery discoverForEditor(UUID organization,Purpose purpose,UUID expert) {
         if(purpose==Purpose.BASELINE)return managedBaseline(organization,expert);
         var owners=roleSkills(organization,expert).values().stream().flatMap(Set::stream).collect(java.util.stream.Collectors.toSet());
+        if(owners.size()>10000)throw capacity();
         if(owners.isEmpty())return new Discovery(List.of(),List.of());
         var discovery=discover(organization,purpose);
         return new Discovery(discovery.scopes().stream().filter(scope->owners.contains(scope.ownerId())).toList(),
