@@ -34,11 +34,9 @@ services:
     volumes:
       - neo4j_data:/data
     healthcheck:
-      # Lightweight HTTP probe: cypher-shell starts a JVM per check and leaks
-      # processes on timeout, which starves Neo4j of CPU.
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:7474/ || exit 1"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null"]
+      interval: 10s
+      timeout: 10s
       retries: 18
       start_period: 45s
     restart: unless-stopped

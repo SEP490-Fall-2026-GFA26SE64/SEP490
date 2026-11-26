@@ -1,0 +1,136 @@
+{
+  "researchQuestion" : "What is the query latency of deep pathfinding operations in Neo4j (e.g., 3-hop to 5-hop depth) as the number of nodes/edges in the competency ontology scales from 1,000 to 10,000?",
+  "scale" : "1k",
+  "scaleLabel" : "1000 nodes",
+  "catalogNodes" : 1000,
+  "catalogRelationships" : 1800,
+  "neo4jVersion" : "5.26.33",
+  "totalRuns" : 100,
+  "warmupRuns" : 50,
+  "meanLatencyMs" : 14.01,
+  "p95LatencyMs" : 30.82,
+  "p50LatencyMs" : 9.26,
+  "minLatencyMs" : 6.0,
+  "maxLatencyMs" : 125.16,
+  "stdDevMs" : 16.64,
+  "sublinearScalingFactor" : 0.0,
+  "stepBreakdown" : {
+    "indexLookupMs" : 0.0,
+    "queueInitMs" : 0.0,
+    "traversalMs" : 0.0,
+    "pathReconstructionMs" : 0.0,
+    "totalMeanMs" : 14.008990030000001
+  },
+  "differenceBreakdown" : {
+    "branchingFactorPct" : 0.0,
+    "branchingFactorMs" : 0.0,
+    "pageCacheMissPct" : 0.0,
+    "pageCacheMissMs" : 0.0,
+    "bTreeDepthPct" : 0.0,
+    "bTreeDepthMs" : 0.0,
+    "totalDifferenceMs" : 0.0
+  },
+  "samplePaths" : [ {
+    "startId" : "RQ2-879",
+    "startName" : "RQ2-879",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-876",
+    "targetName" : "RQ2-876",
+    "targetType" : "MicroSkill",
+    "hops" : 3,
+    "latencyMs" : 8.86
+  }, {
+    "startId" : "RQ2-617",
+    "startName" : "RQ2-617",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-613",
+    "targetName" : "RQ2-613",
+    "targetType" : "MicroSkill",
+    "hops" : 4,
+    "latencyMs" : 8.97
+  }, {
+    "startId" : "RQ2-908",
+    "startName" : "RQ2-908",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-903",
+    "targetName" : "RQ2-903",
+    "targetType" : "MicroSkill",
+    "hops" : 5,
+    "latencyMs" : 11.33
+  }, {
+    "startId" : "RQ2-137",
+    "startName" : "RQ2-137",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-134",
+    "targetName" : "RQ2-134",
+    "targetType" : "MicroSkill",
+    "hops" : 3,
+    "latencyMs" : 9.96
+  }, {
+    "startId" : "RQ2-368",
+    "startName" : "RQ2-368",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-364",
+    "targetName" : "RQ2-364",
+    "targetType" : "MicroSkill",
+    "hops" : 4,
+    "latencyMs" : 8.28
+  }, {
+    "startId" : "RQ2-36",
+    "startName" : "RQ2-36",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-31",
+    "targetName" : "RQ2-31",
+    "targetType" : "MicroSkill",
+    "hops" : 5,
+    "latencyMs" : 9.85
+  }, {
+    "startId" : "RQ2-409",
+    "startName" : "RQ2-409",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-406",
+    "targetName" : "RQ2-406",
+    "targetType" : "MicroSkill",
+    "hops" : 3,
+    "latencyMs" : 11.91
+  }, {
+    "startId" : "RQ2-47",
+    "startName" : "RQ2-47",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-43",
+    "targetName" : "RQ2-43",
+    "targetType" : "MicroSkill",
+    "hops" : 4,
+    "latencyMs" : 8.55
+  }, {
+    "startId" : "RQ2-426",
+    "startName" : "RQ2-426",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-421",
+    "targetName" : "RQ2-421",
+    "targetType" : "MicroSkill",
+    "hops" : 5,
+    "latencyMs" : 25.05
+  }, {
+    "startId" : "RQ2-826",
+    "startName" : "RQ2-826",
+    "startType" : "MicroSkill",
+    "targetId" : "RQ2-823",
+    "targetName" : "RQ2-823",
+    "targetType" : "MicroSkill",
+    "hops" : 3,
+    "latencyMs" : 20.79
+  } ],
+  "scaleComparison" : [ {
+    "scale" : "1k",
+    "label" : "1000 nodes",
+    "nodes" : 1000,
+    "relationships" : 1800,
+    "meanLatencyMs" : 14.008990030000001,
+    "p95LatencyMs" : 30.82275,
+    "speedupVsLinear" : 0.0
+  } ],
+  "defenseArguments" : [ "Measured directed prerequisite queries at 3, 4 and 5 hops on the selected isolated graph.", "Latency includes query execution and result consumption through the Neo4j driver." ],
+  "recentRuns" : [ 8.856542, 8.973958, 11.334584, 9.956375, 8.28475, 9.846208, 11.913625, 8.545458, 25.05425, 20.794667, 52.371125, 24.449542, 26.604125, 7.906375, 8.825542, 17.189125, 9.376625, 21.126666, 9.200583, 13.944791, 11.624875, 8.33825, 10.480542, 15.150208, 7.604541, 11.175834, 9.176833, 9.695125, 9.219083, 27.873916 ],
+  "executedAt" : "2026-11-25T19:21:21.443075Z"
+}
