@@ -24,6 +24,8 @@ export interface ComboboxProps {
   size?: 'default' | 'md' | 'sm'
   clearable?: boolean
   wrapOptions?: boolean
+  /** Keep the dropdown in the content flow inside a scrollable dialog. */
+  inlineDropdown?: boolean
   onOpenChange?: (open: boolean) => void
   onBlur?: () => void
   role?: 'combobox'
@@ -48,6 +50,7 @@ export function Combobox({
   size = 'default',
   clearable = true,
   wrapOptions = false,
+  inlineDropdown = false,
   onOpenChange,
   onBlur,
   role,
@@ -232,8 +235,8 @@ export function Combobox({
       {isOpen && (
         <div
           className={cn(
-            'absolute left-0 z-50 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80',
-            openUpward ? 'bottom-full mb-1' : 'top-full mt-1',
+            'z-50 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80',
+            inlineDropdown ? 'relative mt-1' : cn('absolute left-0', openUpward ? 'bottom-full mb-1' : 'top-full mt-1'),
           )}
         >
           <div className={cn('flex items-center border-b border-border', size === 'sm' ? 'px-2.5 py-1.5' : 'px-3 py-2')}>
