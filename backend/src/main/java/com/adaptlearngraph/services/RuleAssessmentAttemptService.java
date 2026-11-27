@@ -86,9 +86,15 @@ public final class RuleAssessmentAttemptService {
     public boolean autoFillAllowed(java.util.function.Predicate<RoleBaselineFlow.Actor> allowed){return allowed.test(actor());}
     /** Answers the real frozen paper through ordinary answer commands; never submits or awards results. */
     public View autoFill(UUID id,long expected,UUID key,java.util.function.Predicate<RoleBaselineFlow.Actor> allowed) {
+        return autoFill(id,expected,key,allowed,false);
+    }
+    public View completeAnswers(UUID id,long expected,UUID key,java.util.function.Predicate<RoleBaselineFlow.Actor> allowed) {
+        return autoFill(id,expected,key,allowed,true);
+    }
+    private View autoFill(UUID id,long expected,UUID key,java.util.function.Predicate<RoleBaselineFlow.Actor> allowed,boolean allCorrect) {
         var a=actor();if(!allowed.test(a))throw new Failure(403,"FORBIDDEN");
         if(key==null || expected<1)throw new Failure(400,"INVALID_REQUEST");
-        String hash=RoleBaselineFlow.hash(write(List.of(id,expected)));
+        String hash=RoleBaselineFlow.hash(write(allCorrect?List.of(id,expected,true):List.of(id,expected)));
         return interactive(a,()->{
             var replay=receipt(a,"RULE_AUTO_FILL",id.toString(),key,hash);if(replay.isPresent())return replay.get();
             var row=owned(a,id);
@@ -104,7 +110,7 @@ public final class RuleAssessmentAttemptService {
                 boolean fail=baseline ? level==com.adaptlearngraph.entities.domain.KnowledgeLevel.ADVANCED && Set.of("Transaction Management","Java Streams & Lambdas").contains(name)
                     : firstTransaction && (name.equals("Transaction Management") && level!=com.adaptlearngraph.entities.domain.KnowledgeLevel.FOUNDATION || name.equals("Spring Data JPA & Hibernate"));
                 // One correct when possible avoids a zero-score prerequisite veto while remaining below threshold.
-                int quota=fail?Math.max(0,group.rule().requiredCorrectCount()-1):group.items().size();
+                int quota=fail && !allCorrect?Math.max(0,group.rule().requiredCorrectCount()-1):group.items().size();
                 var ordered=new ArrayList<>(group.items());ordered.sort(Comparator.comparing(Candidate::mandatory).reversed().thenComparing(c->c.itemVersionId().toString()));
                 for(var item:ordered) {
                     if(!allowed.test(a))throw new Failure(403,"FORBIDDEN");

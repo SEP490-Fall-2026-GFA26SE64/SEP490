@@ -16,6 +16,10 @@ public final class PathwayTiming {
     }
     public Instant firstApproval(RequirementPathwayJpaRepository.Row row,RoleBaselineFlow.Role role,String levelId,
                               RequirementPathwayRevisions revisions) {
+        return firstApproval(row,role,levelId,revisions,null);
+    }
+    public Instant firstApproval(RequirementPathwayJpaRepository.Row row,RoleBaselineFlow.Role role,String levelId,
+                              RequirementPathwayRevisions revisions,RoleBaselineFlow.Placement placement) {
         if(row.getTimingStartedAt()!=null || row.getPreviouslyApproved())return clock.clock();
         var level=role.levels().stream().filter(l->l.id().equals(levelId)).findFirst()
                 .orElseThrow(()->new Failure(422,"PATHWAY_DURATION_UNAVAILABLE"));
@@ -23,11 +27,13 @@ public final class PathwayTiming {
         var parsed=java.util.regex.Pattern.compile("(?i)^([1-9][0-9]{0,8})(?:\\s+months?)?$").matcher(raw==null?"":raw.strip());
         if(!parsed.matches() || role.roleVersion()==null || role.roleVersion().isBlank())
             throw new Failure(422,"PATHWAY_DURATION_UNAVAILABLE");
-        int months=Integer.parseInt(parsed.group(1));Instant start=clock.clock(),deadline;
+        int months=RoleBaselineFlow.pathwayDuration(role,levelId,placement);Instant start=clock.clock(),deadline;
         try{deadline=start.atZone(ZoneOffset.UTC).plusMonths(months).toInstant();}
         catch(DateTimeException invalid){throw new Failure(422,"PATHWAY_DURATION_UNAVAILABLE");}
-        String basis=revisions.encode(Map.of("roleId",role.id(),"roleVersion",role.roleVersion(),"levelId",levelId,
+        var snapshot=new LinkedHashMap<String,Object>(Map.of("roleId",role.id(),"roleVersion",role.roleVersion(),"levelId",levelId,
                 "catalogVersion",role.catalogVersion(),"catalogFingerprint",role.fingerprint(),"durationMonths",months,"zone","UTC"));
+        snapshot.put("durationPolicy","ASSIGNED_ROLE_DELTA_V1");snapshot.put("assignedPlacement",placement);
+        String basis=revisions.encode(snapshot);
         if(rules.startTiming(row.getOrganizationId(),row.getLearnerId(),row.getRequestId(),months,basis,start,deadline)!=1)
             throw new Failure(409,"PATHWAY_TIMING_CONFLICT");
         return start;

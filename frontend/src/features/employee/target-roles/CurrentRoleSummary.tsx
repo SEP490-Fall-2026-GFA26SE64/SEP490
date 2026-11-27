@@ -1,5 +1,7 @@
 import { Briefcase, Target, Eye, BookOpenCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { readRulePathway, rulePathwaysEnabled } from '../../../shared/api/requirementPathway'
 import { Heading } from '../../../shared/components/typography/Heading'
 import { Text } from '../../../shared/components/typography/Text'
 import { Badge } from '../../../shared/components/ui/Badge'
@@ -7,10 +9,11 @@ import { Button, buttonVariants } from '../../../shared/components/ui/Button'
 import { Card } from '../../../shared/components/ui/Card'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
 import { RoleBaselineGate } from './RoleBaselineGate'
-import type { RoleFlowView } from './currentRoleFlowApi'
+import { pathwayDurationMonths, type RoleFlowView } from './currentRoleFlowApi'
 
-export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view: RoleFlowView; onDetails: () => void; disabled?: boolean }) {
-  const { t } = useTranslation()
+export function CurrentRoleSummary({ view, scope, onDetails, disabled = false }: { view: RoleFlowView; scope: string; onDetails: () => void; disabled?: boolean }) {
+  const { t, language } = useTranslation()
+  const pathway = useQuery({ queryKey: ['initialPathway', scope, 'ruleEmployee', null], queryFn: ({ signal }) => readRulePathway(null, signal), enabled: rulePathwaysEnabled && Boolean(view.selection), retry: false, staleTime: 0 })
   const placement = view.placement ?? (view.startingPlacement ? {
     roleId: view.startingPlacement.role.id,
     roleCode: view.startingPlacement.role.code,
@@ -19,6 +22,12 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
   } : null)
   const selection = view.selection
   const activeLevel = selection?.role.levels.find(level => level.id === selection.levelId)
+  const saved = pathway.data?.selectionId === selection?.selectionId && pathway.data?.selectionRevision === selection?.revision ? pathway.data : null
+  const frozenMonths = saved?.timing?.durationMonths
+  const estimatedMonths = selection && activeLevel ? pathwayDurationMonths(selection.role, activeLevel, view) : null
+  const duration = frozenMonths != null ? `${frozenMonths} ${language === 'vi' ? 'tháng' : 'months'}`
+    : saved?.timing?.state === 'LEGACY_UNTIMED' || pathway.isPending || pathway.isError ? null
+    : estimatedMonths != null ? `${estimatedMonths} ${language === 'vi' ? 'tháng' : 'months'}` : null
 
   if (view.progress.state === 'LEGACY_SELECTION_REQUIRES_RESELECTION') {
     return <Card className="p-5"><Text role="status">{t('roleFlow.legacySelection')}</Text></Card>
@@ -83,9 +92,9 @@ export function CurrentRoleSummary({ view, onDetails, disabled = false }: { view
                           ? ` · ${t('initialPathway.state.UNAVAILABLE')}`
                           : ''}
                     </Badge>
-                    {activeLevel?.duration && (
+                    {duration && (
                       <Badge variant="outline" className="text-xs font-medium border-border/80">
-                        Est. {activeLevel.duration}
+                        Est. {duration}
                       </Badge>
                     )}
                   </>

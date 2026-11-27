@@ -22,6 +22,21 @@ public final class RequirementPathwayView {
         this.actors=actors;this.rules=rules;this.revisions=revisions;this.admission=admission;this.access=access;
     }
     private Actor employee(){var actor=actors.require();actor.require(Role.EMPLOYEE);return actor;}
+    public record HistoryItem(UUID requestId,String roleName,String levelName,String jobPositionName,String state,
+            Instant endedAt,PathwayTiming.View timing) {}
+    public record HistoryPage(List<HistoryItem> items,long total) {}
+    public HistoryPage history(int offset,int limit) {
+        var actor=employee();if(offset<0 || offset>100000 || limit<1 || limit>100)throw new Failure(400,"INVALID_PAGINATION");
+        var items=rules.history(actor.organizationId(),actor.accountId(),offset,limit).stream().map(row->{
+            var input=admission.decode(row).input();var binding=input.binding();
+            boolean completed=row.getTimingCompletedAt()!=null;
+            return new HistoryItem(row.getRequestId(),binding.roleName(),binding.levelName(),input.roleSnapshot().jobPositionName(),
+                    completed?"COMPLETED":"CANCELLED",completed?row.getTimingCompletedAt():row.getArchivedAt(),revisions.timing(row));
+        }).toList();
+        long total=rules.historyCount(actor.organizationId(),actor.accountId());
+        if(!actor.equals(employee()))throw new Failure(403,"FORBIDDEN");
+        return new HistoryPage(items,total);
+    }
     public Optional<View> current() {
         var actor=employee();var rows=rules.current(actor.organizationId(),actor.accountId());
         if(rows.size()>1)throw new Failure(503,"CURRENT_PATHWAY_INTEGRITY_FAILURE");return rows.stream().findFirst().map(row->owned(actor,row));
@@ -66,8 +81,9 @@ public final class RequirementPathwayView {
             }
             boolean gated=!plan.unmetPrerequisites(step.id()).isEmpty();
             var state=started && step.state()==State.NEEDS_SUPPLEMENTATION?State.IN_PROGRESS:step.state();
+            boolean readOnly=row.getArchivedAt()!=null;
             visible.add(new RequirementStep(step.id(),step.requirement(),step.kind(),state,step.reason(),step.fulfilledEvidenceId(),List.copyOf(options),
-                    accepted?step.certificate():null,!accepted || (gated && !started),!accepted || gated,step.sourceBypassId(),origins.get(step.sourceBypassId())));
+                    accepted?step.certificate():null,readOnly || !accepted || (gated && !started),readOnly || !accepted || gated,step.sourceBypassId(),origins.get(step.sourceBypassId())));
         }
         return new View(row.getRequestId(),row.getSelectionId(),row.getSelectionRevision(),binding.roleId(),binding.roleName(),binding.levelId(),binding.levelName(),
                 row.getGenerationStatus(),row.getReviewStatus(),row.getReasonCode(),row.getCurrentRevision(),row.getContentHash(),row.getArchivedAt()!=null,

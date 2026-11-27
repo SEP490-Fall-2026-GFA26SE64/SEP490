@@ -86,7 +86,7 @@ public final class CurrentRoleSelectionStore implements Store {
                 throw new Failure(409,"TARGET_ROLE_LEVEL_LOCKED");
             if(assessmentActive(a))throw new Failure(409,"ASSESSMENT_IN_PROGRESS");
             requireNoLegacyPath(a);
-            com.adaptlearngraph.services.RoleBaselineFlow.requireHigherTarget(role,levelId,placement(a).orElse(null));
+            com.adaptlearngraph.services.RoleBaselineFlow.pathwayDuration(role,levelId,placement(a).orElse(null));
             archiveInitialPathways(a,now);
             data.selections().endCurrent(a.organizationId(),a.learnerId(),now);
             // Former UPDATE ... RETURNING: the learner_state row is locked by transaction(), so the re-read is the incremented value.

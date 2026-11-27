@@ -79,6 +79,22 @@ export class RoleFlowError extends Error {
   constructor(code: string, status = 0) { super(code); this.code = code; this.status = status }
   get ambiguous() { return this.status === 0 || this.status >= 500 || this.code === 'INVALID_RESPONSE' }
 }
+/** Display estimate only; approval freezes the server's current placement/catalog calculation. */
+export function pathwayDurationMonths(role: CurrentRole, level: CurrentLevel, view?: RoleFlowView): number | null {
+  const parse = (raw?: string) => {
+    const match = raw?.trim().match(/^([1-9][0-9]{0,8})(?:\s+months?)?$/i)
+    return match ? Number(match[1]) : null
+  }
+  const target = parse(level.duration)
+  if (target === null || !view) return null
+  const placement = view.placement
+  const same = placement && (role.id === placement.roleId || Boolean(placement.roleCode && role.code.split('#')[0].toLowerCase() === placement.roleCode.split('#')[0].toLowerCase()))
+  if (!same) return target
+  const rank = assignedRankForRole(role, view)
+  const current = role.levels.find(item => item.rank === rank)
+  const start = parse(current?.duration)
+  return current && level.rank < current.rank && start !== null && target > start ? target - start : null
+}
 const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error()
   return value as Record<string, unknown>

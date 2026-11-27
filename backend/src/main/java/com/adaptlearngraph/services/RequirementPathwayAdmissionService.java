@@ -45,6 +45,10 @@ public final class RequirementPathwayAdmissionService {
     private Actor employee(){var actor=actors.require();actor.require(Role.EMPLOYEE);return actor;}
     private RoleBaselineFlow.Actor owner(Actor actor){return new RoleBaselineFlow.Actor(actor.organizationId(),actor.accountId());}
     private void reauthorize(Actor actor){if(!actor.equals(employee()))throw new Failure(403,"FORBIDDEN");}
+    RoleBaselineFlow.Role timingRole(UUID organizationId,String roleId) {
+        return roles.roles(organizationId).stream().filter(role->role.id().equals(roleId)).findFirst()
+                .orElseThrow(()->new Failure(422,"PATHWAY_DURATION_UNAVAILABLE"));
+    }
     public record Overview(UUID selectionId,long selectionRevision,List<Requirement> target,List<String> achievedKeys,List<String> baselinePassedKeys) {}
     /** Read-only projection using the bound target snapshot and the same compatible official evidence query as planning. */
     public Overview overview() {

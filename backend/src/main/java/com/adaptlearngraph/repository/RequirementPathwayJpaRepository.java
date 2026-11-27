@@ -93,6 +93,15 @@ public interface RequirementPathwayJpaRepository extends Repository<InitialPathw
     boolean historicallyApproved(@Param("org") UUID org,@Param("learner") UUID learner,@Param("request") UUID request,@Param("revision") long revision);
     @Query(value=READ+" WHERE r.organization_id=:org AND r.learner_id=:learner AND c.archived_at IS NULL AND r.requirement_snapshot_id IS NOT NULL LIMIT 2",nativeQuery=true)
     List<Row> current(@Param("org") UUID org,@Param("learner") UUID learner);
+    @Query(value=READ+" WHERE r.organization_id=:org AND r.learner_id=:learner AND r.requirement_snapshot_id IS NOT NULL AND (c.timing_completed_at IS NOT NULL OR c.archived_at IS NOT NULL) ORDER BY coalesce(c.timing_completed_at,c.archived_at) DESC,r.request_id DESC LIMIT :limit OFFSET :offset",nativeQuery=true)
+    List<Row> history(@Param("org") UUID org,@Param("learner") UUID learner,@Param("offset") int offset,@Param("limit") int limit);
+    @Query(value="""
+            SELECT count(*) FROM platform.initial_pathway_request r JOIN platform.initial_pathway_current c
+                ON c.request_id=r.request_id AND c.organization_id=r.organization_id AND c.learner_id=r.learner_id
+            WHERE r.organization_id=:org AND r.learner_id=:learner AND r.requirement_snapshot_id IS NOT NULL
+                AND (c.timing_completed_at IS NOT NULL OR c.archived_at IS NOT NULL)
+            """,nativeQuery=true)
+    long historyCount(@Param("org") UUID org,@Param("learner") UUID learner);
     @Query(value=READ+" WHERE r.organization_id=:org AND r.learner_id=:learner AND r.request_id=:id AND r.requirement_snapshot_id IS NOT NULL",nativeQuery=true)
     Optional<Row> own(@Param("org") UUID org,@Param("learner") UUID learner,@Param("id") UUID id);
     /** Caller first verifies the current assigned Expert; this lookup never accepts a client tenant. */
