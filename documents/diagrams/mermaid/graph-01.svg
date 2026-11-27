@@ -8,10 +8,10 @@
 
   <!-- Header -->
   <text x="50" y="46" font-size="26" font-weight="650" fill="#0f172a">Neo4j Knowledge Graph Schema — Entities, Properties &amp; Relationships</text>
-  <text x="50" y="78" font-size="16" font-weight="400" fill="#475569">Updated 2026-11-19 — 8 Node Labels (Department, JobPosition, TargetRole, Level, Competency, MicroSkill, LearningModule, Certificate) &amp; 9 Directed Relationship Types</text>
+  <text x="50" y="78" font-size="16" font-weight="400" fill="#475569">Updated 2026-11-27 — 8 Node Labels (Department, JobPosition, TargetRole, Level, Competency, MicroSkill, LearningModule, Certificate) &amp; 9 Directed Relationship Types</text>
 
-  <!-- 1. Department (x=50, y=120, w=420, h=365) -->
-  <rect x="50" y="120" width="420" height="365" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <!-- 1. Department (x=50, y=120, w=420, h=315) -->
+  <rect x="50" y="120" width="420" height="315" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
   <rect x="50" y="120" width="420" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
   <text x="66" y="150" font-size="20" font-weight="650" fill="#0f172a">Department</text>
   <text x="66" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
@@ -19,16 +19,15 @@
   <text x="66" y="242" font-size="16" fill="#0f172a">name: String</text>
   <text x="66" y="267" font-size="16" fill="#0f172a">organizationId: String</text>
   <text x="66" y="292" font-size="16" fill="#0f172a">description: String</text>
-  <text x="66" y="317" font-size="16" fill="#0f172a">headOfDepartment: String [optional]</text>
-  <text x="66" y="342" font-size="16" fill="#0f172a">headEmail: String [optional]</text>
-  <text x="66" y="367" font-size="16" fill="#0f172a">status: String (ACTIVE | INACTIVE)</text>
-  <text x="66" y="392" font-size="16" fill="#0f172a">version: String [optional]</text>
-  <text x="66" y="417" font-size="16" fill="#0f172a">source: String [optional]</text>
-  <text x="66" y="442" font-size="16" fill="#0f172a">createdAt: String (ISO-8601)</text>
-  <text x="66" y="467" font-size="16" fill="#0f172a">updatedAt: String (ISO-8601)</text>
+  <text x="66" y="317" font-size="16" fill="#0f172a">status: String (ACTIVE | INACTIVE)</text>
+  <text x="66" y="342" font-size="16" fill="#0f172a">version: String [optional]</text>
+  <text x="66" y="367" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="66" y="392" font-size="16" fill="#0f172a">createdAt: String (ISO-8601)</text>
+  <text x="66" y="417" font-size="16" fill="#0f172a">updatedAt: String (ISO-8601)</text>
 
-  <!-- 2. JobPosition (x=580, y=120, w=470, h=490) -->
-  <rect x="580" y="120" width="470" height="490" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <!-- 2. JobPosition (x=580, y=120, w=470, h=465) -->
+  <rect x="580" y="120" width="470" height="465" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="580" y="120" width="470" height="465" rx="8" fill="none" stroke="#64748b" stroke-width="1.5"/>
   <rect x="580" y="120" width="470" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
   <text x="596" y="150" font-size="20" font-weight="650" fill="#0f172a">JobPosition</text>
   <text x="596" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
@@ -38,19 +37,18 @@
   <text x="596" y="292" font-size="16" fill="#0f172a">version: String</text>
   <text x="596" y="317" font-size="16" fill="#0f172a">status: String</text>
   <text x="596" y="342" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
-  <text x="596" y="367" font-size="16" fill="#0f172a">jobZone: Long</text>
-  <text x="596" y="392" font-size="16" fill="#0f172a">description: String [optional]</text>
-  <text x="596" y="417" font-size="16" fill="#0f172a">source: String [optional]</text>
-  <text x="596" y="442" font-size="16" fill="#0f172a">createdAt / updatedAt: String [optional]</text>
-  <text x="596" y="467" font-size="16" fill="#0f172a">interestRealistic: Integer [0..40, optional]</text>
-  <text x="596" y="492" font-size="16" fill="#0f172a">interestInvestigative: Integer [0..40, optional]</text>
-  <text x="596" y="517" font-size="16" fill="#0f172a">interestArtistic: Integer [0..40, optional]</text>
-  <text x="596" y="542" font-size="16" fill="#0f172a">interestSocial: Integer [0..40, optional]</text>
-  <text x="596" y="567" font-size="16" fill="#0f172a">interestEnterprising: Integer [0..40, optional]</text>
-  <text x="596" y="592" font-size="16" fill="#0f172a">interestConventional: Integer [0..40, optional]</text>
+  <text x="596" y="367" font-size="16" fill="#0f172a">description: String [optional]</text>
+  <text x="596" y="392" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="596" y="417" font-size="16" fill="#0f172a">createdAt / updatedAt: String [optional]</text>
+  <text x="596" y="442" font-size="16" fill="#0f172a">interestRealistic: Integer [0..40, optional]</text>
+  <text x="596" y="467" font-size="16" fill="#0f172a">interestInvestigative: Integer [0..40, optional]</text>
+  <text x="596" y="492" font-size="16" fill="#0f172a">interestArtistic: Integer [0..40, optional]</text>
+  <text x="596" y="517" font-size="16" fill="#0f172a">interestSocial: Integer [0..40, optional]</text>
+  <text x="596" y="542" font-size="16" fill="#0f172a">interestEnterprising: Integer [0..40, optional]</text>
+  <text x="596" y="567" font-size="16" fill="#0f172a">interestConventional: Integer [0..40, optional]</text>
 
-  <!-- 3. TargetRole (x=1160, y=120, w=460, h=640) -->
-  <rect x="1160" y="120" width="460" height="640" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <!-- 3. TargetRole (x=1160, y=120, w=460, h=590) -->
+  <rect x="1160" y="120" width="460" height="590" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
   <rect x="1160" y="120" width="460" height="46" rx="8" fill="#e0e7ff" stroke="#64748b" stroke-width="1.5"/>
   <text x="1176" y="150" font-size="20" font-weight="650" fill="#0f172a">TargetRole (:Role)</text>
   <text x="1176" y="192" font-size="16" fill="#0f172a">id: String [UNIQUE]</text>
@@ -58,24 +56,22 @@
   <text x="1176" y="242" font-size="16" fill="#0f172a">code: String [UNIQUE graph code]</text>
   <text x="1176" y="267" font-size="16" fill="#0f172a">baseCode: String [lineage code]</text>
   <text x="1176" y="292" font-size="16" fill="#0f172a">name: String</text>
-  <text x="1176" y="317" font-size="16" fill="#0f172a">title: String [legacy alias]</text>
-  <text x="1176" y="342" font-size="16" fill="#0f172a">familyCode: String</text>
-  <text x="1176" y="367" font-size="16" fill="#0f172a">track: String (PROFESSIONAL | MANAGEMENT)</text>
-  <text x="1176" y="392" font-size="16" fill="#0f172a">description: String</text>
-  <text x="1176" y="417" font-size="16" fill="#0f172a">scope: String</text>
-  <text x="1176" y="442" font-size="16" fill="#0f172a">responsibilities: String[]</text>
-  <text x="1176" y="467" font-size="16" fill="#0f172a">status: String (DRAFT..PUBLISHED..SUPERSEDED)</text>
-  <text x="1176" y="492" font-size="16" fill="#0f172a">isStaffingEnabled: Boolean</text>
-  <text x="1176" y="517" font-size="16" fill="#0f172a">version: String</text>
-  <text x="1176" y="542" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
-  <text x="1176" y="567" font-size="16" fill="#0f172a">assignedExpertId: String [optional]</text>
-  <text x="1176" y="592" font-size="16" fill="#0f172a">assignedExpertName: String [optional]</text>
-  <text x="1176" y="617" font-size="16" fill="#0f172a">skillTargets: String [JSON]</text>
-  <text x="1176" y="642" font-size="16" fill="#0f172a">levelCompetencies: String [JSON]</text>
-  <text x="1176" y="667" font-size="16" fill="#0f172a">competencyIds: String[]</text>
-  <text x="1176" y="692" font-size="16" fill="#0f172a">rejectionReason: String [optional]</text>
-  <text x="1176" y="717" font-size="16" fill="#0f172a">source: String [optional]</text>
-  <text x="1176" y="742" font-size="16" fill="#0f172a">createdAt / updatedAt: DateTime | String</text>
+  <text x="1176" y="317" font-size="16" fill="#0f172a">familyCode: String [links to JobPosition code]</text>
+  <text x="1176" y="342" font-size="16" fill="#0f172a">description: String</text>
+  <text x="1176" y="367" font-size="16" fill="#0f172a">scope: String</text>
+  <text x="1176" y="392" font-size="16" fill="#0f172a">responsibilities: String[]</text>
+  <text x="1176" y="417" font-size="16" fill="#0f172a">status: String (DRAFT..PUBLISHED..SUPERSEDED)</text>
+  <text x="1176" y="442" font-size="16" fill="#0f172a">isStaffingEnabled: Boolean</text>
+  <text x="1176" y="467" font-size="16" fill="#0f172a">version: String</text>
+  <text x="1176" y="492" font-size="16" fill="#0f172a">reviewStatus: String [optional]</text>
+  <text x="1176" y="517" font-size="16" fill="#0f172a">assignedExpertId: String [optional]</text>
+  <text x="1176" y="542" font-size="16" fill="#0f172a">assignedExpertName: String [optional]</text>
+  <text x="1176" y="567" font-size="16" fill="#0f172a">skillTargets: String [JSON]</text>
+  <text x="1176" y="592" font-size="16" fill="#0f172a">levelCompetencies: String [JSON]</text>
+  <text x="1176" y="617" font-size="16" fill="#0f172a">competencyIds: String[]</text>
+  <text x="1176" y="642" font-size="16" fill="#0f172a">rejectionReason: String [optional]</text>
+  <text x="1176" y="667" font-size="16" fill="#0f172a">source: String [optional]</text>
+  <text x="1176" y="692" font-size="16" fill="#0f172a">createdAt / updatedAt: DateTime | String</text>
 
   <!-- 4. Level (x=1730, y=120, w=400, h=440) -->
   <rect x="1730" y="120" width="400" height="440" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
@@ -86,7 +82,7 @@
   <text x="1746" y="242" font-size="16" fill="#0f172a">code: String (S | M | J | LV-n)</text>
   <text x="1746" y="267" font-size="16" fill="#0f172a">name: String</text>
   <text x="1746" y="292" font-size="16" fill="#0f172a">rank: Long</text>
-  <text x="1746" y="317" font-size="16" fill="#0f172a">duration: String (integer months)</text>
+  <text x="1746" y="317" font-size="16" fill="#0f172a">duration: String (positive integer months)</text>
   <text x="1746" y="342" font-size="16" fill="#0f172a">attainmentRule: String</text>
   <text x="1746" y="367" font-size="16" fill="#0f172a">status: String</text>
   <text x="1746" y="392" font-size="16" fill="#0f172a">version: String</text>
