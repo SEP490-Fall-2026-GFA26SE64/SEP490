@@ -31,6 +31,7 @@ public final class RequirementPathwayController {
     @GetMapping("/employee/initial-pathway-requests/{id}") ResponseEntity<?> status(@PathVariable UUID id){return ok(view.own(id));}
     @PostMapping("/employee/initial-pathway-requests/{id}/retry") ResponseEntity<?> retry(@PathVariable UUID id,@RequestHeader("Idempotency-Key")String key){return receipt(admission.retryHttp(id,key));}
     @GetMapping("/employee/pathway") ResponseEntity<?> current(){return ok(view.current().orElse(null));}
+    @GetMapping("/employee/pathways/history") ResponseEntity<?> history(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="12")int limit){return ok(view.history(offset,limit));}
     @GetMapping("/employee/pathways/{id}") ResponseEntity<?> own(@PathVariable UUID id){return ok(view.own(id));}
     @GetMapping("/expert/initial-pathways") ResponseEntity<?> queue(@RequestParam(defaultValue="0")int offset,@RequestParam(defaultValue="20")int limit){return ok(review.queue(offset,limit));}
     @GetMapping("/expert/initial-pathways/{id}") ResponseEntity<?> detail(@PathVariable UUID id){return ok(review.detail(id));}

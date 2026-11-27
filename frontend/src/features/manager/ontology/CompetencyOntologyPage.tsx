@@ -202,6 +202,7 @@ function OwnedCompetencyOntologyPage() {
   // State for active tab
   const [activeTab, setActiveTab] = React.useState('graph')
   const [isLoading, setIsLoading] = React.useState(true)
+  const [catalogLoadFailed, setCatalogLoadFailed] = React.useState(false)
   // Target Roles State for Explore Graph Authoring
   const [targetRoles, setTargetRoles] = React.useState<TargetRoleModel[]>(() => {
     const active = getActiveCompany()
@@ -405,11 +406,12 @@ function OwnedCompetencyOntologyPage() {
   const handleSync = React.useCallback(async () => {
       const orgId = effectiveOrgId
       setIsLoading(true)
+      setCatalogLoadFailed(false)
 
       try {
         const [liveSkills, liveComps, livePrereqs, liveRolesRes, liveDepts, liveJobPositions, liveMembers] = await Promise.all([
-          fetchMicroSkills(orgId).catch(() => []),
-          fetchCompetencies(orgId).catch(() => []),
+          fetchMicroSkills(orgId),
+          fetchCompetencies(orgId),
           fetchPrerequisites(orgId).catch(() => []),
           fetch(`/api/v1/organizations/${orgId}/roles`, {
             headers: {
@@ -569,6 +571,7 @@ function OwnedCompetencyOntologyPage() {
           }
         }
       } catch {
+        setCatalogLoadFailed(true)
         setMicroSkills([])
         setCompetencies([])
         setPrerequisites([])
@@ -1513,6 +1516,21 @@ function OwnedCompetencyOntologyPage() {
             </div>
           }
         />
+
+        {catalogLoadFailed && !isLoading && (
+          <div
+            role="alert"
+            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[hsl(var(--destructive)/0.3)] bg-[hsl(var(--destructive)/0.06)] px-4 py-3"
+          >
+            <div className="flex items-center gap-2 text-[length:var(--text-body-sm)] text-[hsl(var(--destructive))]">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Could not load this organization's micro-skills and competencies.
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void handleSync()}>
+              Retry
+            </Button>
+          </div>
+        )}
 
         {/* Aggregate KPI StatCards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

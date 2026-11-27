@@ -13,7 +13,7 @@ import { Pagination } from '../../../shared/components/ui/Pagination'
 import { LoadingCard } from '../../../shared/components/ui/LoadingCard'
 import { Text } from '../../../shared/components/typography/Text'
 import { useTranslation } from '../../../shared/i18n/LanguageContext'
-import { assignedRankForRole, chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, jobPositionLabel, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
+import { assignedRankForRole, pathwayDurationMonths, chooseCurrentRole, currentRoles, prepareRoleChoice, readRoleFlow, jobPositionLabel, RoleFlowError, type CurrentRole, type RoleChoiceCommand } from './currentRoleFlowApi'
 import { EmptyState } from '../../../shared/components/ui/EmptyState'
 import { CurrentRoleCard } from './CurrentRoleCard'
 import { CurrentRoleSummary } from './CurrentRoleSummary'
@@ -63,7 +63,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     }
     const assignedRank = assignedRankForRole(role, view.data)
     const eligible = role.levels
-      .filter(level => assignedRank === undefined || level.rank < assignedRank)
+      .filter(level => (assignedRank === undefined || level.rank < assignedRank) && pathwayDurationMonths(role, level, view.data) !== null)
       .sort((a, b) => b.rank - a.rank)
     const targetLevelId = eligible.find(level => level.id === chosenLevel)?.id ?? eligible[0]?.id ?? ''
 
@@ -73,7 +73,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     committed.current = false
   }
   async function confirm(prepared?: RoleChoiceCommand) {
-    if (lock.current || !selected || !view.data || !levelId) return
+    if (lock.current || !selected || !view.data || !levelId || !selected.levels.some(level => level.id === levelId && pathwayDurationMonths(selected, level, view.data) !== null)) return
     const next = prepared ?? prepareRoleChoice(selected.id, view.data.selection?.selectionId ?? null, levelId)
     lock.current = true; setBusy(true); setCommand(next); setError(null)
     try {
@@ -93,7 +93,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
     {(roles.isPending || view.isPending) && <LoadingCard label={tr('loading')} />}
     {(roles.isError || view.isError) && <EmployeeAccessNotice error={roles.error ?? view.error} message={jobPosition && roles.error instanceof RoleFlowError ? t(`riasecUi.states.${roles.error.code}`, tr('catalogError')) : tr(roles.isError ? 'catalogError' : 'statusError')}
       retrying={roles.isFetching || view.isFetching} onRetry={() => void refresh()} />}
-    {view.data && !view.isError && <CurrentRoleSummary view={view.data} disabled={blocked} onDetails={() => { if (view.data?.selection) setDetails({ role: view.data.selection.role, selectedLevelId: view.data.selection.levelId ?? undefined }) }} />}
+    {view.data && !view.isError && <CurrentRoleSummary scope={scope} view={view.data} disabled={blocked} onDetails={() => { if (view.data?.selection) setDetails({ role: view.data.selection.role, selectedLevelId: view.data.selection.levelId ?? undefined }) }} />}
     {error && !selected && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
     {view.data?.targetLocked && !error && <Text variant="body-sm" role="status">{tr('errors.TARGET_ROLE_LEVEL_LOCKED')}</Text>}
     {view.data && view.data.targetLocked === undefined && !view.isError && !error && <Text variant="body-sm" role="status">{tr('errors.ROLE_SELECTION_NOT_READY')}</Text>}
@@ -170,6 +170,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
         disabled={blocked}
         onChange={setLevelId}
         minAllowedRank={assignedRankForRole(selected, view.data)}
+        durationForLevel={level => pathwayDurationMonths(selected, level, view.data)}
       />}
       {error && <div className="space-y-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert"><Text variant="body-sm" tone="destructive">{t(`roleFlow.errors.${error.code}`, tr('statusError'))}</Text>{error.code === 'TARGET_ROLE_LEVEL_LOCKED' && <Link to="/employee/pathway?view=role" className={buttonVariants({ variant: 'primary', size: 'sm' })}>{t('roleFlow.viewPathway')}</Link>}</div>}
       {command && <Text variant="body-sm">{tr('retryNotice')}</Text>}
@@ -178,7 +179,7 @@ function OwnedCurrentRolePanel({ scope }: { scope: string }) {
         <Button variant="outline" size="sm" disabled={blocked} onClick={() => setSelected(null)}>
           {tr('cancel')}
         </Button>
-        <Button variant="primary" size="sm" disabled={busy || view.data?.targetLocked !== false || (!levelId && (selected?.levels?.length ?? 0) > 0) || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>
+        <Button variant="primary" size="sm" disabled={busy || view.data?.targetLocked !== false || !selected?.levels.some(level => level.id === levelId && pathwayDurationMonths(selected, level, view.data) !== null) || error?.code === 'TARGET_ROLE_LEVEL_LOCKED'} onClick={() => void confirm(command ?? undefined)}>
           {tr(command ? 'retry' : 'confirm')}
         </Button>
       </DialogFooter>

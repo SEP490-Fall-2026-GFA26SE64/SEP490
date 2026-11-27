@@ -1,7 +1,6 @@
 import * as React from 'react'
 import type { ReactNode } from 'react'
 import {
-  Activity,
   Award,
   BarChart3,
   Bell,
@@ -21,10 +20,8 @@ import {
   LayoutDashboard,
   LogOut,
   Network,
-  Palette,
   PanelLeftClose,
   PanelLeftOpen,
-  Settings,
   Sliders,
   Target,
   User,
@@ -297,11 +294,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         icon: <Users size={15} />,
       },
       {
-        label: t('nav.orgSettings', 'Org Settings'),
-        href: '/admin/organization-settings',
-        icon: <Settings size={15} />,
-      },
-      {
         label: t('nav.subscription', 'Subscription'),
         href: '/admin/subscription',
         icon: <CreditCard size={15} />,
@@ -310,16 +302,6 @@ export function WorkspaceLayout({ children, identity: suppliedIdentity, onSignOu
         label: t('nav.knowledgeGraph'),
         href: '/admin/knowledge-graph',
         icon: <Network size={15} />,
-      },
-      {
-        label: t('nav.designSystem'),
-        href: '/admin/design-system',
-        icon: <Palette size={15} />,
-      },
-      {
-        label: t('nav.serverStatus'),
-        href: '/system-status?portal=admin',
-        icon: <Activity size={15} />,
       },
     ]
   } else if (isPlatformAdmin) {

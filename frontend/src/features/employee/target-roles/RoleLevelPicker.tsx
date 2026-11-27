@@ -12,6 +12,7 @@ export function RoleLevelPicker({
   disabled,
   compact = false,
   minAllowedRank,
+  durationForLevel,
 }: {
   levels: CurrentLevel[]
   value: string
@@ -19,27 +20,28 @@ export function RoleLevelPicker({
   disabled?: boolean
   compact?: boolean
   minAllowedRank?: number
+  durationForLevel?: (level: CurrentLevel) => number | null
 }) {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const name = useId()
 
   useEffect(() => {
     if (typeof minAllowedRank === 'number') {
       const currentSelected = levels.find((l) => l.id === value)
       // If current selected level is at or below assigned rank, auto-switch to lowest permissible higher level
-      if (currentSelected && currentSelected.rank >= minAllowedRank) {
+      if (currentSelected && (currentSelected.rank >= minAllowedRank || durationForLevel?.(currentSelected) === null)) {
         const allowed = levels
-          .filter((l) => l.rank < minAllowedRank)
+          .filter((l) => l.rank < minAllowedRank && durationForLevel?.(l) !== null)
           .sort((a, b) => b.rank - a.rank)
         onChange(allowed[0]?.id ?? '')
       }
     }
-  }, [value, minAllowedRank, levels, onChange])
+  }, [value, minAllowedRank, levels, onChange, durationForLevel])
 
   const sortedLevels = [...levels].sort(
     (a, b) => a.rank - b.rank || a.id.localeCompare(b.id),
   )
-  const noHigherLevel = typeof minAllowedRank === 'number' && !levels.some(level => level.rank < minAllowedRank)
+  const noHigherLevel = typeof minAllowedRank === 'number' && !levels.some(level => level.rank < minAllowedRank && durationForLevel?.(level) !== null)
 
   return (
     <fieldset disabled={disabled} className="min-w-0 space-y-2.5">
@@ -52,7 +54,8 @@ export function RoleLevelPicker({
             typeof minAllowedRank === 'number' && level.rank === minAllowedRank
           const isBelowMin =
             typeof minAllowedRank === 'number' && level.rank > minAllowedRank
-          const isLevelDisabled = disabled || isCurrentLevel || isBelowMin
+          const months = durationForLevel?.(level)
+          const isLevelDisabled = disabled || isCurrentLevel || isBelowMin || months === null
           const isSelected = value === level.id
 
           return (
@@ -122,7 +125,7 @@ export function RoleLevelPicker({
                     !isSelected && 'border-border/80 text-muted-foreground',
                   )}
                 >
-                  {level.duration}
+                  {durationForLevel ? months === null ? '—' : `${months} ${language === 'vi' ? 'tháng' : 'months'}` : level.duration}
                 </Badge>
               )}
             </label>

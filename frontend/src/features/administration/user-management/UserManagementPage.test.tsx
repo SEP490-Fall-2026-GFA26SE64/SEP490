@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LanguageProvider } from '../../../shared/i18n/LanguageContext'
 import { ToastProvider } from '../../../shared/hooks/useToast'
+import { Toaster } from '../../../shared/components/ui/Toast'
 import { UserManagementPage } from './UserManagementPage'
 import { OrganizationSubscriptionPage } from '../subscription/OrganizationSubscriptionPage'
 import { WorkspaceBoundary } from '../../subscription/WorkspaceBoundary'
@@ -46,7 +47,7 @@ function show(subscription = false) {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
     <ToastProvider><LanguageProvider><WorkspaceSlugContext.Provider value="actual"><MemoryRouter initialEntries={[subscription ? '/admin/subscription' : '/admin/users']}>
       <WorkspaceBoundary>{subscription ? <OrganizationSubscriptionPage /> : <UserManagementPage />}</WorkspaceBoundary>
-    </MemoryRouter></WorkspaceSlugContext.Provider></LanguageProvider></ToastProvider>
+    </MemoryRouter></WorkspaceSlugContext.Provider><Toaster /></LanguageProvider></ToastProvider>
   </QueryClientProvider>)
 }
 beforeEach(() => {

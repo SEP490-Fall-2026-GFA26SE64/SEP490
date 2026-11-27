@@ -130,6 +130,32 @@ public final class RoleBaselineFlow {
                 || role.levels().stream().map(Level::rank).distinct().count()!=role.levels().size())
             throw new Failure(409,"ASSIGNED_LEVEL_UNAVAILABLE");
         if(target.rank()>=current.rank())throw new Failure(409,"TARGET_LEVEL_NOT_HIGHER");
+        if(durationMonths(target)<=durationMonths(current))throw new Failure(409,"TARGET_DURATION_NOT_HIGHER");
+    }
+    /** Calendar-month allowance, resolved against actual employment rather than a previous learning target. */
+    public static int pathwayDuration(Role role,String levelId,Placement placement) {
+        requireHigherTarget(role,levelId,placement);
+        var target=role.levels().stream().filter(l->l.id().equals(levelId)).findFirst()
+                .orElseThrow(()->new Failure(404,"LEVEL_NOT_AVAILABLE"));
+        int months=durationMonths(target);
+        boolean same=placement!=null && (Objects.equals(role.id(),placement.roleId())
+                || placement.roleCode()!=null && role.code()!=null
+                    && role.code().split("#",2)[0].equalsIgnoreCase(placement.roleCode().split("#",2)[0]));
+        if(!same)return months;
+        if(placement.levelName()==null || placement.levelName().isBlank())throw new Failure(409,"ASSIGNED_LEVEL_UNAVAILABLE");
+        String assigned=placement.levelName().replaceFirst("(?i)^(?:rank|level)\\s*\\d+\\s*:\\s*", "").strip();
+        var matches=role.levels().stream().filter(l->l.id().equalsIgnoreCase(assigned)
+                || l.code()!=null && l.code().equalsIgnoreCase(assigned) || l.name().equalsIgnoreCase(assigned)).toList();
+        if(matches.size()!=1)throw new Failure(409,"ASSIGNED_LEVEL_UNAVAILABLE");
+        int allowance=months-durationMonths(matches.getFirst());
+        if(allowance<=0)throw new Failure(409,"TARGET_DURATION_NOT_HIGHER");
+        return allowance;
+    }
+    private static int durationMonths(Level level) {
+        var parsed=java.util.regex.Pattern.compile("(?i)^([1-9][0-9]{0,8})(?:\\s+months?)?$")
+                .matcher(level.duration()==null?"":level.duration().strip());
+        if(!parsed.matches())throw new Failure(422,"PATHWAY_DURATION_UNAVAILABLE");
+        return Integer.parseInt(parsed.group(1));
     }
     public Selection choose(String roleId,String levelId,UUID expected,String key) {
         var actor=identity.requireEmployee();

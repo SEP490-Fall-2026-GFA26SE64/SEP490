@@ -25,7 +25,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
   const sufficient = skills.length > 0 && passedSkills === skills.length
   const mainGroup = result.groups.find(group => group.role === 'MAIN'), mainScore = result.results.find(score => score.groupId === mainGroup?.id)
   const outcome = result.purpose === 'BASELINE' ? null : mainScore && !mainScore.passed ? copy('MAIN group not passed', 'Nhóm MAIN chưa đạt')
-    : result.results.some(score => score.vetoTriggered) ? copy('Prerequisite veto · retake required', 'Veto từ nhóm tiên quyết · cần thi lại')
+    : result.results.some(score => score.vetoTriggered) ? copy('All prerequisite answers wrong · relearn and retake', 'Sai toàn bộ câu tiên quyết · học lại và thi lại')
     : !sufficient ? copy('MAIN passed · foundation requirements not met', 'MAIN đạt · chưa đủ yêu cầu nền tảng') : copy('Assessment passed · achievement conditions are checked separately', 'Đánh giá đạt · xét riêng điều kiện công nhận')
   return <Card className={sufficient ? 'overflow-hidden border-success/40' : 'overflow-hidden border-warning/50'}>
     <CardHeader className={sufficient ? 'border-b border-success/20 bg-success/5 p-5' : 'border-b border-warning/30 bg-warning/5 p-5'}>
@@ -51,7 +51,7 @@ export function BaselineResultPanel({ result, locked, run, error }: { result: Ba
                 <Text variant="caption" className="font-semibold text-foreground">{t('knowledgeLevel.' + group.requirement.knowledgeLevel)}{group.role === 'PREREQUISITE' ? group.requirement.skillId === mainGroup?.requirement.skillId ? copy(' · Lower level of the same skill', ' · Mức thấp hơn cùng kỹ năng') : copy(' · Prerequisite skill', ' · Kỹ năng tiên quyết khác') : group.role === 'MAIN' ? ' · MAIN' : ''}</Text>
                 <Text variant="caption">{copy('Correct', 'Đúng')}: {score?.correctCount ?? '—'} / {score?.totalCount ?? group.totalCount} · {copy('Required', 'Cần đạt')}: {group.requiredCorrectCount} / {score?.totalCount ?? group.totalCount}</Text>
                 {group.mandatoryRequired && <Text variant="caption">{score?.mandatorySatisfied ? copy('All mandatory questions passed.', 'Đạt tất cả câu điểm liệt.') : copy('Mandatory questions not satisfied.', 'Chưa đạt điều kiện câu điểm liệt.')}</Text>}
-                {score?.vetoTriggered && <Text variant="caption" tone="destructive">{copy('Prerequisite veto: retake required.', 'Điều kiện chặn từ nhóm tiên quyết: cần làm lại bài.')}</Text>}
+                {score?.vetoTriggered && <Text variant="caption" tone="destructive">{copy('All answers in this prerequisite group are wrong. Relearn and retake the full assessment.', 'Sai toàn bộ câu trong nhóm tiên quyết này. Cần học lại và làm lại toàn bộ bài đánh giá.')}</Text>}
               </div>)}</div></details>
             </th>
             <td className="px-3 py-3 align-top sm:px-4"><div className="flex flex-col items-start gap-2">{skill.groups.map(({ group, score }) => <Badge className="max-w-full whitespace-normal" key={group.id} variant={score?.passed && !score.vetoTriggered ? 'success' : 'warning'}>{t('knowledgeLevel.' + group.requirement.knowledgeLevel)} · {score?.passed && !score.vetoTriggered ? copy('Passed', 'Đạt') : copy('Not passed', 'Chưa đạt')}</Badge>)}</div></td>

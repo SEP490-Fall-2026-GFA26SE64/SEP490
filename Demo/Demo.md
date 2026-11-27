@@ -429,7 +429,7 @@ Cấu hình cây năng lực chuẩn logic cấp bậc:
 1. Đăng xuất Sarah → đăng nhập **David Thompson (Domain Expert)**.
 2. Vào **Skill Assessment → Configurations → Create configuration**.
 3. Bước **Questions**: kiểm tra tên; dùng **6 câu / 4 đúng / 1 mandatory** cho F/I/A và prerequisite nếu bank Published đã đủ theo file07 → **Continue**. Nếu thiếu câu, hoàn tất bank trước.
-4. Bước **Time & retakes**: đặt **Seconds per question = 60**, **Maximum attempts = 10**, **Wait = 0 phút** cho lượt demo này → **Continue**. Giữ all-wrong veto cho prerequisite theo cấu hình.
+4. Bước **Time & retakes**: đặt **Seconds per question = 60**, **Maximum attempts = 10**, **Wait = 0 phút** cho lượt demo này → **Continue**. Quy tắc tiên quyết luôn được bật: sai toàn bộ câu trong một nhóm tiên quyết thì phải học lại và thi lại toàn bộ bài đánh giá; không có checkbox tùy chọn.
 5. Bước **Review**: kiểm tra lại → **Save & activate** → xác nhận kích hoạt.
 6. Vào tab **Active** → kiểm tra cấu hình đã kích hoạt.
 

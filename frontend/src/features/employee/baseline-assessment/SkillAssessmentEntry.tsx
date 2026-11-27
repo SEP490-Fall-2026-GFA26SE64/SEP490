@@ -22,7 +22,7 @@ export function AssessmentStatus({ state, partialLabel }: { state: AssessmentSta
     loading: ['Checking assessment…', 'Đang kiểm tra bài đánh giá…'], unavailable: ['Assessment status unavailable', 'Chưa tải được trạng thái đánh giá'],
     notStarted: ['Assessment not taken', 'Chưa làm bài đánh giá'], inProgress: ['Assessment in progress', 'Đang làm bài đánh giá'],
     failed: ['Assessment not passed', 'Bài đánh giá chưa đạt'], passed: ['Assessment passed', 'Bài đánh giá đạt'],
-    veto: ['Prerequisite veto · retake required', 'Veto từ nhóm tiên quyết · cần thi lại'],
+    veto: ['All prerequisite answers wrong · relearn and retake', 'Sai toàn bộ câu tiên quyết · học lại và thi lại'],
     prerequisites: ['Main group passed · check prerequisite results', 'Nhóm chính đạt · xem kết quả tiền đề'],
   }
   return <Badge variant={state === 'passed' ? 'success' : state === 'failed' || state === 'veto' ? 'destructive' : state === 'loading' || state === 'unavailable' ? 'outline' : 'warning'} className="whitespace-normal text-left">{state === 'prerequisites' && partialLabel ? partialLabel : labels[state][language === 'vi' ? 1 : 0]}</Badge>

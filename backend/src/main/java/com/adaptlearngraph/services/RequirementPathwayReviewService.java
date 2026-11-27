@@ -200,7 +200,10 @@ public final class RequirementPathwayReviewService {
             var selected=selections.current(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId()))
                     .filter(value->value.selectionId().equals(row.getSelectionId()) && value.revision()==row.getSelectionRevision())
                     .orElseThrow(()->new Failure(409,"STALE_SELECTION"));
-            var approvedAt=new PathwayTiming(rules,clock).firstApproval(row,selected.role(),selected.levelId(),revisions);
+            // Existing approvals retain their original clock and basis, even after placement/catalog changes.
+            var timingRole=row.getTimingStartedAt()!=null || row.getPreviouslyApproved()?selected.role():admission.timingRole(row.getOrganizationId(),selected.role().id());
+            var placement=selections.placement(new RoleBaselineFlow.Actor(row.getOrganizationId(),row.getLearnerId())).orElse(null);
+            var approvedAt=new PathwayTiming(rules,clock).firstApproval(row,timingRole,selected.levelId(),revisions,placement);
             data.approvals().insert(new InitialPathwayApprovalEntity(id,row.getCurrentRevision(),row.getContentHash(),actor.organizationId(),actor.accountId(),assignment.id(),assignment.version(),approvedAt));
             if(data.current().approve(actor.organizationId(),row.getLearnerId(),id,row.getCurrentRevision(),row.getContentHash())!=1)throw new Failure(409,"STALE_PATHWAY_REVISION");
             revisions.event(row,row.getCurrentRevision(),"RULE_PATHWAY_APPROVED",actor.accountId(),Map.of("assignmentId",assignment.id(),"assignmentVersion",assignment.version()));

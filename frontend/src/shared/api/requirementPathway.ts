@@ -49,6 +49,14 @@ function pathway(v: unknown): RulePathway | null {
 }
 // Spring's Optional.empty current view is HTTP200 with no body. Only this nullable read permits it.
 export const readRulePathway = (id?: string | null, signal?: AbortSignal) => request(id ? 'employee/pathways/' + encodeURIComponent(id) : 'employee/pathway', pathway, { signal }, !id)
+export interface PathwayHistoryItem { requestId: string; roleName: string; levelName: string; jobPositionName: string | null; state: 'COMPLETED' | 'CANCELLED'; endedAt: string; timing: PathwayTiming }
+export const readPathwayHistory = (page: number, signal?: AbortSignal) => request(`employee/pathways/history?offset=${(page - 1) * 12}&limit=12`, value => {
+  const p = object(value)
+  return { total: count(p.total), items: list(p.items, value => {
+    const item = object(value)
+    return { requestId: text(item.requestId), roleName: text(item.roleName), levelName: text(item.levelName), jobPositionName: nullable(item.jobPositionName, text), state: oneOf(item.state, ['COMPLETED', 'CANCELLED'] as const), endedAt: timestamp(item.endedAt), timing: timing(item.timing) } satisfies PathwayHistoryItem
+  }) }
+}, { signal })
 export interface BypassedGap { bypassId: string; sourceRequestId: string; roleName: string; levelName: string; requirement: RuleRequirement; reason: string; expertId: string; decidedAt: string; achieved: boolean; options: { moduleId: string; moduleRevision: number; title: string }[]; certificate: RuleCertificate | null }
 export const readBypassedGaps = (signal?: AbortSignal) => request('employee/bypassed-gaps', value => list(value, item => {
   const gap = object(item)
