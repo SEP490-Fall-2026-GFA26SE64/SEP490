@@ -365,16 +365,46 @@ export function setActiveCompanyId(id: string) {
   window.dispatchEvent(new Event('active_company_changed'))
 }
 
+function hasExplicitActiveCompany(): boolean {
+  return typeof localStorage !== 'undefined' && Boolean(localStorage.getItem(STORAGE_KEY_ACTIVE_COMPANY))
+}
+
+function isActiveRecord(company: CompanyRecord, activeId: string): boolean {
+  return company.id === activeId || (activeId === SEED_COMPANY_TECHNOVA.id && company.id === 'comp-technova')
+}
+
+/** A cache record that belongs only to {@code id}; never borrows another organization's catalog. */
+function emptyCompanyRecord(id: string): CompanyRecord {
+  if (id === SEED_COMPANY_TECHNOVA.id) return { ...SEED_COMPANY_TECHNOVA }
+  return {
+    id,
+    name: '',
+    packageTier: 'Starter',
+    maxUsers: 0,
+    ownerEmail: '',
+    createdAt: '',
+    users: [],
+    competencies: [],
+    microSkills: [],
+    prerequisites: [],
+    modules: [],
+    targetRoles: [],
+    questions: [],
+    blueprints: [],
+  }
+}
+
 export function getActiveCompany(): CompanyRecord {
   const companies = loadCompanies()
   const activeId = getActiveCompanyId()
-  const found = companies.find((c) => c.id === activeId || (activeId === SEED_COMPANY_TECHNOVA.id && c.id === 'comp-technova'))
+  const found = companies.find((c) => isActiveRecord(c, activeId))
   if (found) {
     if (found.id === 'comp-technova') {
       return { ...found, id: SEED_COMPANY_TECHNOVA.id }
     }
     return found
   }
+  if (hasExplicitActiveCompany()) return emptyCompanyRecord(activeId)
   const fallback = companies[0] || SEED_COMPANY_TECHNOVA
   return fallback.id === 'comp-technova' ? { ...fallback, id: SEED_COMPANY_TECHNOVA.id } : fallback
 }
@@ -382,12 +412,22 @@ export function getActiveCompany(): CompanyRecord {
 export function updateActiveCompany(updater: (company: CompanyRecord) => CompanyRecord) {
   const companies = loadCompanies()
   const activeId = getActiveCompanyId()
-  const updated = companies.map((c) =>
-    (c.id === activeId || (activeId === SEED_COMPANY_TECHNOVA.id && c.id === 'comp-technova'))
-      ? updater(c)
-      : c
-  )
-  saveCompanies(updated)
+  if (!companies.some((c) => isActiveRecord(c, activeId))) {
+    saveCompanies([...companies, updater(emptyCompanyRecord(activeId))])
+    return
+  }
+  saveCompanies(companies.map((c) => (isActiveRecord(c, activeId) ? updater(c) : c)))
+}
+
+/**
+ * Keeps only the signed-in organization's browser cache so another tenant's cached catalog
+ * (micro-skills, competencies, roles) cannot surface after switching accounts in the same browser.
+ */
+export function scopeCompanyCacheToOrganization(organizationId: string) {
+  const normalized = organizationId === 'comp-technova' || organizationId === 'default-org' ? SEED_COMPANY_TECHNOVA.id : organizationId
+  const own = loadCompanies().filter((c) => isActiveRecord(c, normalized))
+  saveCompanies(own.length > 0 ? own : [emptyCompanyRecord(normalized)])
+  setActiveCompanyId(normalized)
 }
 
 export function createCompanyFromPackagePurchase(

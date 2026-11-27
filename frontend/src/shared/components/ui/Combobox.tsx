@@ -67,7 +67,7 @@ export function Combobox({
       const rect = triggerRef.current.getBoundingClientRect()
       const spaceBelow = window.innerHeight - rect.bottom
       const spaceAbove = rect.top
-      setOpenUpward(spaceBelow < 240 && spaceAbove > spaceBelow)
+      setOpenUpward(spaceBelow < 280 && spaceAbove > spaceBelow)
     }
   }, [])
 
@@ -235,11 +235,11 @@ export function Combobox({
       {isOpen && (
         <div
           className={cn(
-            'z-50 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80',
+            'z-50 flex w-full flex-col overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-lg animate-in fade-in-80',
             inlineDropdown ? 'relative mt-1' : cn('absolute left-0', openUpward ? 'bottom-full mb-1' : 'top-full mt-1'),
           )}
         >
-          <div className={cn('flex items-center border-b border-border', size === 'sm' ? 'px-2.5 py-1.5' : 'px-3 py-2')}>
+          <div className={cn('flex shrink-0 items-center border-b border-border', size === 'sm' ? 'px-2.5 py-1.5' : 'px-3 py-2')}>
             <Search aria-hidden="true" className={cn('mr-2 shrink-0 text-muted-foreground', size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
             <input
               ref={searchRef}
@@ -264,7 +264,7 @@ export function Combobox({
           </div>
 
           <div id={listId} role="listbox" aria-label={ariaLabel ?? placeholder}
-            aria-multiselectable={isMulti || undefined} className="max-h-48 overflow-y-auto p-1">
+            aria-multiselectable={isMulti || undefined} className="max-h-48 min-h-0 overflow-y-auto p-1">
             {filteredOptions.length === 0 ? (
               <div className={cn('py-3 text-center text-muted-foreground', size === 'sm' ? 'text-xs' : 'text-sm')}>
                 {emptyMessage}

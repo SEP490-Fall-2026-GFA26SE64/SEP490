@@ -11,7 +11,7 @@ import { Failure, Loading } from "./SubscriptionFeedback";
 import { useCopy } from "./SubscriptionFeedback.helpers";
 import { ROLE_HOME, roleOwnsPath, singleWorkspaceRole } from '../../shared/auth/workspaceRole'
 import { isWorkspaceSlug, safeReturnPath, workspaceBase, workspaceUrl } from '../../shared/auth/workspacePaths'
-import { setActiveCompanyId } from '../../shared/stores/companyStore'
+import { scopeCompanyCacheToOrganization } from '../../shared/stores/companyStore'
 
 export function WorkspaceLoginPage() {
   const c = useCopy()
@@ -29,7 +29,7 @@ export function WorkspaceLoginPage() {
   const [copied, setCopied] = useState<'idle' | 'done' | 'failed'>('idle')
   const session = identity ?? current.data
   const finish = (value: Identity) => {
-    setIdentity(value); setCode(''); setPassword(''); cache.clear(); cache.setQueryData(['workspace-identity'], value); if (value.organizationId) { setActiveCompanyId(value.organizationId); }
+    setIdentity(value); setCode(''); setPassword(''); cache.clear(); cache.setQueryData(['workspace-identity'], value); if (value.organizationId) { scopeCompanyCacheToOrganization(value.organizationId); }
   }
   const signIn = useMutation({ mutationFn: () => authenticate('sign-in', { email, password }), onSuccess: finish })
   const restart = useMutation({ mutationFn: () => request('/api/v1/workspace-auth/sign-out', 'POST'), onSuccess: () => {
