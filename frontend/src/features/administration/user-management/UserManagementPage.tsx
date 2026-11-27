@@ -1,4 +1,5 @@
 import { useResettableState } from '../../../shared/hooks/useResettableState'
+import { useToast } from '../../../shared/hooks/useToast'
 import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query'
 import { Briefcase,Building2,Eye,FileSpreadsheet,Mail,Pencil,Plus,Search,ShieldCheck,Target,Trash2,User,UserCheck,Users,UserX } from 'lucide-react'
 import { useEffect,useMemo,useState } from 'react'
@@ -116,7 +117,20 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
   const [form, setForm] = useState<{ member: Member | null } | null>(null)
   const [detail, setDetail] = useState<DirectoryRow | null>(null)
   const [confirm, setConfirm] = useState<Member | null>(null)
-  const [notice, setNotice] = useState<'membership' | 'invited' | 'saved' | null>(null)
+  const { toast } = useToast()
+  const notify = (kind: 'membership' | 'invited' | 'saved') => {
+    if (kind === 'membership') {
+      toast({ title: c('Membership updated', 'Đã cập nhật thành viên'), description: c('Membership updated.', 'Đã cập nhật vai trò thành viên.'), variant: 'success' })
+    } else if (kind === 'saved') {
+      toast({ title: c('User saved', 'Đã lưu người dùng'), description: c('User details saved.', 'Đã lưu thông tin người dùng.'), variant: 'success' })
+    } else {
+      toast({
+        title: c('Invitation sent', 'Đã gửi lời mời'),
+        description: c('Activation invitation dispatched. The user can activate their account using the link in their email.', 'Lời mời kích hoạt đã được gửi. Người dùng có thể kích hoạt tài khoản qua liên kết trong email.'),
+        variant: 'success',
+      })
+    }
+  }
   const [importOpen, setImportOpen] = useState(false)
   const suspended = summary.data?.workspaceStatus === 'SUSPENDED'
   const editable = summary.isSuccess && !suspended && summary.data.subscriptionStatus === 'ACTIVE'
@@ -139,7 +153,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       roles: member.roles,
       revision: member.revision,
     }),
-    onSuccess: async () => { await refresh(); setConfirm(null); setNotice('membership') },
+    onSuccess: async () => { await refresh(); setConfirm(null); notify('membership') },
   })
 
   const resend = useMutation({
@@ -150,7 +164,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
       departmentId: invitation.departmentId,
       jobPositionReferenceId: invitation.jobPositionReferenceId,
     }),
-    onSuccess: async () => { await refresh(); setNotice('invited') },
+    onSuccess: async () => { await refresh(); notify('invited') },
   })
 
   const storedDepartments = useMemo(() => loadDepartments(organization), [organization])
@@ -387,7 +401,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
             variant="outline"
             disabled={!editable || isCapReached}
             leftIcon={<FileSpreadsheet size={16} aria-hidden="true" />}
-            onClick={() => { setNotice(null); setImportOpen(true) }}
+            onClick={() => setImportOpen(true)}
             title={isCapReached ? c('Seat limit reached. Upgrade subscription to add more users.', 'Đã đạt giới hạn ghế thành viên. Nâng cấp gói để thêm người dùng.') : undefined}
           >
             {c('Import Excel', 'Nhập Excel')}
@@ -395,7 +409,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           <Button
             disabled={!editable || isCapReached}
             leftIcon={<Plus size={16} aria-hidden="true" />}
-            onClick={() => { setNotice(null); setForm({ member: null }) }}
+            onClick={() => setForm({ member: null })}
             title={isCapReached ? c('Seat limit reached. Upgrade subscription to add more users.', 'Đã đạt giới hạn ghế thành viên. Nâng cấp gói để thêm người dùng.') : undefined}
           >
             {c('Create User', 'Tạo người dùng')}
@@ -417,13 +431,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
             `Đã đạt giới hạn ghế (${summary.data?.usedSeats ?? 0}/${summary.data?.admissionLimit ?? 0}). Vui lòng nâng cấp gói đăng ký trước khi tạo người dùng mới.`
           )}
         </div>
-      )}
-      {notice && (
-        <p role="status" className="rounded-lg border border-success/30 bg-card p-3">
-          {notice === 'membership' ? c('Membership updated.', 'Đã cập nhật vai trò thành viên.') :
-            notice === 'saved' ? c('User details saved.', 'Đã lưu thông tin người dùng.') :
-              c('Activation invitation dispatched. The user can activate their account using the link in their email.', 'Lời mời kích hoạt đã được gửi. Người dùng có thể kích hoạt tài khoản qua liên kết trong email.')}
-        </p>
       )}
       {resend.isError && <Failure error={resend.error} />}
       {incomplete ? <Loading /> : failure ? <Failure error={failure} retry={() => void refresh()} /> : (
@@ -684,7 +691,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           enabled={editable && !isCapReached}
           onImported={async (created) => {
             await refresh()
-            if (created > 0) setNotice('invited')
+            if (created > 0) notify('invited')
           }}
         />
       )}
@@ -705,7 +712,7 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           saved={async (invited) => {
             await refresh()
             setForm(null)
-            setNotice(invited ? 'invited' : 'saved')
+            notify(invited ? 'invited' : 'saved')
           }}
         />
       )}

@@ -9,9 +9,9 @@ import { WorkspaceLayout } from './WorkspaceLayout'
 afterEach(() => { cleanup(); localStorage.clear(); vi.unstubAllGlobals() })
 
 it.each([
-  ['ORGANIZATION_ADMINISTRATOR', '/system-status?portal=admin'],
+  ['ORGANIZATION_ADMINISTRATOR', '/admin/dashboard'],
   ['DOMAIN_EXPERT', '/system-status?portal=expert'],
-])('uses the signed-in %s portal on shared pages regardless of saved demo state', (role, statusLink) => {
+])('uses the signed-in %s portal on shared pages regardless of saved demo state', (role, portalLink) => {
   vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 })))
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() })))
   localStorage.setItem('active_actor', 'employee')
@@ -23,9 +23,25 @@ it.each([
     </MemoryRouter>
   </LanguageProvider></ToastProvider></QueryClientProvider>)
   const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
-  expect(hrefs).toContain(statusLink)
+  expect(hrefs).toContain(portalLink)
   expect(hrefs).not.toContain('/employee/overview')
   expect(hrefs).not.toContain('/employee/my-skills')
+})
+it('omits Org Settings, Design System and Server Status from the System Administrator sidebar', () => {
+  vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 })))
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() })))
+  render(<QueryClientProvider client={new QueryClient()}><ToastProvider><LanguageProvider>
+    <MemoryRouter initialEntries={['/admin/dashboard']}>
+      <WorkspaceLayout identity={{ accountId: 'a', fullName: 'Admin', email: 'admin@example.test', organizationId: 'o', organizationName: 'Organization', roles: ['ORGANIZATION_ADMINISTRATOR'] }}>
+        <p>content</p>
+      </WorkspaceLayout>
+    </MemoryRouter>
+  </LanguageProvider></ToastProvider></QueryClientProvider>)
+  const hrefs = screen.getAllByRole('link').map(link => link.getAttribute('href'))
+  expect(hrefs).toContain('/admin/users')
+  expect(hrefs).not.toContain('/admin/organization-settings')
+  expect(hrefs).not.toContain('/admin/design-system')
+  expect(hrefs).not.toContain('/system-status?portal=admin')
 })
 it.each(['/ld-manager/modules','/ld-manager/approvals'])('groups %s under Modules with Modules as its entry', path => {
   vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:404})))
