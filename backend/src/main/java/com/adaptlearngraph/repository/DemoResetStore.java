@@ -47,8 +47,9 @@ public class DemoResetStore {
             int organizations = jdbc.update("DELETE FROM platform.organization WHERE organization_id::text <> ALL(?::text[])", keep);
             int accounts = jdbc.update("""
                     DELETE FROM platform.account a
-                    WHERE (a.organization_id IS NOT NULL AND a.organization_id::text <> ALL(?::text[]))
-                       OR (a.organization_id IS NULL AND NOT EXISTS (SELECT 1 FROM platform.account_role r WHERE r.account_id = a.account_id))
+                    WHERE ((a.organization_id IS NOT NULL AND a.organization_id::text <> ALL(?::text[]))
+                       OR (a.organization_id IS NULL AND NOT EXISTS (SELECT 1 FROM platform.account_role r WHERE r.account_id = a.account_id)))
+                      AND NOT EXISTS (SELECT 1 FROM platform.platform_administrator p WHERE p.account_id = a.account_id)
                     """, keep);
             int registrations = jdbc.update("""
                     DELETE FROM platform.organization_registration g
