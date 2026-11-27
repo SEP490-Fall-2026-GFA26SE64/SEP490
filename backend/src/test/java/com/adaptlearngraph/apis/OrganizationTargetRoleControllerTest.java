@@ -11,7 +11,6 @@ import com.adaptlearngraph.services.CreateTargetRoleUseCase;
 import com.adaptlearngraph.services.ManageTargetRoleUseCase;
 import com.adaptlearngraph.services.ViewTargetRolesUseCase;
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,8 +68,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_BACKEND_P3",
                 "Backend Engineer P3",
-                "BACKEND",
-                RoleTrack.PROFESSIONAL,
                 "Backend role",
                 RoleStatus.DRAFT,
                 Instant.now(),
@@ -82,8 +79,7 @@ class OrganizationTargetRoleControllerTest {
         CreateTargetRoleRequest request = new CreateTargetRoleRequest(
                 "ROLE_BACKEND_P3",
                 "Backend Engineer P3",
-                "BACKEND",
-                "PROFESSIONAL",
+                "",
                 "Backend role");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/target-roles")
@@ -108,8 +104,7 @@ class OrganizationTargetRoleControllerTest {
         CreateTargetRoleRequest request = new CreateTargetRoleRequest(
                 "ROLE_BACKEND_P3",
                 "Backend Engineer P3",
-                "BACKEND",
-                "PROFESSIONAL",
+                "",
                 "Backend role");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/target-roles")
@@ -129,8 +124,7 @@ class OrganizationTargetRoleControllerTest {
         CreateTargetRoleRequest request = new CreateTargetRoleRequest(
                 "ROLE_BACKEND_P3",
                 "Backend Engineer P3",
-                "BACKEND",
-                "PROFESSIONAL",
+                "",
                 "Backend role");
 
         mockMvc.perform(post("/api/v1/organizations/org-1/target-roles")
@@ -150,8 +144,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_DEV",
                 "Developer",
-                "DEV",
-                RoleTrack.PROFESSIONAL,
                 "Desc",
                 RoleStatus.DRAFT,
                 Instant.now(),
@@ -177,8 +169,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_CLOUD",
                 "Updated Cloud Architect",
-                "CLOUD_DEVOPS",
-                RoleTrack.MANAGEMENT,
                 "expert-1",
                 "Updated description",
                 RoleStatus.DRAFT,
@@ -191,8 +181,6 @@ class OrganizationTargetRoleControllerTest {
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
                         "Updated Cloud Architect",
-                        "CLOUD_DEVOPS",
-                        "MANAGEMENT",
                         "expert-1",
                         "Updated description");
 
@@ -202,9 +190,7 @@ class OrganizationTargetRoleControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Cloud Architect"))
-                .andExpect(jsonPath("$.track").value("MANAGEMENT"))
-                .andExpect(jsonPath("$.familyCode").value("CLOUD_DEVOPS"));
+                .andExpect(jsonPath("$.name").value("Updated Cloud Architect"));
     }
 
     @Test
@@ -214,7 +200,7 @@ class OrganizationTargetRoleControllerTest {
         UUID roleId = UUID.randomUUID();
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
-                        "Name", "DEV", "PROFESSIONAL", "", "Desc");
+                        "Name", "", "Desc");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -234,8 +220,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_CLOUD",
                 "Cloud Architect",
-                "CLOUD_DEVOPS",
-                RoleTrack.MANAGEMENT,
                 "expert-1",
                 "Description",
                 RoleStatus.UNPUBLISHED,
@@ -248,15 +232,9 @@ class OrganizationTargetRoleControllerTest {
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
                         "Cloud Architect",
-                        "CLOUD_DEVOPS",
-                        "MANAGEMENT",
                         "expert-1",
                         "Description",
-                        null,
-                        "UNPUBLISHED",
-                        null,
-                        null,
-                        null);
+                        "UNPUBLISHED");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -272,22 +250,16 @@ class OrganizationTargetRoleControllerTest {
     @DisplayName("REQ-052-F03: PUT with status UNPUBLISHED returns 403 Forbidden for DOMAIN_EXPERT")
     void updateTargetRoleUnpublishReturns403ForDomainExpert() throws Exception {
         UUID roleId = UUID.randomUUID();
-        TargetRole existingRole = TargetRole.createNew("org-1", "ROLE_CLOUD", "Cloud Architect", "CLOUD_DEVOPS", RoleTrack.MANAGEMENT, "expert-1", "Description").publish();
+        TargetRole existingRole = TargetRole.createNew("org-1", "ROLE_CLOUD", "Cloud Architect", "expert-1", "Description").publish();
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(existingRole));
 
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
                         "Cloud Architect",
-                        "CLOUD_DEVOPS",
-                        "MANAGEMENT",
                         "expert-1",
                         "Description",
-                        null,
-                        "UNPUBLISHED",
-                        null,
-                        null,
-                        null);
+                        "UNPUBLISHED");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -303,7 +275,7 @@ class OrganizationTargetRoleControllerTest {
     @DisplayName("REQ-023-F04: DELETE /api/v1/organizations/{orgId}/target-roles/{roleId} returns 204 No Content for LD_MANAGER when DRAFT")
     void deleteTargetRoleReturns204() throws Exception {
         UUID roleId = UUID.randomUUID();
-        TargetRole draftRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "ENG", RoleTrack.PROFESSIONAL, "", "desc");
+        TargetRole draftRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "", "desc");
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(draftRole));
         when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
@@ -320,7 +292,7 @@ class OrganizationTargetRoleControllerTest {
     @DisplayName("REQ-023-F04: DELETE returns 403 Forbidden for LD_MANAGER when ACTIVE/PUBLISHED")
     void deleteTargetRoleReturns403ForLdManagerWhenPublished() throws Exception {
         UUID roleId = UUID.randomUUID();
-        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "", "desc").publish();
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(publishedRole));
 
@@ -335,7 +307,7 @@ class OrganizationTargetRoleControllerTest {
     @DisplayName("REQ-023-F04: DELETE returns 204 No Content for DOMAIN_EXPERT when PUBLISHED")
     void deleteTargetRoleReturns204ForExpertWhenPublished() throws Exception {
         UUID roleId = UUID.randomUUID();
-        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "ENG", RoleTrack.PROFESSIONAL, "", "desc").publish();
+        TargetRole publishedRole = TargetRole.createNew("org-1", "ROLE_TEST", "Test Role", "", "desc").publish();
         when(viewTargetRolesUseCase.getTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
                 .thenReturn(Optional.of(publishedRole));
         when(manageTargetRoleUseCase.deleteTargetRole(eq("org-1"), eq(new TargetRoleId(roleId))))
@@ -368,8 +340,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.DRAFT,
@@ -396,8 +366,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.SENT,
@@ -409,8 +377,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.ACTIVE,
@@ -424,7 +390,7 @@ class OrganizationTargetRoleControllerTest {
 
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
-                        "AI Spec", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "ACTIVE");
+                        "AI Spec", "expert-alpha", "Desc", "ACTIVE");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -446,8 +412,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.SENT,
@@ -459,7 +423,7 @@ class OrganizationTargetRoleControllerTest {
 
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
-                        "AI Spec", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "ACTIVE");
+                        "AI Spec", "expert-alpha", "Desc", "ACTIVE");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -480,8 +444,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.SENT,
@@ -493,7 +455,7 @@ class OrganizationTargetRoleControllerTest {
 
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
-                        "AI Spec", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(), "Skill benchmark threshold too high for junior tier");
+                        "AI Spec", "expert-alpha", "Desc", List.of(), "REJECTED", "1.0", List.of(), "Skill benchmark threshold too high for junior tier", null, null, null, null);
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -515,8 +477,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI",
                 "AI Spec",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-alpha",
                 "Desc",
                 RoleStatus.REJECTED,
@@ -530,7 +490,7 @@ class OrganizationTargetRoleControllerTest {
 
         com.adaptlearngraph.dtos.UpdateTargetRoleRequest request =
                 new com.adaptlearngraph.dtos.UpdateTargetRoleRequest(
-                        "AI Spec", "AI_ML", "PROFESSIONAL", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(java.util.Map.of("skillCode", "SKILL_01", "threshold", 80)), "Proposal Rejected: fresher missing skill");
+                        "AI Spec", "expert-alpha", "Desc", "REJECTED", "1.0", List.of(java.util.Map.of("skillCode", "SKILL_01", "threshold", 80)), "Proposal Rejected: fresher missing skill");
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/v1/organizations/org-1/target-roles/" + roleId)
                         .with(csrf())
@@ -551,8 +511,6 @@ class OrganizationTargetRoleControllerTest {
                 "org-1",
                 "ROLE_AI_P4",
                 "AI Architect P4",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-chen",
                 "Senior AI role",
                 List.of("Design neural models", "Deploy graph ML"),
@@ -569,8 +527,6 @@ class OrganizationTargetRoleControllerTest {
         CreateTargetRoleRequest request = new CreateTargetRoleRequest(
                 "ROLE_AI_P4",
                 "AI Architect P4",
-                "AI_ML",
-                "PROFESSIONAL",
                 "expert-chen",
                 "Senior AI role",
                 List.of("Design neural models", "Deploy graph ML"));

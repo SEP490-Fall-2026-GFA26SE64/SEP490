@@ -2,7 +2,6 @@ package com.adaptlearngraph.services;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.repository.GraphSchemaMigrator;
 import com.adaptlearngraph.repository.Neo4jTargetRoleRepository;
@@ -48,8 +47,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-alpha",
                         "ROLE_DATA_ENG",
                         "Data Engineer",
-                        "DATA",
-                        RoleTrack.PROFESSIONAL,
                         "Data pipeline engineering");
                 roleRepo.save(roleAlpha);
 
@@ -58,8 +55,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-beta",
                         "ROLE_DATA_ENG_BETA",
                         "Data Engineer Beta",
-                        "DATA",
-                        RoleTrack.MANAGEMENT,
                         "Beta pipeline engineering");
                 roleRepo.save(roleBeta);
 
@@ -68,7 +63,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                 assertEquals(1, alphaRoles.size());
                 assertEquals("ROLE_DATA_ENG", alphaRoles.getFirst().getCode());
                 assertEquals(RoleStatus.DRAFT, alphaRoles.getFirst().getStatus());
-                assertEquals(RoleTrack.PROFESSIONAL, alphaRoles.getFirst().getTrack());
 
                 List<TargetRole> betaRoles = roleRepo.findByOrganizationId("org-beta", TargetRoleFilter.empty());
                 assertEquals(1, betaRoles.size());
@@ -81,8 +75,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                 // REQ-023-F03: Update Target Role details in Neo4j
                 TargetRole updatedAlpha = roleAlpha.updateDetails(
                         "Principal Data Engineer",
-                        "PYTHON_DATA",
-                        RoleTrack.MANAGEMENT,
                         "expert-99",
                         "Principal level data engineering");
                 roleRepo.save(updatedAlpha);
@@ -90,17 +82,16 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                 var loadedAlphaOpt = roleRepo.findById("org-alpha", roleAlpha.getId());
                 assertTrue(loadedAlphaOpt.isPresent());
                 assertEquals("Principal Data Engineer", loadedAlphaOpt.get().getName());
-                assertEquals(RoleTrack.MANAGEMENT, loadedAlphaOpt.get().getTrack());
                 assertEquals("expert-99", loadedAlphaOpt.get().getAssignedExpertId());
 
                 // REQ-011-F01 & REQ-023-F05: Filter by assignedExpertId in Neo4j
                 List<TargetRole> expertRoles = roleRepo.findByOrganizationId("org-alpha",
-                        new TargetRoleFilter(null, null, null, "expert-99"));
+                        new TargetRoleFilter(null, null, "expert-99"));
                 assertEquals(1, expertRoles.size());
                 assertEquals("ROLE_DATA_ENG", expertRoles.getFirst().getCode());
 
                 List<TargetRole> unassignedExpertRoles = roleRepo.findByOrganizationId("org-alpha",
-                        new TargetRoleFilter(null, null, null, "expert-none"));
+                        new TargetRoleFilter(null, null, "expert-none"));
                 assertEquals(0, unassignedExpertRoles.size());
 
                 // REQ-023-F04: Delete Target Role with DETACH DELETE in Neo4j
@@ -130,8 +121,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-beta",
                         "ROLE_ML_ENG",
                         "Machine Learning Engineer",
-                        "AI_ML",
-                        RoleTrack.PROFESSIONAL,
                         "expert-chen",
                         "ML and Deep learning role",
                         "1.0",
@@ -161,8 +150,6 @@ class TargetRoleAndMicroSkillNeo4jIntegrationTest {
                         "org-beta",
                         "ROLE_ML_ENG",
                         "Machine Learning Engineer",
-                        "AI_ML",
-                        RoleTrack.PROFESSIONAL,
                         "expert-chen",
                         "Successor draft for ML Engineer",
                         "1.1",

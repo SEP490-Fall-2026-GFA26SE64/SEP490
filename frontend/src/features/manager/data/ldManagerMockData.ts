@@ -48,7 +48,6 @@ export interface JobPosition {
   code: string // e.g. '15-1252.00'
   name: string // e.g. 'Software Developers'
   description: string
-  jobZone: number // e.g. 4
   profiles: string[] // e.g. ['DEV', 'INTEGRATION', 'DEVOPS', 'INFRA', 'SWARCH', 'SYSARCH']
   assignedExpertIds: string[]
   status?: 'active' | 'inactive'
@@ -98,7 +97,6 @@ export function resolveJobPositionForRole(
       code: role.jobPositionCode,
       name: role.jobPositionCode,
       description: 'Aligned job position classification.',
-      jobZone: 4,
       profiles: ['DEV'],
       assignedExpertIds: [],
     }
@@ -123,7 +121,6 @@ export function resolveJobPositionForRole(
         code: '15-1252.00',
         name: 'Software Developers',
         description: 'Research, design, and develop computer and network software or specialized utility programs.',
-        jobZone: 4,
         profiles: ['DEV'],
         assignedExpertIds: [],
       }
@@ -163,7 +160,6 @@ export function resolveJobPositionForRole(
       code: '13-1151.00',
       name: 'Training and Development Specialists',
       description: 'Design and conduct training and development programs to improve individual and organizational performance.',
-      jobZone: 4,
       profiles: ['LD'],
       assignedExpertIds: [],
     }
@@ -175,7 +171,6 @@ export function resolveJobPositionForRole(
       code: '15-1212.00',
       name: 'Information Security Analysts',
       description: 'Plan, implement, upgrade, or monitor security measures for the protection of computer networks and information.',
-      jobZone: 4,
       profiles: ['SEC'],
       assignedExpertIds: [],
     }
@@ -189,7 +184,6 @@ export function resolveJobPositionForRole(
       code: '15-1253.00',
       name: 'Software Quality Assurance Analysts and Testers',
       description: 'Develop and execute software tests to identify software problems and their causes.',
-      jobZone: 4,
       profiles: ['QA'],
       assignedExpertIds: [],
     }
@@ -201,7 +195,6 @@ export function resolveJobPositionForRole(
       code: '15-1243.00',
       name: 'Database Architects',
       description: 'Design strategies for enterprise database systems and set standards for operations, programming, and security.',
-      jobZone: 4,
       profiles: ['DATA'],
       assignedExpertIds: [],
     }
@@ -213,7 +206,6 @@ export function resolveJobPositionForRole(
       code: '15-1299.08',
       name: 'Computer Systems Engineers/Architects',
       description: 'Design and develop solutions to complex applications problems, system administration issues, or network concerns.',
-      jobZone: 4,
       profiles: ['SYSARCH', 'INFRA', 'DEVOPS'],
       assignedExpertIds: [],
     }
@@ -226,7 +218,6 @@ export function resolveJobPositionForRole(
     code: '15-1252.00',
     name: 'Software Developers',
     description: 'Research, design, and develop computer and network software or specialized utility programs.',
-    jobZone: 4,
     profiles: ['DEV'],
     assignedExpertIds: [],
   }
@@ -600,7 +591,6 @@ export function getAvailableJobPositions(organizationId?: string, includeInactiv
                     code: item.code,
                     name: item.name || existing?.name || item.code,
                     description: item.description || existing?.description || '',
-                    jobZone: item.jobZone || existing?.jobZone || 4,
                     profiles: existing?.profiles || ['DEV'],
                     assignedExpertIds: Array.isArray(item.assignedExperts)
                       ? item.assignedExperts.map((ae: any) => normalizeExpertId(ae.id || ae))
@@ -621,7 +611,6 @@ export function getAvailableJobPositions(organizationId?: string, includeInactiv
       code: '15-1252.00',
       name: 'Software Developers',
       description: 'Research, design, and develop computer and network software or specialized utility programs.',
-      jobZone: 4,
       profiles: ['DEV'],
       assignedExpertIds: [],
       status: 'active',

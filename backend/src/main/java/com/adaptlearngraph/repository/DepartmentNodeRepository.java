@@ -20,16 +20,12 @@ public interface DepartmentNodeRepository extends Repository<DepartmentNode, Str
                 d.code = $code,
                 d.name = $name,
                 d.description = $description,
-                d.headOfDepartment = $headOfDepartment,
-                d.headEmail = $headEmail,
                 d.status = $status,
                 d.createdAt = $createdAt,
                 d.updatedAt = $updatedAt
             ON MATCH SET
                 d.name = $name,
                 d.description = $description,
-                d.headOfDepartment = $headOfDepartment,
-                d.headEmail = $headEmail,
                 d.status = $status,
                 d.updatedAt = $updatedAt
             """)
@@ -38,8 +34,6 @@ public interface DepartmentNodeRepository extends Repository<DepartmentNode, Str
                @Param("code") String code,
                @Param("name") String name,
                @Param("description") String description,
-               @Param("headOfDepartment") String headOfDepartment,
-               @Param("headEmail") String headEmail,
                @Param("status") String status,
                @Param("createdAt") String createdAt,
                @Param("updatedAt") String updatedAt);

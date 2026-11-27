@@ -61,7 +61,6 @@ export interface JobPositionRecord {
   id: string
   code: string // Job position code, e.g. 15-1252.00
   name: string
-  jobZone: number
   description: string
   status: 'active' | 'inactive'
   assignedExperts: AssignedExpert[]
@@ -151,17 +150,6 @@ export function JobPositionsManagementPage() {
               name: matched.name,
               jobPositionCodes: matched.linkedJobPositions || [],
             }
-          }
-        }
-        const matchedHead = localDepts.find(
-          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
-        )
-        if (matchedHead) {
-          return {
-            id: matchedHead.id,
-            code: matchedHead.code,
-            name: matchedHead.name,
-            jobPositionCodes: matchedHead.linkedJobPositions || [],
           }
         }
       }
@@ -256,19 +244,10 @@ export function JobPositionsManagementPage() {
                 id: matched.id,
                 code: matched.code,
                 name: matched.name,
-                headEmail: session?.identity?.email || '',
-                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
                 status: 'ACTIVE',
               }).catch(() => {})
             }
           }
-        }
-
-        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
-        if (!matched && session?.identity?.email) {
-          matched = effectiveDepts.find(
-            (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
-          )
         }
 
         if (matched && isMounted) {
@@ -386,7 +365,6 @@ export function JobPositionsManagementPage() {
             id: item.id || item.code || '',
             code,
             name: item.name || item.title || '',
-            jobZone: item.jobZone || 4,
             interests: Object.fromEntries(INTEREST_FIELDS.map(key => [key, item[key] ?? null])),
             description: item.description || localMatch?.description || '',
             status: localMatch?.status || (String(item.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active'),
@@ -437,7 +415,6 @@ export function JobPositionsManagementPage() {
   const [editingJobPosition, setEditingJobPosition] = React.useState<JobPositionRecord | null>(null)
   const [occName, setOccName] = React.useState('')
   const [occCode, setOccCode] = React.useState('')
-  const [occJobZone, setOccJobZone] = React.useState(4)
   const [occDescription, setOccDescription] = React.useState('')
   const [occInterests, setOccInterests] = React.useState<Record<string, string>>({})
   // View Details Modal (Includes RIASEC profile view)
@@ -520,7 +497,6 @@ export function JobPositionsManagementPage() {
       defaultCode = `SEC-ENG-${String(suffix).padStart(2, '0')}`
     }
     setOccCode(defaultCode)
-    setOccJobZone(4)
     setOccDescription('')
     setOccInterests({})
     setIsJobPositionModalOpen(true)
@@ -531,7 +507,6 @@ export function JobPositionsManagementPage() {
     setEditingJobPosition(occ)
     setOccName(occ.name)
     setOccCode(occ.code)
-    setOccJobZone(occ.jobZone)
     setOccDescription(occ.description)
     setOccInterests(Object.fromEntries(INTEREST_FIELDS.map(key => [key, occ.interests?.[key] == null ? '' : String(occ.interests[key])])))
     setIsJobPositionModalOpen(true)
@@ -548,11 +523,11 @@ export function JobPositionsManagementPage() {
       const filled = INTEREST_FIELDS.filter(key => (occInterests[key] ?? '').trim() !== '')
       if (filled.length !== 0 && filled.length !== 6) throw new Error('Enter all six RIASEC scores or leave all six blank.')
       if (filled.some(key => !/^\d+$/.test(occInterests[key]) || Number(occInterests[key]) > 40)) throw new Error('RIASEC scores must be integers from 0 to 40.')
-      const payload = { code: codeUpper, name: occName.trim(), jobZone: occJobZone, description: occDescription.trim(), ...Object.fromEntries(INTEREST_FIELDS.map(key => [key, filled.length ? Number(occInterests[key]) : null])), ...(editingJobPosition ? {} : { status: 'ACTIVE' }) }
+      const payload = { code: codeUpper, name: occName.trim(), description: occDescription.trim(), ...Object.fromEntries(INTEREST_FIELDS.map(key => [key, filled.length ? Number(occInterests[key]) : null])), ...(editingJobPosition ? {} : { status: 'ACTIVE' }) }
       const accepted = editingJobPosition ? await updateJobPosition(orgId, editingJobPosition.id, payload) : await createJobPosition(orgId, payload)
       const existing = jobPositions.find(p => p.id === accepted.id)
       const newOcc: JobPositionRecord = {
-        id: accepted.id, code: accepted.code, name: accepted.name, jobZone: accepted.jobZone,
+        id: accepted.id, code: accepted.code, name: accepted.name,
         interests: Object.fromEntries(INTEREST_FIELDS.map(key => [key, accepted[key] ?? null])),
         description: occDescription.trim(), status: accepted.status?.toUpperCase() === 'INACTIVE' ? 'inactive' : 'active',
         assignedExperts: existing?.assignedExperts ?? [], microSkillCount: accepted.microSkillCount,
@@ -606,8 +581,6 @@ export function JobPositionsManagementPage() {
                 code: (managerDepartment as any).code || managerDepartment.name.toUpperCase().slice(0, 8),
                 name: managerDepartment.name,
                 description: '',
-                headOfDepartment: '',
-                headEmail: session?.identity?.email || '',
                 status: 'active' as const,
                 linkedJobPositions: [newOcc.code],
                 organizationId: orgId,
@@ -837,7 +810,6 @@ export function JobPositionsManagementPage() {
         id: String(item.id || `occ-imp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
         code: String(item.code || `15-${(1250 + jobPositions.length + validJobPositions.length + 1).toString().padStart(4, '0')}.00`),
         name: String(item.name).trim(),
-        jobZone: Number(item.jobZone) || 4,
         description: String(item.description || 'Imported curricular jobPosition domain.'),
         status: item.status === 'inactive' ? 'inactive' : 'active',
         assignedExperts: Array.isArray(item.assignedExperts) ? (item.assignedExperts as JobPositionRecord['assignedExperts']) : [],
@@ -1182,7 +1154,7 @@ export function JobPositionsManagementPage() {
             <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable] pr-1.5 space-y-4 text-xs min-h-0">
               {/* Unified Job Position Overview Card */}
               <div className="p-4 rounded-xl border border-border bg-card space-y-3.5 shadow-2xs">
-                {/* Top Row: Classification & Job Zone */}
+                {/* Top Row: Classification */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
                   <div className="space-y-1">
                     <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">

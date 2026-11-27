@@ -78,7 +78,6 @@ class Neo4jTargetRoleCatalogAdapterTest {
     void detailMapsRequirementsAndRechecksCurrentCatalogState() {
         var detail = adapter.findAvailableRole("org-a", "role-a").orElseThrow();
 
-        assertThat(detail.familyCode()).isEqualTo("JAVA");
         assertThat(detail.responsibilities()).containsExactly("Build APIs", "Review code");
         assertThat(detail.requirements()).extracting(requirement -> requirement.skillCode())
                 .containsExactlyInAnyOrder("JAVA", "SPRING");
@@ -111,24 +110,24 @@ class Neo4jTargetRoleCatalogAdapterTest {
             CREATE (spring:MicroSkill {id: 'skill-spring', code: 'SPRING', name: 'Spring', status: 'ACTIVE'})
             CREATE (inactiveSkill:MicroSkill {id: 'skill-inactive', code: 'OLD', name: 'Old Skill', status: 'RETIRED'})
             CREATE (roleA:TargetRole {
-                id: 'role-a', code: 'JAVA_P3', name: 'Java Backend Developer', familyCode: 'JAVA',
-                track: 'PROFESSIONAL', organizationId: 'org-a', status: 'ACTIVE',
+                id: 'role-a', code: 'JAVA_P3', name: 'Java Backend Developer',
+                organizationId: 'org-a', status: 'ACTIVE',
                 description: 'Backend role', responsibilities: ['Build APIs', 'Review code']})
             CREATE (roleB:TargetRole {
-                id: 'role-b', code: 'FIN_P3', name: 'Finance Analyst', familyCode: 'FIN',
-                track: 'PROFESSIONAL', organizationId: 'org-b', status: 'ACTIVE'})
+                id: 'role-b', code: 'FIN_P3', name: 'Finance Analyst',
+                organizationId: 'org-b', status: 'ACTIVE'})
             CREATE (retired:TargetRole {
-                id: 'role-retired', code: 'OLD_P3', name: 'Retired Role', familyCode: 'OLD',
-                track: 'PROFESSIONAL', organizationId: 'org-a', status: 'RETIRED'})
+                id: 'role-retired', code: 'OLD_P3', name: 'Retired Role',
+                organizationId: 'org-a', status: 'RETIRED'})
             CREATE (noRequirements:TargetRole {
-                id: 'role-empty', code: 'EMPTY_P3', name: 'Empty Role', familyCode: 'EMPTY',
-                track: 'PROFESSIONAL', organizationId: 'org-a', status: 'ACTIVE'})
+                id: 'role-empty', code: 'EMPTY_P3', name: 'Empty Role',
+                organizationId: 'org-a', status: 'ACTIVE'})
             CREATE (badMastery:TargetRole {
-                id: 'role-bad', code: 'BAD_P3', name: 'Bad Role', familyCode: 'BAD',
-                track: 'PROFESSIONAL', organizationId: 'org-a', status: 'ACTIVE'})
+                id: 'role-bad', code: 'BAD_P3', name: 'Bad Role',
+                organizationId: 'org-a', status: 'ACTIVE'})
             CREATE (inactiveRequirement:TargetRole {
-                id: 'role-inactive-skill', code: 'INACTIVE_P3', name: 'Inactive Skill Role', familyCode: 'OLD',
-                track: 'PROFESSIONAL', organizationId: 'org-a', status: 'ACTIVE'})
+                id: 'role-inactive-skill', code: 'INACTIVE_P3', name: 'Inactive Skill Role',
+                organizationId: 'org-a', status: 'ACTIVE'})
             CREATE (roleA)-[:REQUIRES_SKILL {status: 'ACTIVE', targetMastery: 0.6}]->(java)
             CREATE (roleA)-[:REQUIRES_SKILL {status: 'ACTIVE', targetMastery: 0.7}]->(spring)
             CREATE (roleB)-[:REQUIRES_SKILL {status: 'ACTIVE', targetMastery: 0.6}]->(java)

@@ -17,8 +17,6 @@ public record DepartmentNode(
         @Property("code") String code,
         @Property("name") String name,
         @Property("description") String description,
-        @Property("headOfDepartment") String headOfDepartment,
-        @Property("headEmail") String headEmail,
         @Property("status") String status,
         @Property("createdAt") String createdAt,
         @Property("updatedAt") String updatedAt,

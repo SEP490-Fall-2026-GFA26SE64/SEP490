@@ -2,12 +2,11 @@ package com.adaptlearngraph.entities.domain;
 
 import java.util.Objects;
 
-/** Employee-facing summary of a catalog-valid target role. */
+/** Catalog search summary projection of a target role. */
 public record TargetRoleSummary(
         String id,
         String code,
         String name,
-        CareerTrack track,
         String description,
         int requirementCount) {
 
@@ -15,10 +14,9 @@ public record TargetRoleSummary(
         id = requireText(id, "id");
         code = requireText(code, "code");
         name = requireText(name, "name");
-        track = Objects.requireNonNull(track, "track must not be null");
-        description = optionalText(description);
-        if (requirementCount < 1) {
-            throw new IllegalArgumentException("requirementCount must be at least 1");
+        description = description == null ? "" : description.strip();
+        if (requirementCount < 0) {
+            throw new IllegalArgumentException("requirementCount must not be negative");
         }
     }
 
@@ -27,9 +25,5 @@ public record TargetRoleSummary(
             throw new IllegalArgumentException(field + " must not be blank");
         }
         return value.strip();
-    }
-
-    private static String optionalText(String value) {
-        return value == null || value.isBlank() ? null : value.strip();
     }
 }

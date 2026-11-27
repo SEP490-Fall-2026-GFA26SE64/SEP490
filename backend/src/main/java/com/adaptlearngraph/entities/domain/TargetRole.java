@@ -11,7 +11,6 @@ public final class TargetRole {
     private final String code;
     private final String name;
     private final String familyCode;
-    private final RoleTrack track;
     private final String assignedExpertId;
     private final String description;
     private final List<String> responsibilities;
@@ -33,7 +32,6 @@ public final class TargetRole {
             String code,
             String name,
             String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -52,8 +50,7 @@ public final class TargetRole {
         this.organizationId = requireNonBlank(organizationId, "organizationId cannot be blank");
         this.code = normalizeCode(code);
         this.name = requireNonBlank(name, "name cannot be blank").trim();
-        this.familyCode = familyCode != null ? familyCode.trim().toUpperCase() : "JAVA_BACKEND";
-        this.track = Objects.requireNonNullElse(track, RoleTrack.PROFESSIONAL);
+        this.familyCode = familyCode != null ? familyCode.trim() : "";
         this.assignedExpertId = assignedExpertId != null ? assignedExpertId.trim() : "";
         this.description = description != null ? description.trim() : "";
         this.responsibilities = responsibilities != null ? List.copyOf(responsibilities) : List.of();
@@ -75,8 +72,29 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations,
+            boolean isStaffingEnabled) {
+        this(id, organizationId, code, name, "", assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, isStaffingEnabled);
+    }
+
+    public TargetRole(
+            TargetRoleId id,
+            String organizationId,
+            String code,
+            String name,
             String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -90,7 +108,7 @@ public final class TargetRole {
             String levelCompetencies,
             List<String> competencyIds,
             Map<String, String> levelDurations) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, status == RoleStatus.STAGED);
+        this(id, organizationId, code, name, familyCode, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, status == RoleStatus.STAGED);
     }
 
     public TargetRole(
@@ -98,8 +116,27 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            Instant createdAt,
+            Instant updatedAt,
+            String rejectionReason,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        this(id, organizationId, code, name, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations, status == RoleStatus.STAGED);
+    }
+
+    public TargetRole(
+            TargetRoleId id,
+            String organizationId,
+            String code,
+            String name,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -112,7 +149,7 @@ public final class TargetRole {
             List<String> levels,
             String levelCompetencies,
             List<String> competencyIds) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, Map.of());
+        this(id, organizationId, code, name, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, levelCompetencies, competencyIds, Map.of());
     }
 
     public TargetRole(
@@ -120,8 +157,6 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -132,7 +167,7 @@ public final class TargetRole {
             Instant updatedAt,
             String rejectionReason,
             List<String> levels) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, "{}", List.of());
+        this(id, organizationId, code, name, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, levels, "{}", List.of());
     }
 
     public TargetRole(
@@ -140,8 +175,6 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -151,7 +184,7 @@ public final class TargetRole {
             Instant createdAt,
             Instant updatedAt,
             String rejectionReason) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, List.of("Senior", "Middle", "Junior"));
+        this(id, organizationId, code, name, assignedExpertId, description, responsibilities, status, version, skillTargets, createdAt, updatedAt, rejectionReason, List.of("Senior", "Middle", "Junior"));
     }
 
     public TargetRole(
@@ -159,8 +192,6 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             RoleStatus status,
@@ -168,7 +199,7 @@ public final class TargetRole {
             String skillTargets,
             Instant createdAt,
             Instant updatedAt) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, List.of(), status, version, skillTargets, createdAt, updatedAt, null);
+        this(id, organizationId, code, name, assignedExpertId, description, List.of(), status, version, skillTargets, createdAt, updatedAt, null);
     }
 
     public TargetRole(
@@ -176,14 +207,12 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             RoleStatus status,
             Instant createdAt,
             Instant updatedAt) {
-        this(id, organizationId, code, name, familyCode, track, assignedExpertId, description, status, "1.0", "[]", createdAt, updatedAt);
+        this(id, organizationId, code, name, assignedExpertId, description, status, "1.0", "[]", createdAt, updatedAt);
     }
 
     public TargetRole(
@@ -191,13 +220,11 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String description,
             RoleStatus status,
             Instant createdAt,
             Instant updatedAt) {
-        this(id, organizationId, code, name, familyCode, track, "", description, status, createdAt, updatedAt);
+        this(id, organizationId, code, name, "", description, status, createdAt, updatedAt);
     }
 
     public static TargetRole createNew(
@@ -205,7 +232,6 @@ public final class TargetRole {
             String code,
             String name,
             String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -223,7 +249,6 @@ public final class TargetRole {
                 code,
                 name,
                 familyCode,
-                track,
                 assignedExpertId,
                 description,
                 responsibilities,
@@ -243,8 +268,23 @@ public final class TargetRole {
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            RoleStatus status,
+            String skillTargets,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        return createNew(organizationId, code, name, "", assignedExpertId, description, responsibilities, version, status, skillTargets, levels, levelCompetencies, competencyIds, levelDurations);
+    }
+
+    public static TargetRole createNew(
+            String organizationId,
+            String code,
+            String name,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -254,15 +294,13 @@ public final class TargetRole {
             List<String> levels,
             String levelCompetencies,
             List<String> competencyIds) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, levelCompetencies, competencyIds, Map.of());
+        return createNew(organizationId, code, name, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, levelCompetencies, competencyIds, Map.of());
     }
 
     public static TargetRole createNew(
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -270,63 +308,54 @@ public final class TargetRole {
             RoleStatus status,
             String skillTargets,
             List<String> levels) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of());
+        return createNew(organizationId, code, name, assignedExpertId, description, responsibilities, version, status, skillTargets, levels, "{}", List.of());
     }
 
     public static TargetRole createNew(
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
             String version,
             RoleStatus status,
             String skillTargets) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Senior", "Middle", "Junior"));
+        return createNew(organizationId, code, name, assignedExpertId, description, responsibilities, version, status, skillTargets, List.of("Senior", "Middle", "Junior"));
     }
 
     public static TargetRole createNew(
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             String version,
             RoleStatus status,
             String skillTargets) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, List.of(), version, status, skillTargets);
+        return createNew(organizationId, code, name, assignedExpertId, description, List.of(), version, status, skillTargets);
     }
 
     public static TargetRole createNew(
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description) {
-        return createNew(organizationId, code, name, familyCode, track, assignedExpertId, description, "1.0", RoleStatus.DRAFT, "[]");
+        return createNew(organizationId, code, name, assignedExpertId, description, "1.0", RoleStatus.DRAFT, "[]");
     }
 
     public static TargetRole createNew(
             String organizationId,
             String code,
             String name,
-            String familyCode,
-            RoleTrack track,
             String description) {
-        return createNew(organizationId, code, name, familyCode, track, "", description, "1.0", RoleStatus.DRAFT, "[]");
+        return createNew(organizationId, code, name, "", description, "1.0", RoleStatus.DRAFT, "[]");
     }
 
     public TargetRole updateDetails(
             String name,
             String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -338,14 +367,12 @@ public final class TargetRole {
             String levelCompetencies,
             List<String> competencyIds,
             Map<String, String> levelDurations) {
-        RoleTrack targetTrack = track != null ? track : this.track;
         return new TargetRole(
                 this.id,
                 this.organizationId,
                 this.code,
                 name != null && !name.isBlank() ? name.trim() : this.name,
-                familyCode != null && !familyCode.isBlank() ? familyCode.trim().toUpperCase() : this.familyCode,
-                targetTrack,
+                familyCode != null && !familyCode.isBlank() ? familyCode.trim() : this.familyCode,
                 assignedExpertId != null ? assignedExpertId.trim() : this.assignedExpertId,
                 description != null ? description.trim() : this.description,
                 responsibilities != null ? List.copyOf(responsibilities) : this.responsibilities,
@@ -366,8 +393,22 @@ public final class TargetRole {
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            RoleStatus status,
+            String version,
+            String skillTargets,
+            String rejectionReason,
+            List<String> levels,
+            String levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        return updateDetails(name, this.familyCode, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations);
+    }
+
+    public TargetRole updateDetails(
+            String name,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -378,13 +419,11 @@ public final class TargetRole {
             List<String> levels,
             String levelCompetencies,
             List<String> competencyIds) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, this.levelDurations);
+        return updateDetails(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, this.levelDurations);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -393,13 +432,11 @@ public final class TargetRole {
             String skillTargets,
             String rejectionReason,
             List<String> levels) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, this.levelCompetencies, this.competencyIds);
+        return updateDetails(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, this.levelCompetencies, this.competencyIds);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -407,51 +444,43 @@ public final class TargetRole {
             String version,
             String skillTargets,
             String rejectionReason) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, this.levels);
+        return updateDetails(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, this.levels);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             RoleStatus status,
             String version,
             String skillTargets,
             String rejectionReason) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, this.responsibilities, status, version, skillTargets, rejectionReason);
+        return updateDetails(name, assignedExpertId, description, this.responsibilities, status, version, skillTargets, rejectionReason);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             RoleStatus status,
             String version,
             String skillTargets) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, status, version, skillTargets, this.rejectionReason);
+        return updateDetails(name, assignedExpertId, description, status, version, skillTargets, this.rejectionReason);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description,
             RoleStatus status) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, status, this.version, this.skillTargets, this.rejectionReason);
+        return updateDetails(name, assignedExpertId, description, status, this.version, this.skillTargets, this.rejectionReason);
     }
 
     public TargetRole updateDetails(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description) {
-        return updateDetails(name, familyCode, track, assignedExpertId, description, this.status, this.version, this.skillTargets, this.rejectionReason);
+        return updateDetails(name, assignedExpertId, description, this.status, this.version, this.skillTargets, this.rejectionReason);
     }
 
     public TargetRole stage() {
@@ -461,7 +490,6 @@ public final class TargetRole {
                 this.code,
                 this.name,
                 this.familyCode,
-                this.track,
                 this.assignedExpertId,
                 this.description,
                 this.responsibilities,
@@ -485,7 +513,6 @@ public final class TargetRole {
                 this.code,
                 this.name,
                 this.familyCode,
-                this.track,
                 this.assignedExpertId,
                 this.description,
                 this.responsibilities,
@@ -509,7 +536,6 @@ public final class TargetRole {
                 this.code,
                 this.name,
                 this.familyCode,
-                this.track,
                 this.assignedExpertId,
                 this.description,
                 this.responsibilities,
@@ -536,7 +562,6 @@ public final class TargetRole {
                 this.code,
                 this.name,
                 this.familyCode,
-                this.track,
                 this.assignedExpertId,
                 this.description,
                 this.responsibilities,
@@ -559,7 +584,6 @@ public final class TargetRole {
                 this.code,
                 this.name,
                 this.familyCode,
-                this.track,
                 this.assignedExpertId,
                 this.description,
                 this.responsibilities,
@@ -605,10 +629,6 @@ public final class TargetRole {
 
     public String getFamilyCode() {
         return familyCode;
-    }
-
-    public RoleTrack getTrack() {
-        return track;
     }
 
     public String getAssignedExpertId() {

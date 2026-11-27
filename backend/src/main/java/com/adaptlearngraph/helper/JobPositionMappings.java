@@ -14,7 +14,6 @@ public final class JobPositionMappings implements ModelMapperRegistrar {
                     source.id(),
                     source.code(),
                     source.name(),
-                    source.jobZone(),
                     source.status(),
                     source.version(),
                     source.roleCount(),

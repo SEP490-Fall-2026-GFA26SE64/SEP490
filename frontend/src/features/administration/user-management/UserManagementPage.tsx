@@ -2,7 +2,7 @@ import { useResettableState } from '../../../shared/hooks/useResettableState'
 import { useMutation,useQuery,useQueryClient } from '@tanstack/react-query'
 import { Briefcase,Building2,Eye,FileSpreadsheet,Mail,Pencil,Plus,Search,ShieldCheck,Target,Trash2,User,UserCheck,Users,UserX } from 'lucide-react'
 import { useEffect,useMemo,useState } from 'react'
-import { createDepartmentApi,fetchDepartments,updateDepartmentApi,type DepartmentDto } from '../../../shared/api/departmentApi'
+import { fetchDepartments,type DepartmentDto } from '../../../shared/api/departmentApi'
 import { fetchJobPositions,type JobPositionDto } from '../../../shared/api/jobPositionApi'
 import { Badge } from '../../../shared/components/ui/Badge'
 import { Button } from '../../../shared/components/ui/Button'
@@ -14,7 +14,7 @@ import { Pagination } from '../../../shared/components/ui/Pagination'
 import { StatCard } from '../../../shared/components/ui/StatCard'
 import { useTranslation } from "../../../shared/i18n/LanguageContext"
 import { getActiveCompany,resolveWorkspaceOrgId } from '../../../shared/stores/companyStore'
-import { loadDepartments,updateDepartment,type DepartmentRecord } from '../../../shared/stores/departmentStore'
+import { loadDepartments,type DepartmentRecord } from '../../../shared/stores/departmentStore'
 import {
 getAvailableJobPositions,
 type JobPosition,
@@ -68,7 +68,7 @@ interface DirectoryRow {
   status: string
   departmentName: string | null
   departmentCode: string | null
-  departmentLeadership: string | null
+  departmentLeadership?: string | null
   jobPositionName: string | null
   jobPositionCode: string | null
   targetRoleId: string | null
@@ -196,7 +196,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           code,
           name: jp.name || localMatch?.name || existing?.name || code,
           description: (jp as any).description || localMatch?.description || existing?.description || 'Industry job position competency domain',
-          jobZone: jp.jobZone || localMatch?.jobZone || existing?.jobZone || 4,
           profiles: localMatch?.profiles || existing?.profiles || ['DEV'],
           assignedExpertIds: localMatch?.assignedExpertIds || existing?.assignedExpertIds || [],
           status: 'active',
@@ -222,8 +221,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           code: ld.code,
           name: ld.name,
           description: ld.description || 'Enterprise organizational business unit',
-          headOfDepartment: ld.headOfDepartment,
-          headEmail: ld.headEmail,
           linkedJobPositions: mergedLinked,
           uuid: toDeterministicUuid(ld.id),
           uuidCode: toDeterministicUuid(ld.code),
@@ -248,8 +245,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
           code: ld.code,
           name: ld.name,
           description: ld.description || 'Enterprise organizational business unit',
-          headOfDepartment: ld.headOfDepartment,
-          headEmail: ld.headEmail,
           linkedJobPositions: ld.linkedJobPositions || [],
           uuid: toDeterministicUuid(ld.id),
           uuidCode: toDeterministicUuid(ld.code),
@@ -307,7 +302,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         status: !member.accountActive ? 'ACCOUNT_DISABLED' : member.active ? 'ACTIVE' : 'INACTIVE',
         departmentName: resolvedDept?.name || (member.departmentName?.startsWith('Department ') ? (allDepartments[0]?.name || 'Engineering') : member.departmentName),
         departmentCode: resolvedDept?.code || null,
-        departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || (member.jobPositionName?.startsWith('Job Position ') ? '15-1252.00 - Software Developers' : member.jobPositionName),
         jobPositionCode: resolvedJob?.code || null,
         targetRoleId: resolvedAssignment?.roleId || null,
@@ -343,7 +337,6 @@ function UserDirectory({ identity, organization, principal }: { identity: Identi
         status: invitation.state,
         departmentName: resolvedDept?.name || invitation.departmentName,
         departmentCode: resolvedDept?.code || null,
-        departmentLeadership: resolvedDept?.headOfDepartment || null,
         jobPositionName: resolvedJob?.jobPositionName || invitation.jobPositionName,
         jobPositionCode: resolvedJob?.code || null,
         targetRoleId: resolvedAssignment?.roleId || null,
@@ -1034,8 +1027,6 @@ function UserForm({
         code: cleanName.replace(/^dept-/, '').toUpperCase().slice(0, 10),
         name: cleanName,
         description: 'Current assigned department.',
-        headOfDepartment: '',
-        headEmail: '',
         linkedJobPositions: [],
         uuid: toDeterministicUuid(member.departmentId),
         uuidCode: '',
@@ -1268,41 +1259,6 @@ function UserForm({
               parsed.department = assignment.departmentName
               localStorage.setItem(activeProfileKey, JSON.stringify(parsed))
             }
-          }
-
-          if (isLdManager) {
-            if (member?.departmentId && member.departmentId !== selectedDeptObj?.id) {
-              const oldDept = allDepartments.find((d) => d.id === member.departmentId || d.code === member.departmentId)
-              if (oldDept) {
-                updateDepartment(oldDept.id, { headOfDepartment: '', headEmail: '' }, organization)
-                updateDepartmentApi(organization, oldDept.id, {
-                  code: oldDept.code,
-                  name: oldDept.name,
-                  headOfDepartment: '',
-                  headEmail: '',
-                }).catch(() => {})
-              }
-            }
-            if (selectedDeptObj?.id) {
-              updateDepartment(selectedDeptObj.id, { headOfDepartment: name, headEmail: email }, organization)
-              updateDepartmentApi(organization, selectedDeptObj.id, {
-                code: selectedDeptObj.code,
-                name: selectedDeptObj.name,
-                headOfDepartment: name,
-                headEmail: email,
-              }).catch(() => {
-                createDepartmentApi(organization, {
-                  id: selectedDeptObj.id,
-                  code: selectedDeptObj.code,
-                  name: selectedDeptObj.name,
-                  headOfDepartment: name,
-                  headEmail: email,
-                  status: 'ACTIVE',
-                  linkedJobPositions: selectedDeptObj.linkedJobPositions,
-                }).catch(() => {})
-              })
-            }
-            window.dispatchEvent(new Event('departments_updated'))
           }
         } catch {}
       }

@@ -11,7 +11,6 @@ public record JobPositionNode(
         @Property("organizationId") String organizationId,
         @Property("code") String code,
         @Property("name") String name,
-        @Property("jobZone") Long jobZone,
         @Property("status") String status,
         @Property("version") String version,
         @Property("description") String description,

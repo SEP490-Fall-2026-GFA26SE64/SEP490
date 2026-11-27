@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.adaptlearngraph.exception.TargetRoleQueryException;
 import com.adaptlearngraph.exception.TargetRoleQueryException.Code;
 import com.adaptlearngraph.services.TargetRoleQueryUseCase;
-import com.adaptlearngraph.entities.domain.CareerTrack;
 import com.adaptlearngraph.entities.domain.TargetRoleDetail;
 import com.adaptlearngraph.entities.domain.TargetRoleRequirement;
 import com.adaptlearngraph.entities.domain.TargetRoleSummary;
@@ -45,7 +44,6 @@ class TargetRoleControllerTest {
                         .param("organizationId", "untrusted-org"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value("role-1"))
-                .andExpect(jsonPath("$[0].track").value("PROFESSIONAL"))
                 .andExpect(jsonPath("$[0].requirementCount").value(1));
 
         verify(queries).listTargetRoles(" Java ");
@@ -57,7 +55,7 @@ class TargetRoleControllerTest {
 
         mvc.perform(get("/api/v1/employee/target-roles/role-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.familyCode").value("JAVA"))
+                .andExpect(jsonPath("$.code").value("JAVA_P3"))
                 .andExpect(jsonPath("$.responsibilities[0]").value("Build APIs"))
                 .andExpect(jsonPath("$.requirements[0].skillCode").value("JAVA"))
                 .andExpect(jsonPath("$.requirements[0].targetMastery").value(0.7));
@@ -102,14 +100,14 @@ class TargetRoleControllerTest {
 
     private static TargetRoleSummary summary() {
         return new TargetRoleSummary(
-                "role-1", "JAVA_P3", "Java Developer", CareerTrack.PROFESSIONAL,
+                "role-1", "JAVA_P3", "Java Developer",
                 "Backend role", 1);
     }
 
     private static TargetRoleDetail detail() {
         return new TargetRoleDetail(
-                "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, "Backend role", List.of("Build APIs"),
+                "role-1", "JAVA_P3", "Java Developer",
+                "Backend role", List.of("Build APIs"),
                 List.of(new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7)));
     }
 }

@@ -121,7 +121,7 @@ export function UserImportDialog(props: UserImportDialogProps) {
     setReading(true)
     try {
       const result = await parseUserImportFile(await file.arrayBuffer())
-      if (!result.ok) { setParseError(parseErrorMessage(result.error, c, language)); return }
+      if (!result.ok) { setParseError(parseErrorMessage('error' in result ? result.error : { code: 'invalidFile' }, c, language)); return }
       setRows(validateImportRows(result.rows, catalog, existingEmails, c))
       setErrorsOnly(false)
       setPhase('preview')

@@ -21,7 +21,7 @@ class RiasecApiTest {
         when(port.saveChange(anyString(),any())).thenAnswer(call -> {
             JobPositionChange change=call.getArgument(1);
             assertThat(change.authorId()).isEqualTo("MANAGER");
-            return new JobPosition(change.id(),change.code(),change.name(),4,"ACTIVE","v1",0,0);
+            return new JobPosition(change.id(),change.code(),change.name(),"ACTIVE","v1",0,0);
         });
         var request=json.readValue("{\"code\":\"ENGINEER\",\"name\":\"Engineer\"}",SaveJobPositionRequest.class);
         var first=service.createJobPosition("ORG-A",request);
@@ -44,7 +44,7 @@ class RiasecApiTest {
     @Test void catalogRequiresSixStrictIntegersOrSixExplicitNullsAndPreservesOmittedFields() throws Exception {
         var port=mock(GetJobPositionsUseCase.class);var mapper=new ModelMapper();new JobPositionMappings().register(mapper);
         var service=new JobPositionApplicationService(port,mapper,org->"MANAGER");
-        when(port.saveChange(anyString(),any())).thenReturn(new JobPosition("J","J","Job",4,"ACTIVE","v1",0,0));
+        when(port.saveChange(anyString(),any())).thenReturn(new JobPosition("J","J","Job","ACTIVE","v1",0,0));
         service.updateJobPosition("ORG","J",json.readValue("{\"name\":\"Job\"}",SaveJobPositionRequest.class));
         var captor=org.mockito.ArgumentCaptor.forClass(JobPositionChange.class);verify(port).saveChange(eq("ORG"),captor.capture());
         assertThat(captor.getValue().interestProfile()).isNull();reset(port);
@@ -56,7 +56,7 @@ class RiasecApiTest {
         var partial=json.readValue("{\"interestRealistic\":20}",SaveJobPositionRequest.class);
         assertThatThrownBy(()->service.updateJobPosition("ORG","J",partial)).hasMessage("INVALID_RIASEC_PROFILE");
         verifyNoInteractions(port);
-        when(port.saveChange(anyString(),any())).thenReturn(new JobPosition("J","J","Job",4,"ACTIVE","v1",0,0));
+        when(port.saveChange(anyString(),any())).thenReturn(new JobPosition("J","J","Job","ACTIVE","v1",0,0));
         for(String value:new String[]{"40","null"})service.updateJobPosition("ORG","J",json.readValue("{"+fields.formatted(value,value,value,value,value,value)+"}",SaveJobPositionRequest.class));
         verify(port,times(2)).saveChange(eq("ORG"),captor.capture());assertThat(captor.getValue().interestProfile()).isEmpty();
     }

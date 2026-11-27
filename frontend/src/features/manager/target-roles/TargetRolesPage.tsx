@@ -311,7 +311,6 @@ export function TargetRolesPage() {
               code,
               name: ap.name || localMatch?.name || existing?.name || code,
               description: (ap as any).description || localMatch?.description || existing?.description || '',
-              jobZone: ap.jobZone || localMatch?.jobZone || existing?.jobZone || 4,
               profiles: localMatch?.profiles || existing?.profiles || ['DEV'],
               assignedExpertIds: localMatch?.assignedExpertIds || existing?.assignedExpertIds || [],
               status: 'active',
@@ -455,17 +454,6 @@ export function TargetRolesPage() {
             }
           }
         }
-        const matchedHead = localDepts.find(
-          (d) => d.headEmail?.toLowerCase() === activeEmail.toLowerCase()
-        )
-        if (matchedHead) {
-          return {
-            id: matchedHead.id,
-            code: matchedHead.code,
-            name: matchedHead.name,
-            jobPositionCodes: matchedHead.linkedJobPositions || [],
-          }
-        }
       }
     } catch {}
     return null
@@ -558,19 +546,10 @@ export function TargetRolesPage() {
                 id: matched.id,
                 code: matched.code,
                 name: matched.name,
-                headEmail: session?.identity?.email || '',
-                headOfDepartment: session?.identity?.fullName || session?.identity?.email || '',
                 status: 'ACTIVE',
               }).catch(() => {})
             }
           }
-        }
-
-        // Secondary fallback: Match headEmail ONLY if user has no assigned department anywhere
-        if (!matched && session?.identity?.email) {
-          matched = effectiveDepts.find(
-            (d) => (d as any).headEmail?.toLowerCase() === session?.identity?.email?.toLowerCase()
-          )
         }
 
         if (matched && isMounted) {
@@ -737,17 +716,24 @@ export function TargetRolesPage() {
             orgId,
           )
 
-          const posCode = explicitJobPositionCode || String(r.familyCode || '').trim()
-          const matchedJp = (liveJobPositions || []).find(
-            (jp) => jp.code.toLowerCase().trim() === posCode.toLowerCase(),
-          )
+          const posCode = explicitJobPositionCode || String(r.familyCode || '').trim() || occ.code
+          const matchedJp = (liveJobPositions || []).find((jp) => {
+            const jpCode = jp.code.toLowerCase().trim()
+            const target = posCode.toLowerCase().trim()
+            return jpCode === target || jpCode === occ.code.toLowerCase().trim() || jpCode === rCode.toLowerCase()
+          })
 
           const matchedServerDept = (liveDepts || []).find((d) => {
             const posCodes = (d.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
             const targetPos = posCode.toLowerCase().trim()
+            const basePos = targetPos.replace(/\.00$/, '')
+            const occBase = occ.code.toLowerCase().trim().replace(/\.00$/, '')
+            const rCodeLower = rCode.toLowerCase()
             return (
-              (targetPos && posCodes.includes(targetPos)) ||
-              (d.code && posCode.toLowerCase().startsWith(d.code.toLowerCase())) ||
+              (targetPos && posCodes.some((c) => c === targetPos || c.replace(/\.00$/, '') === basePos)) ||
+              (occ.code && posCodes.some((c) => c === occ.code.toLowerCase().trim() || c.replace(/\.00$/, '') === occBase)) ||
+              posCodes.some((c) => c === rCodeLower) ||
+              (d.code && (targetPos === d.code.toLowerCase() || rCodeLower === d.code.toLowerCase())) ||
               (d.id && String(r.departmentId || '') === d.id) ||
               (d.name && String(r.department || '').toLowerCase() === d.name.toLowerCase())
             )
@@ -1472,16 +1458,16 @@ export function TargetRolesPage() {
         }
 
         const matchesDept = Boolean(
-          (deptName && (roleDept === deptName || roleDept.includes(deptName) || deptName.includes(roleDept))) ||
-          (deptCode && (roleDept === deptCode || roleDept.startsWith(deptCode))) ||
-          (deptId && (roleDeptId === deptId || roleDept === deptId || roleDeptId.includes(deptId))),
+          (deptName && roleDept && (roleDept === deptName || roleDept.includes(deptName) || deptName.includes(roleDept))) ||
+          (deptCode && roleDept && (roleDept === deptCode || roleDept.startsWith(deptCode))) ||
+          (deptId && (roleDeptId ? (roleDeptId === deptId || roleDeptId.includes(deptId)) : (roleDept === deptId))),
         )
 
         const matchesJobPosition =
           allowedJobPositionCodes.size > 0 &&
           (allowedJobPositionCodes.has(occCode) ||
-            allowedJobPositionCodes.has(roleFamilyCode) ||
-            Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode))
+            (roleFamilyCode && allowedJobPositionCodes.has(roleFamilyCode)) ||
+            (baseOccCode && Array.from(allowedJobPositionCodes).some((c) => c.replace(/\.00$/, '') === baseOccCode)))
 
         return matchesJobPosition || matchesDept
       })
@@ -3499,13 +3485,6 @@ export function TargetRolesPage() {
                   and benchmark standard.
                 </p>
               </div>
-
-              <Badge
-                variant="secondary"
-                className="text-[10px] font-semibold shrink-0 self-start sm:self-center"
-              >
-                Job Zone 4
-              </Badge>
             </div>
 
             {jobPositionOptions.length === 0 && (
@@ -4380,13 +4359,6 @@ export function TargetRolesPage() {
                         job position and benchmark standard.
                       </p>
                     </div>
-
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-semibold shrink-0 self-start sm:self-center"
-                    >
-                      Job Zone 4
-                    </Badge>
                   </div>
 
                   <div className="pt-1">
@@ -5408,9 +5380,6 @@ export function TargetRolesPage() {
                           className="font-mono text-xs font-semibold text-primary border-primary/30 bg-primary/5"
                         >
                           {viewingDetailsRole.jobPositionCode || occ.code}
-                        </Badge>
-                        <Badge variant="secondary" className="text-[10px] font-semibold">
-                          Job Zone 4 · Considerable Preparation
                         </Badge>
                       </div>
                     </div>

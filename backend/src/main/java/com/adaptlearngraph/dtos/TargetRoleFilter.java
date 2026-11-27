@@ -1,19 +1,17 @@
 package com.adaptlearngraph.dtos;
 
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 
 public record TargetRoleFilter(
         String search,
-        RoleTrack track,
         RoleStatus status,
         String assignedExpertId) {
 
-    public TargetRoleFilter(String search, RoleTrack track, RoleStatus status) {
-        this(search, track, status, null);
+    public TargetRoleFilter(String search, RoleStatus status) {
+        this(search, status, null);
     }
 
     public static TargetRoleFilter empty() {
-        return new TargetRoleFilter(null, null, null, null);
+        return new TargetRoleFilter(null, null, null);
     }
 }

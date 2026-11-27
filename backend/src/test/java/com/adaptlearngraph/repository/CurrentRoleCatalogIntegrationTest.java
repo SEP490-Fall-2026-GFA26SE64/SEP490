@@ -86,8 +86,8 @@ class CurrentRoleCatalogIntegrationTest {
  }
  @Test void savedRoleWritesExplicitKnowledgeRequirementsToLevelEdges(){
   var repository=new Neo4jTargetRoleRepository(persistence.bean(TargetRoleNodeRepository.class),persistence.client(),persistence.mappingContext(),persistence.transactionManager());
-  var role=com.adaptlearngraph.entities.domain.TargetRole.createNew(ORG.toString(),"APP_DEV","Application Developer","O",
-    com.adaptlearngraph.entities.domain.RoleTrack.PROFESSIONAL,null,"Application scope",List.of(),"v1",
+  var role=com.adaptlearngraph.entities.domain.TargetRole.createNew(ORG.toString(),"APP_DEV","Application Developer",
+    null,"Application scope",List.of(),"v1",
     com.adaptlearngraph.entities.domain.RoleStatus.ACTIVE,
     "[{\"skillId\":\"skill-0\",\"level\":\"Senior\",\"requiredKnowledgeLevels\":[\"INTERMEDIATE\",\"ADVANCED\"]}]",List.of("Senior"));
   repository.save(role);

@@ -15,12 +15,9 @@ public record CreateTargetRoleRequest(
         @Size(min = 2, max = 128, message = "Role name must be between 2 and 128 characters")
         String name,
 
-        List<String> levels,
-
         String familyCode,
 
-        @Pattern(regexp = "^(PROFESSIONAL|MANAGEMENT)?$", message = "Track must be either PROFESSIONAL or MANAGEMENT")
-        String track,
+        List<String> levels,
 
         String assignedExpertId,
 
@@ -46,8 +43,22 @@ public record CreateTargetRoleRequest(
             String code,
             String name,
             List<String> levels,
-            String familyCode,
-            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String version,
+            String status,
+            List<Map<String, Object>> skillTargets,
+            Map<String, List<String>> levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        this(code, name, "", levels, assignedExpertId, description, responsibilities, version, status, skillTargets, levelCompetencies, competencyIds, levelDurations);
+    }
+
+    public CreateTargetRoleRequest(
+            String code,
+            String name,
+            List<String> levels,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -56,46 +67,40 @@ public record CreateTargetRoleRequest(
             List<Map<String, Object>> skillTargets,
             Map<String, List<String>> levelCompetencies,
             List<String> competencyIds) {
-        this(code, name, levels, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, levelCompetencies, competencyIds, Map.of());
+        this(code, name, "", levels, assignedExpertId, description, responsibilities, version, status, skillTargets, levelCompetencies, competencyIds, Map.of());
     }
 
     public CreateTargetRoleRequest(
             String code,
             String name,
             List<String> levels,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
             String version,
             String status,
             List<Map<String, Object>> skillTargets) {
-        this(code, name, levels, familyCode, track, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of(), Map.of());
+        this(code, name, levels, assignedExpertId, description, responsibilities, version, status, skillTargets, Map.of(), List.of(), Map.of());
     }
 
     public CreateTargetRoleRequest(
             String code,
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             List<String> responsibilities) {
-        this(code, name, List.of(), familyCode, track, assignedExpertId, description, responsibilities, "1.0", "DRAFT", List.of());
+        this(code, name, List.of(), assignedExpertId, description, responsibilities, "1.0", "DRAFT", List.of());
     }
 
     public CreateTargetRoleRequest(
             String code,
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description) {
-        this(code, name, List.of(), familyCode, track, assignedExpertId, description, List.of(), "1.0", "DRAFT", List.of());
+        this(code, name, List.of(), assignedExpertId, description, List.of(), "1.0", "DRAFT", List.of());
     }
 
-    public CreateTargetRoleRequest(String code, String name, String familyCode, String track, String description) {
-        this(code, name, List.of(), familyCode, track, "", description, List.of(), "1.0", "DRAFT", List.of());
+    public CreateTargetRoleRequest(String code, String name, String description) {
+        this(code, name, List.of(), "", description, List.of(), "1.0", "DRAFT", List.of());
     }
 }

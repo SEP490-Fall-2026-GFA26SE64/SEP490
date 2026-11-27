@@ -19,17 +19,15 @@ public class Neo4jDepartmentRepository implements DepartmentRepository {
     private static final String PROJECTION = """
             OPTIONAL MATCH (d)-[:HAS_JOB_POSITION]->(jp:JobPosition)
             RETURN d.id AS id,
-                   d.code AS code,
-                   d.name AS name,
-                   coalesce(d.description, '') AS description,
-                   coalesce(d.headOfDepartment, '') AS headOfDepartment,
-                   coalesce(d.headEmail, '') AS headEmail,
-                   coalesce(d.status, 'ACTIVE') AS status,
-                   d.organizationId AS organizationId,
-                   coalesce(d.createdAt, '') AS createdAt,
-                   coalesce(d.updatedAt, '') AS updatedAt,
-                   collect(DISTINCT jp.code) AS jobPositionCodes,
-                   count(DISTINCT jp) AS jobPositionCount
+                    d.code AS code,
+                    d.name AS name,
+                    coalesce(d.description, '') AS description,
+                    coalesce(d.status, 'ACTIVE') AS status,
+                    d.organizationId AS organizationId,
+                    coalesce(d.createdAt, '') AS createdAt,
+                    coalesce(d.updatedAt, '') AS updatedAt,
+                    collect(DISTINCT jp.code) AS jobPositionCodes,
+                    count(DISTINCT jp) AS jobPositionCount
             """;
 
     private static final String LIST = """
@@ -83,8 +81,6 @@ public class Neo4jDepartmentRepository implements DepartmentRepository {
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "Department", id, organization);
             departments.merge(id, organization, d.code(), d.name(),
                     d.description() != null ? d.description() : "",
-                    d.headOfDepartment() != null ? d.headOfDepartment() : "",
-                    d.headEmail() != null ? d.headEmail() : "",
                     d.status() != null ? d.status() : "ACTIVE",
                     d.createdAt() != null ? d.createdAt() : java.time.Instant.now().toString(),
                     d.updatedAt() != null ? d.updatedAt() : java.time.Instant.now().toString());
@@ -137,8 +133,6 @@ public class Neo4jDepartmentRepository implements DepartmentRepository {
                 row.get("code").asString(""),
                 row.get("name").asString(""),
                 row.get("description").asString(""),
-                row.get("headOfDepartment").asString(""),
-                row.get("headEmail").asString(""),
                 row.get("status").asString("ACTIVE"),
                 row.get("organizationId").asString(""),
                 row.get("createdAt").asString(""),

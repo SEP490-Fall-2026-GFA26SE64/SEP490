@@ -41,8 +41,8 @@ class JobPositionControllerTest {
     @DisplayName("GET /api/v1/organizations/{orgId}/job-positions returns mapped list of job positions")
     void listJobPositions_returnsList() throws Exception {
         List<JobPosition> positions = List.of(
-                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40),
-                new JobPosition("pos-2", "15-1243.00", "Database Architects", 4, "ACTIVE", "0.9.0", 2, 8, null, 10, 40, 15, 20, 30, 40)
+                new JobPosition("pos-1", "15-1252.00", "Software Developers", "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40),
+                new JobPosition("pos-2", "15-1243.00", "Database Architects", "ACTIVE", "0.9.0", 2, 8, null, 10, 40, 15, 20, 30, 40)
         );
 
         given(getJobPositionsUseCase.listJobPositions("org-technova")).willReturn(positions);
@@ -53,7 +53,6 @@ class JobPositionControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].code").value("15-1252.00"))
                 .andExpect(jsonPath("$[0].name").value("Software Developers"))
-                .andExpect(jsonPath("$[0].jobZone").value(4))
                 .andExpect(jsonPath("$[1].code").value("15-1243.00"));
     }
 
@@ -62,7 +61,7 @@ class JobPositionControllerTest {
     @DisplayName("GET /api/v1/organizations/{orgId}/job-positions backward compatible alias returns mapped list")
     void listJobPositions_aliasReturnsList() throws Exception {
         List<JobPosition> positions = List.of(
-                new JobPosition("pos-1", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40)
+                new JobPosition("pos-1", "15-1252.00", "Software Developers", "ACTIVE", "0.9.0", 3, 12, null, 16, 40, 22, 13, 14, 40)
         );
 
         given(getJobPositionsUseCase.listJobPositions("org-technova")).willReturn(positions);
@@ -78,7 +77,7 @@ class JobPositionControllerTest {
     @WithMockUser
     @DisplayName("POST /api/v1/organizations/{orgId}/job-positions creates job position")
     void createJobPosition_success() throws Exception {
-        JobPosition created = new JobPosition("15-1252.00", "15-1252.00", "Software Developers", 4, "ACTIVE", "0.9.0", 0, 0, null, 0, 0, 0, 0, 0, 0);
+        JobPosition created = new JobPosition("15-1252.00", "15-1252.00", "Software Developers", "ACTIVE", "0.9.0", 0, 0, null, 0, 0, 0, 0, 0, 0);
         given(getJobPositionsUseCase.saveChange(eq("org-technova"), any(com.adaptlearngraph.entities.domain.JobPositionChange.class))).willReturn(created);
 
         mockMvc.perform(post("/api/v1/organizations/org-technova/job-positions")
@@ -87,8 +86,7 @@ class JobPositionControllerTest {
                         .content("""
                                 {
                                     "code": "15-1252.00",
-                                    "name": "Software Developers",
-                                    "jobZone": 4
+                                    "name": "Software Developers"
                                 }
                                 """))
                 .andExpect(status().isCreated())

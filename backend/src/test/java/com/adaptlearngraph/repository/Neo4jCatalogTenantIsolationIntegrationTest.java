@@ -49,8 +49,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
     private static final String A = "org-a";
     private static final String B = "org-b";
     private static final String FIXTURE = """
-            CREATE (occ:JobPosition {id: 'occ-a', organizationId: $a, code: 'OCC_A', name: 'JobPosition A', jobZone: 4})
-            CREATE (occ2:JobPosition {id: 'occ-a2', organizationId: $a, code: 'OCC_A2', name: 'JobPosition A2', jobZone: 3})
+            CREATE (occ:JobPosition {id: 'occ-a', organizationId: $a, code: 'OCC_A', name: 'JobPosition A'})
+            CREATE (occ2:JobPosition {id: 'occ-a2', organizationId: $a, code: 'OCC_A2', name: 'JobPosition A2'})
             CREATE (role:TargetRole {id: 'role-a', organizationId: $a, code: 'ROLE_A', baseCode: 'ROLE_A', name: 'Role A',
                                      status: 'ACTIVE', version: '1.0', track: 'PROFESSIONAL'})
             CREATE (role2:TargetRole {id: 'role-a2', organizationId: $a, code: 'ROLE_A2', baseCode: 'ROLE_A2', name: 'Role A2',
@@ -122,7 +122,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         Instant now = Instant.parse("2026-11-03T00:00:00Z");
 
         assertThatThrownBy(() -> jobPositions.saveChange(B,
-                new com.adaptlearngraph.entities.domain.JobPositionChange("occ-a", "OCC_B", "Hijacked", 2, "ACTIVE", "1.0", "manager-b", false, null, null)))
+                new com.adaptlearngraph.entities.domain.JobPositionChange("occ-a", "OCC_B", "Hijacked", "ACTIVE", "1.0", "manager-b", false, null, null)))
                 .isInstanceOf(CrossTenantWriteException.class);
         assertThatThrownBy(() -> skills.save(new MicroSkill(MicroSkillId.fromString("skill-a1"), B, "SKILL_A1", "Hijacked",
                 "hijacked", SkillStatus.ACTIVE, now, now)))
@@ -130,8 +130,8 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         assertThatThrownBy(() -> competencies.save(B, new CompetencyRecord("comp-a", "COMP_A", "Hijacked", "", "ANY", "ACTIVE",
                 "0.11.0", null, "", "", List.of()), List.of("skill-b1"), "level-b"))
                 .isInstanceOf(CrossTenantWriteException.class);
-        assertThatThrownBy(() -> roles.save(new TargetRole(TargetRoleId.fromString("role-a"), B, "ROLE_A", "Hijacked", "FAM",
-                RoleTrack.PROFESSIONAL, "", "", List.of(), RoleStatus.ACTIVE, "1.0",
+        assertThatThrownBy(() -> roles.save(new TargetRole(TargetRoleId.fromString("role-a"), B, "ROLE_A", "Hijacked",
+                "", "", List.of(), RoleStatus.ACTIVE, "1.0",
                 "[{\"skillCode\":\"SKILL_B1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":80}]", now, now, null, List.of("Junior"), "{}", List.of())))
                 .isInstanceOf(CrossTenantWriteException.class);
 
@@ -158,7 +158,7 @@ class Neo4jCatalogTenantIsolationIntegrationTest {
         assertThat(prerequisites.hasPath(B, "skill-a1", "skill-a3")).isFalse();
         assertThat(prerequisites.hasPath(A, "skill-a1", "skill-a3")).isTrue();
 
-        roles.save(TargetRole.createNew(B, "ROLE_B", "Role B", "FAM", RoleTrack.PROFESSIONAL, "", "Role B", "1.0",
+        roles.save(TargetRole.createNew(B, "ROLE_B", "Role B", "", "Role B", List.of(), "1.0",
                 RoleStatus.DRAFT, "[{\"skillCode\":\"SKILL_A1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":70},"
                         + "{\"skillId\":\"skill-a2\",\"skillCode\":\"SKILL_A2\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":70},"
                         + "{\"skillCode\":\"SKILL_B1\",\"level\":\"Junior\",\"requiredKnowledgeLevels\":[\"FOUNDATION\"],\"threshold\":90}]"));

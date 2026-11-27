@@ -51,9 +51,9 @@ class CatalogMappingsTest {
     @Test
     void mapsJobPositions() {
         ModelMapper mapper = ModelMapperFactory.create(List.of(new JobPositionMappings()));
-        var jobPosition = new JobPosition("occ-1", "15-1252.00", "Software Developer", 4, "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20);
+        var jobPosition = new JobPosition("occ-1", "15-1252.00", "Software Developer", "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20);
 
-        assertThat(mapper.map(jobPosition, JobPositionResponse.class)).isEqualTo(new JobPositionResponse("occ-1", "15-1252.00", "Software Developer", 4, "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20));
+        assertThat(mapper.map(jobPosition, JobPositionResponse.class)).isEqualTo(new JobPositionResponse("occ-1", "15-1252.00", "Software Developer", "ACTIVE", "1.0.0", 3, 12, null, 4, 36, 12, 8, 16, 20));
     }
 
     @Test
@@ -93,31 +93,30 @@ class CatalogMappingsTest {
     void mapsTargetRolesIncludingParsedJsonAndDefaults() throws Exception {
         ModelMapper mapper = ModelMapperFactory.create(List.of(new TargetRoleMappings()));
         UUID roleId = UUID.randomUUID();
-        var role = new TargetRole(new TargetRoleId(roleId), "org-a", "ROLE_BACKEND", "Backend Engineer", "backend",
-                RoleTrack.MANAGEMENT, "expert-1", "Builds services", List.of("Own APIs"), RoleStatus.SENT, "2.0",
+        var role = new TargetRole(new TargetRoleId(roleId), "org-a", "ROLE_BACKEND", "Backend Engineer",
+                "expert-1", "Builds services", List.of("Own APIs"), RoleStatus.SENT, "2.0",
                 "[{\"skillId\":\"s1\",\"targetMastery\":0.8}]", CREATED, UPDATED, "Needs work", List.of("Senior"),
                 "{\"Senior\":[\"cmp-1\"]}", List.of("cmp-1"));
 
         TargetRoleResponse response = mapper.map(role, TargetRoleResponse.class);
 
         assertThat(response).isEqualTo(new TargetRoleResponse(roleId.toString(), "org-a", "ROLE_BACKEND",
-                "Backend Engineer", "BACKEND", "MANAGEMENT", "expert-1", "Builds services", List.of("Own APIs"), "SENT",
+                "Backend Engineer", "", "expert-1", "Builds services", List.of("Own APIs"), "SENT",
                 "2.0", List.of(Map.of("skillId", "s1", "targetMastery", 0.8)), CREATED, UPDATED, "Needs work",
                 List.of("Senior"), Map.of("Senior", List.of("cmp-1")), List.of("cmp-1"), Map.of(), false));
         assertThat(Arrays.stream(TargetRoleResponse.class.getRecordComponents()).map(c -> c.getName()).toList())
-                .containsExactly("id", "organizationId", "code", "name", "familyCode", "track", "assignedExpertId",
+                .containsExactly("id", "organizationId", "code", "name", "familyCode", "assignedExpertId",
                         "description", "responsibilities", "status", "version", "skillTargets", "createdAt", "updatedAt",
                         "rejectionReason", "levels", "levelCompetencies", "competencyIds", "levelDurations", "isStaffingEnabled");
         assertThat(json.writeValueAsString(response)).contains("\"organizationId\":\"org-a\"");
 
-        var minimal = new TargetRole(new TargetRoleId(roleId), "org-a", "R2", "Role two", null, null, null, null, null,
-                null, null, "not json", CREATED, UPDATED, null, null, null, null);
+        var minimal = new TargetRole(new TargetRoleId(roleId), "org-a", "R2", "Role two", null, null, null, null,
+                null, "not json", CREATED, UPDATED, null, null, null, null);
         TargetRoleResponse defaults = mapper.map(minimal, TargetRoleResponse.class);
         assertThat(defaults.skillTargets()).isEmpty();
         assertThat(defaults.levels()).containsExactly("Senior", "Middle", "Junior");
         assertThat(defaults.levelCompetencies()).isEmpty();
         assertThat(defaults.status()).isEqualTo("DRAFT");
-        assertThat(defaults.track()).isEqualTo("PROFESSIONAL");
     }
 
     @Test

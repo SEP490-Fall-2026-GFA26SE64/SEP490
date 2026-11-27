@@ -115,12 +115,12 @@ class TargetRoleQueryServiceTest {
 
     private static TargetRoleSummary summary(String id, String name) {
         return new TargetRoleSummary(
-                id, id.toUpperCase(), name, CareerTrack.PROFESSIONAL, null, 1);
+                id, id.toUpperCase(), name, null, 1);
     }
 
     private static TargetRoleDetail detail(String id) {
         return new TargetRoleDetail(
-                id, "JAVA_P3", "Java Developer", "JAVA", CareerTrack.PROFESSIONAL,
+                id, "JAVA_P3", "Java Developer",
                 null, List.of(), List.of(new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7)));
     }
 

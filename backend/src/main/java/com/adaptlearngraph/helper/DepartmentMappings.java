@@ -15,8 +15,6 @@ public final class DepartmentMappings implements ModelMapperRegistrar {
                     source.code(),
                     source.name(),
                     source.description(),
-                    source.headOfDepartment(),
-                    source.headEmail(),
                     source.status(),
                     source.organizationId(),
                     source.createdAt(),

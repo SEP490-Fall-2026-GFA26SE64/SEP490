@@ -5,8 +5,6 @@ export interface DepartmentRecord {
   code: string
   name: string
   description: string
-  headOfDepartment: string
-  headEmail: string
   status: 'active' | 'inactive'
   targetHeadcount?: number
   linkedJobPositions: string[]
@@ -45,8 +43,6 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
     code: 'ENG-COG',
     name: 'Engineering & Cognitive Systems',
     description: 'Core software engineering, cognitive knowledge graphs, and distributed systems.',
-    headOfDepartment: 'Sarah Connor',
-    headEmail: 'manager@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1252.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -57,8 +53,6 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
     code: 'ENG-DATA',
     name: 'Data & Artificial Intelligence',
     description: 'Data pipelines, analytics warehouses, and cognitive knowledge models.',
-    headOfDepartment: 'Dr. Sarah Chen',
-    headEmail: 'expert@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1243.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -69,8 +63,6 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
     code: 'ENG-QA',
     name: 'Quality Engineering & Assurance',
     description: 'Automated test suites, Playwright verification, and quality gates.',
-    headOfDepartment: 'Marcus Vance',
-    headEmail: 'marcus.vance@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1253.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -81,8 +73,6 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
     code: 'ENG-CLOUD',
     name: 'Cloud Infrastructure & DevOps',
     description: 'Cloud systems architecture, container orchestration, and CI/CD pipelines.',
-    headOfDepartment: 'Linh Nguyen',
-    headEmail: 'linh.nguyen@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1299.08', '15-1259.00', '15-1260.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -93,8 +83,6 @@ export const INITIAL_DEPARTMENTS: DepartmentRecord[] = [
     code: 'ENG-SEC',
     name: 'Cybersecurity & Compliance',
     description: 'Zero-trust architecture, security auditing, and compliance governance.',
-    headOfDepartment: 'Alex Rivera',
-    headEmail: 'alex.rivera@technova.com',
     status: 'active',
     linkedJobPositions: ['15-1212.00'],
     organizationId: 'e0000000-0000-0000-0000-000000000001',
@@ -125,8 +113,6 @@ export function loadDepartments(orgId?: string): DepartmentRecord[] {
               code: d.code || '',
               name: d.name || '',
               description: d.description || '',
-              headOfDepartment: d.headOfDepartment || '',
-              headEmail: d.headEmail || '',
               status: (d.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
               linkedJobPositions: Array.isArray(d.linkedJobPositions) ? d.linkedJobPositions : [],
               organizationId: effectiveOrg,

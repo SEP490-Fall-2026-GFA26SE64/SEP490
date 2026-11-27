@@ -20,17 +20,15 @@ public interface JobPositionNodeRepository extends Repository<JobPositionNode, S
                 o.id = $id,
                 o.code = $code,
                 o.name = $name,
-                o.jobZone = $jobZone,
                 o.status = $status,
                 o.version = $version
             ON MATCH SET
                 o.name = $name,
-                o.jobZone = $jobZone,
                 o.status = $status,
                 o.version = $version
             """)
     void merge(@Param("id") String id, @Param("organizationId") String organizationId, @Param("code") String code,
-            @Param("name") String name, @Param("jobZone") int jobZone,
+            @Param("name") String name,
             @Param("status") String status, @Param("version") String version);
 
     @Transactional(TransactionManagers.NEO4J)

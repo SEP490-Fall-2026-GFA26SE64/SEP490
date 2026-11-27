@@ -127,8 +127,6 @@ export function DepartmentsManagementPage() {
           code: d.code,
           name: d.name,
           description: d.description || '',
-          headOfDepartment: d.headOfDepartment || '',
-          headEmail: d.headEmail || '',
           status: String(d.status || 'ACTIVE').toLowerCase() === 'inactive' ? 'inactive' : 'active',
           linkedJobPositions: d.jobPositionCodes || [],
           organizationId: d.organizationId || orgId,
@@ -149,8 +147,6 @@ export function DepartmentsManagementPage() {
             code: loc.code,
             name: loc.name,
             description: loc.description,
-            headOfDepartment: loc.headOfDepartment,
-            headEmail: loc.headEmail,
             status: loc.status === 'inactive' ? 'INACTIVE' : 'ACTIVE',
             linkedJobPositions: loc.linkedJobPositions,
           }).catch(() => {})
@@ -208,7 +204,6 @@ export function DepartmentsManagementPage() {
                       code: item.code,
                       name: item.name || item.code,
                       description: item.description || 'Industry job position competency domain',
-                      jobZone: item.jobZone || 4,
                       profiles: ['DEV'],
                       assignedExpertIds: Array.isArray(item.assignedExperts)
                         ? item.assignedExperts.map((ae: any) => ae.id || ae)
@@ -241,7 +236,6 @@ export function DepartmentsManagementPage() {
             code: jp.code,
             name: jp.name,
             description: existing?.description || 'Industry job position competency domain',
-            jobZone: jp.jobZone || existing?.jobZone || 4,
             profiles: existing?.profiles || ['DEV'],
             assignedExpertIds: existing?.assignedExpertIds || [],
           })
@@ -408,8 +402,6 @@ export function DepartmentsManagementPage() {
           code: codeClean,
           name: formName.trim(),
           description: formDescription.trim(),
-          headOfDepartment: editingDept.headOfDepartment || '',
-          headEmail: editingDept.headEmail || '',
           status: editingDept.status.toUpperCase(),
           linkedJobPositions: selectedJobPositions,
         })
@@ -423,8 +415,6 @@ export function DepartmentsManagementPage() {
           name: formName.trim(),
           code: codeClean,
           description: formDescription.trim(),
-          headOfDepartment: editingDept.headOfDepartment || '',
-          headEmail: editingDept.headEmail || '',
           linkedJobPositions: selectedJobPositions,
         },
         orgId
@@ -465,8 +455,6 @@ export function DepartmentsManagementPage() {
           name: formName.trim(),
           code: codeClean,
           description: formDescription.trim(),
-          headOfDepartment: '',
-          headEmail: '',
           status: 'active',
           linkedJobPositions: selectedJobPositions,
         },
@@ -489,8 +477,6 @@ export function DepartmentsManagementPage() {
           code: codeClean,
           name: formName.trim(),
           description: formDescription.trim(),
-          headOfDepartment: '',
-          headEmail: '',
           status: 'ACTIVE',
           linkedJobPositions: selectedJobPositions,
         })

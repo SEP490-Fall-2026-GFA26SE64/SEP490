@@ -46,8 +46,6 @@ test.describe('Department Isolation & Automatic Job Position Assignment', () => 
         code: 'DPT-EMPTY',
         name: 'Empty Department',
         description: 'Testing department with no job positions',
-        headOfDepartment: 'Sarah Connor',
-        headEmail: 'manager@technova.com',
         status: 'active',
         linkedJobPositions: [],
         organizationId: 'e0000000-0000-0000-0000-000000000001',

@@ -35,7 +35,7 @@ describe('Workspace login appearance and authentication', () => {
     expect(illustrations).toHaveLength(2)
     expect(illustrations[0].getAttribute('src')).toBe('/illustrations/ill_left_opt.webp')
     expect(illustrations[1].getAttribute('src')).toBe('/illustrations/ill_right_opt.webp')
-    for (const image of illustrations) expect(image.getAttribute('alt')).toBe('')
+    for (const image of Array.from(illustrations)) expect(image.getAttribute('alt')).toBe('')
     expect(await screen.findByLabelText('Email')).toHaveProperty('value', '')
     expect(screen.getByLabelText('Password')).toHaveProperty('value', '')
     expect(screen.queryByText('Sign Up as Guest')).toBeNull()

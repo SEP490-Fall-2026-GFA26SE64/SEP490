@@ -302,7 +302,6 @@ public class CatalogConfiguration {
         public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
             return store.values().stream()
                     .filter(r -> r.getOrganizationId().equals(organizationId))
-                    .filter(r -> filter.track() == null || r.getTrack() == filter.track())
                     .filter(r -> filter.status() == null || r.getStatus() == filter.status())
                     .filter(r -> filter.assignedExpertId() == null || (r.getAssignedExpertId() != null && r.getAssignedExpertId().equals(filter.assignedExpertId())))
                     .filter(r -> filter.search() == null || r.getName().toLowerCase().contains(filter.search().toLowerCase()))

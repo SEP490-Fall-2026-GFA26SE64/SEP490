@@ -2,7 +2,6 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.entities.TargetRoleNode;
@@ -150,8 +149,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             String updatedAt = targetRole.getUpdatedAt().toString();
 
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "TargetRole", matchedId, organizationId);
-            roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(), targetRole.getFamilyCode(),
-                    targetRole.getTrack().name(), targetRole.getAssignedExpertId(), targetRole.getDescription(),
+            roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(),
+                    targetRole.getFamilyCode() != null ? targetRole.getFamilyCode() : "",
+                    targetRole.getAssignedExpertId(), targetRole.getDescription(),
                     targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of(),
                     targetRole.getStatus().name(), targetRole.isStaffingEnabled(), version, targetRole.getSkillTargets(),
                     targetRole.getLevelCompetencies(),
@@ -175,7 +175,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             syncMemberLevelIdentities(organizationId, matchedId, targetRole.getLevels(), version, updatedAt);
 
             // 4. Synchronize HAS_ROLE edge from JobPosition to TargetRole
-            syncJobPositionRelationship(organizationId, matchedId, targetRole.getFamilyCode(), targetRole.getStatus().name(), targetRole.getUpdatedAt());
+            syncJobPositionRelationship(organizationId, matchedId, targetRole.getStatus().name(), targetRole.getUpdatedAt());
         });
         return targetRole;
     }
@@ -512,33 +512,21 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
     }
 
-    private void syncJobPositionRelationship(String organizationId, String roleId, String familyCode, String status, Instant updatedAt) {
-        String famCode = familyCode != null ? familyCode.trim().toUpperCase() : "DEV";
+    private void syncJobPositionRelationship(String organizationId, String roleId, String status, Instant updatedAt) {
         client.query("""
                 MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
+                OPTIONAL MATCH (existingJp:JobPosition)-[:HAS_ROLE]->(r)
+                WITH r, existingJp
                 MATCH (jp:JobPosition {organizationId: $organizationId})
-                WHERE jp.status = 'ACTIVE'
-                  AND (
-                    jp.code = $famCode
-                    OR jp.id = $famCode
-                    OR jp.id = 'OCC-' + $famCode
-                    OR ($famCode IN ['DEV', 'JAVA_BACKEND', 'SOFTWARE_ENGINEERING', 'SOFTWARE_DEVELOPMENT', '15-1252.00', '15-1252'] AND jp.code = '15-1252.00')
-                    OR ($famCode IN ['DATA', 'DATABASE', '15-1243.00', '15-1243'] AND jp.code = '15-1243.00')
-                    OR ($famCode IN ['QA', 'QUALITY', 'TEST', '15-1253.00', '15-1253'] AND jp.code = '15-1253.00')
-                    OR ($famCode IN ['CLOUD', 'DEVOPS', 'SYSTEMS', 'INFRASTRUCTURE', '15-1299.08'] AND jp.code = '15-1299.08')
-                    OR ($famCode IN ['SECURITY', 'SEC', 'COMPLIANCE', '15-1212.00'] AND jp.code = '15-1212.00')
-                  )
-                WITH r, jp
-                OPTIONAL MATCH (other:JobPosition)-[oldRel:HAS_ROLE]->(r)
-                WHERE other.organizationId=$organizationId AND elementId(other) <> elementId(jp)
-                DELETE oldRel
+                WHERE (existingJp IS NOT NULL AND elementId(jp) = elementId(existingJp))
+                   OR (existingJp IS NULL AND (jp.code = '15-1252.00' OR jp.code STARTS WITH '15-'))
+                WITH r, jp LIMIT 1
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
                 SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
                     rel.updatedAt = datetime($updatedAt)
                 """)
                 .bind(roleId).to("roleId")
                 .bind(organizationId).to("organizationId")
-                .bind(famCode).to("famCode")
                 .bind(status).to("status")
                 .bind(updatedAt.toString()).to("updatedAt")
                 .run();
@@ -573,10 +561,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("organizationId", organizationId);
 
-        if (filter.track() != null) {
-            cypher.append(" AND r.track = $track");
-            params.put("track", filter.track().name());
-        }
         if (filter.status() != null) {
             cypher.append(" AND r.status = $status");
             params.put("status", filter.status().name());
@@ -698,11 +682,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             code = code.substring(0, code.indexOf("#"));
         }
 
-        String name = node.name() != null ? node.name() : (node.title() != null ? node.title() : code);
-        String familyCode = node.familyCode() != null && !node.familyCode().isBlank()
-                ? node.familyCode()
-                : (graphJobPositionCode != null && !graphJobPositionCode.isBlank() ? graphJobPositionCode : "SOFTWARE_ENGINEERING");
-        String trackStr = node.track() != null ? node.track() : "PROFESSIONAL";
+        String name = node.name() != null ? node.name() : code;
         String assignedExpertId = node.assignedExpertId() != null ? node.assignedExpertId() : "";
         String desc = node.description() != null ? node.description() : (node.scope() != null ? node.scope() : "");
         List<String> responsibilities = node.responsibilities() != null ? node.responsibilities() : List.of();
@@ -781,13 +761,16 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         RoleStatus parsedStatus = RoleStatus.fromString(statusStr);
         boolean isStaffingEnabled = RoleStatus.STAGED.equals(parsedStatus) || (Boolean.TRUE.equals(node.isStaffingEnabled()) && !RoleStatus.ACTIVE.equals(parsedStatus) && !RoleStatus.PUBLISHED.equals(parsedStatus));
 
+        String familyCode = node.familyCode() != null && !node.familyCode().isBlank()
+                ? node.familyCode().trim()
+                : (graphJobPositionCode != null && !graphJobPositionCode.isBlank() ? graphJobPositionCode.trim() : "");
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
                 code,
                 name,
                 familyCode,
-                RoleTrack.fromString(trackStr),
                 assignedExpertId,
                 desc,
                 responsibilities,
