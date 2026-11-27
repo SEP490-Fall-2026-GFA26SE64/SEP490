@@ -1,0 +1,110 @@
+package com.adaptlearngraph.config;
+
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+/**
+ * Idempotent automatic seed bootstrap for Research Question 2 (Graph Latency Benchmark).
+ * Runs at application startup during deployment or local dev, provisioning 1k, 5k, and 10k
+ * isolated benchmark subgraphs in Neo4j without affecting real business entities.
+ */
+@Component
+@Profile("!migrate")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@Order(Ordered.LOWEST_PRECEDENCE)
+public class Rq2BenchmarkSeedBootstrap implements ApplicationRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(Rq2BenchmarkSeedBootstrap.class);
+
+    private final ObjectProvider<Driver> driverProvider;
+    private final ConfigurableApplicationContext context;
+
+    public Rq2BenchmarkSeedBootstrap(ObjectProvider<Driver> driverProvider, ConfigurableApplicationContext context) {
+        this.driverProvider = driverProvider;
+        this.context = context;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        if (!context.isActive()) {
+            return;
+        }
+        try {
+            Driver driver = driverProvider.getIfAvailable();
+            if (driver == null) {
+                log.info("Neo4j driver not available, skipping RQ2 benchmark seed bootstrap.");
+                return;
+            }
+            ensureAllBenchmarkScalesSeeded(driver);
+        } catch (Exception e) {
+            log.warn("Non-fatal RQ2 benchmark seed bootstrap notice: {}", e.getMessage());
+        }
+    }
+
+    public static void ensureAllBenchmarkScalesSeeded(Driver driver) {
+        ensureScaleSeeded(driver, "1k", 1000);
+        ensureScaleSeeded(driver, "5k", 5000);
+        ensureScaleSeeded(driver, "10k", 10000);
+    }
+
+    public static void ensureScaleSeeded(Driver driver, String scale, int expectedNodes) {
+        String scaleUpper = scale.toUpperCase();
+        String prefix = "RQ2-" + scaleUpper + "-";
+        try (Session session = driver.session()) {
+            long currentNodes = session.run(
+                    "MATCH (n:MicroSkill) WHERE n.id STARTS WITH $prefix RETURN count(n) AS cnt",
+                    Map.of("prefix", prefix)
+            ).single().get("cnt").asLong();
+
+            if (currentNodes == expectedNodes) {
+                return; // Already fully seeded
+            }
+
+            log.info("Seeding RQ2 benchmark partition for scale {} (target: {} nodes)...", scale, expectedNodes);
+
+            session.run("CREATE CONSTRAINT rq2_microskill_id IF NOT EXISTS FOR (n:MicroSkill) REQUIRE n.id IS UNIQUE;");
+
+            // Batch create nodes
+            String createNodesCypher = String.format("""
+                    UNWIND range(0, %d) AS i
+                    MERGE (n:MicroSkill:RQ2Benchmark {id: '%s' + toString(i)})
+                    SET n.code = '%s' + toString(i),
+                        n.name = 'Benchmark Skill ' + '%s' + toString(i),
+                        n.dataset = '%s',
+                        n.version = 'rq2-benchmark';
+                    """, expectedNodes - 1, prefix, prefix, prefix, scale.toLowerCase());
+            session.run(createNodesCypher);
+
+            // Batch create relationships (10-node chain topology from RQ2 specification)
+            String createRelsCypher = String.format("""
+                    UNWIND range(0, %d) AS i
+                    WITH i WHERE i %% 10 > 0
+                    MATCH (source:MicroSkill {id: '%s' + toString(i)})
+                    MATCH (same:MicroSkill {id: '%s' + toString(i - 1)})
+                    MATCH (next:MicroSkill {id: '%s' + toString((i + 10) %% %d - 1)})
+                    MERGE (source)-[:HAS_SKILL_PREREQUISITE {dataset: '%s'}]->(same)
+                    MERGE (source)-[:HAS_SKILL_PREREQUISITE {dataset: '%s'}]->(next);
+                    """, expectedNodes - 1, prefix, prefix, prefix, expectedNodes, scale.toLowerCase(), scale.toLowerCase());
+            session.run(createRelsCypher);
+
+            log.info("RQ2 benchmark partition for scale {} seeded successfully ({} nodes, {} relationships).",
+                    scale, expectedNodes, (expectedNodes * 9 / 10) * 2);
+        } catch (Exception e) {
+            log.error("Failed to seed RQ2 benchmark partition for scale {}: {}", scale, e.getMessage(), e);
+            throw new IllegalStateException("Failed to seed RQ2 benchmark partition for " + scale + ": " + e.getMessage(), e);
+        }
+    }
+}

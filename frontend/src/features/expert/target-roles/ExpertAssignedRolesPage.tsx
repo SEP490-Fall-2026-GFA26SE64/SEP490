@@ -301,12 +301,11 @@ export function ExpertAssignedRolesPage() {
                 formatRoleVersion(tr.version) === rVer),
           )
           const meta = metaMap[rId] || metaMap[rCode]
+          const rawBackendStatus = String(r.status || '').toLowerCase()
           const isStaffing = Boolean(
-            (r as Record<string, unknown>).isStaffingEnabled ||
-            meta?.isStaffingEnabled ||
-            storeRole?.isStaffingEnabled ||
-            String(r.status || '').toLowerCase() === 'staged' ||
-            meta?.status === 'staged'
+            rawBackendStatus === 'staged' ||
+            ((r as Record<string, unknown>).isStaffingEnabled && rawBackendStatus !== 'draft' && rawBackendStatus !== 'published' && rawBackendStatus !== 'active') ||
+            (!rawBackendStatus && (meta?.isStaffingEnabled || meta?.status === 'staged'))
           )
           const effectiveLevelComps =
             (r.levelCompetencies as Record<string, string[]>) ||
@@ -833,11 +832,13 @@ export function ExpertAssignedRolesPage() {
         const newRoleId = createdRoleData?.id
           ? String(createdRoleData.id)
           : `${role.code}-v${nextVersion}`
-        const newDraftRole: TargetRoleModel = {
+        const newDraftRole: TargetRoleModel & { createdByRole?: string } = {
           ...role,
           id: newRoleId,
           version: nextVersion,
           status: 'draft',
+          isStaffingEnabled: false,
+          createdByRole: 'DOMAIN_EXPERT',
           levels: inheritedLevels,
           levelCompetencies: inheritedLevelCompetencies,
           competencyIds: inheritedCompetencyIds,
@@ -880,31 +881,24 @@ export function ExpertAssignedRolesPage() {
         })
 
         return
+      } else {
+        const errData = await res.json().catch(() => null)
+        toast({
+          title: res.status === 409 ? 'Active Draft Already Exists' : 'Draft Creation Failed',
+          description: errData?.message || 'An active draft or in-flight revision already exists for this role.',
+          variant: res.status === 409 ? 'warning' : 'destructive',
+        })
+        await fetchAssignedRoles()
+        return
       }
     } catch {
-      // API error: fallback in-memory
+      toast({
+        title: 'Draft Creation Failed',
+        description: 'Unable to reach server to create draft.',
+        variant: 'destructive',
+      })
+      return
     }
-
-    const createdFallback: TargetRoleModel = {
-      ...role,
-      id: `${role.code}-v${nextVersion}`,
-      version: nextVersion,
-      status: 'draft',
-      levels: inheritedLevels,
-      levelCompetencies: inheritedLevelCompetencies,
-      competencyIds: inheritedCompetencyIds,
-      skillTargets: inheritedSkillTargets,
-      updatedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    }
-
-    saveAndSetRoles((prev) => [createdFallback, ...prev])
-
-    toast({
-      title: 'Successor Draft Created',
-      description: `Draft v${nextVersion} created with all configurations from v${role.version}. Click the edit icon to configure competencies and micro-skills.`,
-      variant: 'success',
-    })
   }
 
   // Competency authoring state inside Authoring Modal
@@ -1220,6 +1214,14 @@ export function ExpertAssignedRolesPage() {
 
   const compDeptOptions: ComboboxOption[] = React.useMemo(() => {
     const map = new Map<string, { label: string; count: number }>()
+    const seenLabels = new Set<string>()
+    departments.forEach((d) => {
+      if (d.status && String(d.status).toUpperCase() === 'INACTIVE') return
+      const label = (d.name || d.code || d.id).trim()
+      if (!label) return
+      map.set(d.id, { label, count: 0 })
+      seenLabels.add(label.toLowerCase())
+    })
     availableCompetencies.forEach((comp) => {
       const resolvedName = resolveCompDepartmentName(comp)
       if (!resolvedName || resolvedName.toLowerCase().trim() === 'unassigned' || resolvedName.toLowerCase().trim() === 'unassigned department') {
@@ -1227,11 +1229,11 @@ export function ExpertAssignedRolesPage() {
       }
       const key = comp.departmentId || resolvedName
       const label = resolvedName
-      const cur = map.get(key)
-      if (cur) {
-        cur.count += 1
-      } else {
+      if (map.has(key)) {
+        map.get(key)!.count += 1
+      } else if (!seenLabels.has(label.toLowerCase().trim())) {
         map.set(key, { label, count: 1 })
+        seenLabels.add(label.toLowerCase().trim())
       }
     })
     const list: ComboboxOption[] = [
@@ -1241,17 +1243,43 @@ export function ExpertAssignedRolesPage() {
       list.push({ value: key, label: val.label })
     })
     return list
-  }, [availableCompetencies, resolveCompDepartmentName])
+  }, [departments, availableCompetencies, resolveCompDepartmentName])
 
   const compJobPosOptions: ComboboxOption[] = React.useMemo(() => {
     const map = new Map<string, { key: string; label: string; count: number }>()
+    const selectedDeptObj = compDeptFilter !== 'all'
+      ? departments.find((d) => d.id === compDeptFilter || d.name === compDeptFilter || d.code === compDeptFilter)
+      : undefined
+    const deptAllowedJpCodes = new Set(
+      (selectedDeptObj?.jobPositionCodes || []).map((c) => c.toLowerCase().trim())
+    )
+
+    jobPositions.forEach((jp) => {
+      if (jp.status && String(jp.status).toUpperCase() === 'INACTIVE') return
+      if (compDeptFilter !== 'all' && deptAllowedJpCodes.size > 0) {
+        const jpCode = (jp.code || '').toLowerCase().trim()
+        const jpBase = jpCode.replace(/\.00$/, '')
+        const matchesDept = deptAllowedJpCodes.has(jpCode) ||
+          Array.from(deptAllowedJpCodes).some((c) => c.replace(/\.00$/, '') === jpBase)
+        if (!matchesDept) return
+      }
+      const cleanTitle = (jp.name || jp.code || '').replace(/\s*\((?:Department|dept)\)\s*/gi, '').trim()
+      if (!cleanTitle) return
+      const normKey = cleanTitle.toLowerCase()
+      if (!map.has(normKey)) {
+        map.set(normKey, { key: jp.code || cleanTitle, label: cleanTitle, count: 0 })
+      }
+    })
+
     availableCompetencies.forEach((comp) => {
       const resolvedDept = resolveCompDepartmentName(comp)
+      const selectedDeptName = selectedDeptObj?.name?.toLowerCase().trim()
       if (
         compDeptFilter !== 'all' &&
         comp.departmentId !== compDeptFilter &&
         comp.departmentName !== compDeptFilter &&
-        resolvedDept !== compDeptFilter
+        resolvedDept !== compDeptFilter &&
+        (!selectedDeptName || resolvedDept.toLowerCase().trim() !== selectedDeptName)
       ) {
         return
       }
@@ -1267,7 +1295,7 @@ export function ExpertAssignedRolesPage() {
       if (cur) {
         cur.count += 1
       } else {
-        map.set(normKey, { key: cleanTitle, label: displayLabel, count: 1 })
+        map.set(normKey, { key: comp.jobPositionCode || cleanTitle, label: displayLabel, count: 1 })
       }
     })
 
@@ -1278,16 +1306,26 @@ export function ExpertAssignedRolesPage() {
       list.push({ value: val.key, label: val.label })
     })
     return list
-  }, [availableCompetencies, compDeptFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
+  }, [departments, jobPositions, availableCompetencies, compDeptFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
 
   const filteredAvailableCompetencies = React.useMemo(() => {
+    const selectedDeptObj = compDeptFilter !== 'all'
+      ? departments.find((d) => d.id === compDeptFilter || d.name === compDeptFilter || d.code === compDeptFilter)
+      : undefined
+    const selectedDeptName = selectedDeptObj?.name?.toLowerCase().trim()
+    const selectedJpObj = compJobPosFilter !== 'all'
+      ? jobPositions.find((jp) => jp.code === compJobPosFilter || jp.name === compJobPosFilter)
+      : undefined
+    const selectedJpTitle = selectedJpObj?.name?.replace(/\s*\((?:Department|dept)\)\s*/gi, '').toLowerCase().trim()
+
     return availableCompetencies.filter((comp) => {
       if (compDeptFilter !== 'all') {
         const resolvedDept = resolveCompDepartmentName(comp)
         if (
           comp.departmentId !== compDeptFilter &&
           comp.departmentName !== compDeptFilter &&
-          resolvedDept !== compDeptFilter
+          resolvedDept !== compDeptFilter &&
+          (!selectedDeptName || resolvedDept.toLowerCase().trim() !== selectedDeptName)
         ) {
           return false
         }
@@ -1295,7 +1333,8 @@ export function ExpertAssignedRolesPage() {
       if (compJobPosFilter !== 'all') {
         const cleanTitle = resolveCompJobPositionTitle(comp)
         const filterLower = compJobPosFilter.toLowerCase().trim()
-        const matchesTitle = cleanTitle.toLowerCase().trim() === filterLower
+        const matchesTitle = cleanTitle.toLowerCase().trim() === filterLower ||
+          (!!selectedJpTitle && cleanTitle.toLowerCase().trim() === selectedJpTitle)
         const matchesCode = comp.jobPositionCode?.toLowerCase().trim() === filterLower
         const matchesRaw = comp.jobPositionTitle?.toLowerCase().trim() === filterLower
         if (!matchesTitle && !matchesCode && !matchesRaw) {
@@ -1304,7 +1343,7 @@ export function ExpertAssignedRolesPage() {
       }
       return true
     })
-  }, [availableCompetencies, compDeptFilter, compJobPosFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
+  }, [departments, jobPositions, availableCompetencies, compDeptFilter, compJobPosFilter, resolveCompDepartmentName, resolveCompJobPositionTitle])
 
   const competencyOptions: ComboboxOption[] = React.useMemo(() => {
     return filteredAvailableCompetencies.map((comp) => {
@@ -2029,7 +2068,16 @@ export function ExpertAssignedRolesPage() {
 
                     <tbody className="divide-y divide-border">
                       {paginatedRoles.map((role) => {
-                        const effStatus = getExpertEffectiveStatus(role)
+                        const rawEffStatus = getExpertEffectiveStatus(role)
+                        const hasAnyPublishedInLineage = assignedRoles.some(
+                          (r) =>
+                            (r.stableId === role.stableId || r.code === role.code) &&
+                            (r.status === 'published' || (r.status as string) === 'ACTIVE' || (r.status as string) === 'PUBLISHED'),
+                        )
+                        const effStatus =
+                          hasAnyPublishedInLineage && rawEffStatus === 'staged'
+                            ? 'draft'
+                            : rawEffStatus
                         const isDraft = effStatus === 'draft'
                         const isSubmitted = effStatus === 'submitted'
                         const isSent = effStatus === 'sent'
@@ -3505,7 +3553,9 @@ export function ExpertAssignedRolesPage() {
                                                   )
 
                                                   setEditingKnowledgeLevels(
-                                                    [...(st.requiredKnowledgeLevels ?? [])],
+                                                    st.requiredKnowledgeLevels?.length
+                                                      ? [st.requiredKnowledgeLevels[st.requiredKnowledgeLevels.length - 1]]
+                                                      : [],
                                                   )
                                                 }}
 

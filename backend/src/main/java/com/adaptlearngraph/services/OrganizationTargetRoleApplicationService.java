@@ -11,13 +11,19 @@ import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.helper.ModelMapperFactory;
 import com.adaptlearngraph.helper.TargetRoleMappings;
+import com.adaptlearngraph.repository.TargetRoleNodeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -29,6 +35,7 @@ public class OrganizationTargetRoleApplicationService {
     private final ViewTargetRolesUseCase viewTargetRoles;
     private final ManageTargetRoleUseCase manageTargetRole;
     private final ModelMapper mapper;
+    private final TargetRoleNodeRepository targetRoleNodeRepository;
 
     public OrganizationTargetRoleApplicationService(
             CreateTargetRoleUseCase createTargetRole,
@@ -39,6 +46,22 @@ public class OrganizationTargetRoleApplicationService {
         this.viewTargetRoles = viewTargetRoles;
         this.manageTargetRole = manageTargetRole;
         this.mapper = mapper;
+        this.targetRoleNodeRepository = null;
+    }
+
+    public OrganizationTargetRoleApplicationService(
+            CreateTargetRoleUseCase createTargetRole,
+            ViewTargetRolesUseCase viewTargetRoles,
+            ManageTargetRoleUseCase manageTargetRole,
+            ModelMapper mapper,
+            ObjectProvider<TargetRoleNodeRepository> targetRoleNodeRepositoryProvider) {
+        this.createTargetRole = createTargetRole;
+        this.viewTargetRoles = viewTargetRoles;
+        this.manageTargetRole = manageTargetRole;
+        this.mapper = mapper;
+        this.targetRoleNodeRepository = targetRoleNodeRepositoryProvider != null
+                ? targetRoleNodeRepositoryProvider.getIfAvailable()
+                : null;
     }
 
     public TargetRoleResponse createTargetRole(String organizationId, CreateTargetRoleRequest request) {
@@ -47,6 +70,19 @@ public class OrganizationTargetRoleApplicationService {
             String sanitized = request.name().replaceAll("[^A-Za-z0-9]", "_").toUpperCase();
             effectiveCode = "ROLE-" + (sanitized.length() > 40 ? sanitized.substring(0, 40) : sanitized) + "-"
                     + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        } else if (targetRoleNodeRepository != null) {
+            try {
+                if (targetRoleNodeRepository.hasActiveNonReleasedVersion(organizationId, effectiveCode.trim())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "An active draft or in-flight revision already exists for role '" + effectiveCode.trim()
+                                    + "'. Only one active revision is allowed at a time.");
+                }
+            } catch (ResponseStatusException rse) {
+                throw rse;
+            } catch (Exception ignored) {
+                // Non-fatal in unit/mock environments without Neo4j
+            }
         }
 
         RoleStatus status = request.status() != null && !request.status().isBlank()
@@ -153,6 +189,49 @@ public class OrganizationTargetRoleApplicationService {
 
     public boolean deleteTargetRole(String organizationId, String roleId) {
         return manageTargetRole.deleteTargetRole(organizationId, TargetRoleId.fromString(roleId));
+    }
+
+    public void markCreatedByRole(String organizationId, String roleId, String createdByRole) {
+        if (targetRoleNodeRepository == null || roleId == null || roleId.isBlank() || createdByRole == null) {
+            return;
+        }
+        try {
+            targetRoleNodeRepository.markCreatedByRole(organizationId, roleId, createdByRole);
+        } catch (Exception ignored) {
+            // Non-fatal in unit/mock environments without Neo4j
+        }
+    }
+
+    public List<TargetRoleResponse> filterVisibleRoles(
+            String organizationId,
+            List<TargetRoleResponse> responses,
+            boolean isManager,
+            boolean isExpert) {
+        if (targetRoleNodeRepository == null || responses == null || responses.isEmpty()) {
+            return responses;
+        }
+        try {
+            if (isManager && !isExpert) {
+                Set<String> hiddenExpertDraftIds = new HashSet<>(
+                        targetRoleNodeRepository.findRoleIdsByCreatedByRoleAndStatus(organizationId, "DOMAIN_EXPERT", "DRAFT"));
+                if (!hiddenExpertDraftIds.isEmpty()) {
+                    return responses.stream()
+                            .filter(r -> !hiddenExpertDraftIds.contains(r.id()) || !"DRAFT".equalsIgnoreCase(r.status()))
+                            .toList();
+                }
+            } else if (isExpert && !isManager) {
+                Set<String> hiddenManagerDraftIds = new HashSet<>(
+                        targetRoleNodeRepository.findRoleIdsByCreatedByRoleAndStatus(organizationId, "LD_MANAGER", "DRAFT"));
+                if (!hiddenManagerDraftIds.isEmpty()) {
+                    return responses.stream()
+                            .filter(r -> !hiddenManagerDraftIds.contains(r.id()) || !"DRAFT".equalsIgnoreCase(r.status()))
+                            .toList();
+                }
+            }
+        } catch (Exception ignored) {
+            // Non-fatal in unit/mock environments
+        }
+        return responses;
     }
 
     private TargetRoleResponse toResponse(TargetRole role) {

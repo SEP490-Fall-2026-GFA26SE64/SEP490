@@ -518,8 +518,8 @@ export function TargetRolesPage() {
           } catch {}
         }
 
-        const targetDeptId = localAssignmentObj?.departmentId || currentMember?.departmentId
-        const targetDeptName = localAssignmentObj?.departmentName || currentMember?.departmentName
+        const targetDeptId = currentMember?.departmentId || localAssignmentObj?.departmentId
+        const targetDeptName = currentMember?.departmentName || localAssignmentObj?.departmentName
 
         if (targetDeptId || targetDeptName) {
           matched = effectiveDepts.find((d) => {
@@ -700,11 +700,11 @@ export function TargetRolesPage() {
               : undefined
 
           const explicitJobPositionCode =
-            meta?.jobPositionCode ||
-            storeRole?.jobPositionCode ||
             (typeof r.jobPositionCode === 'string' && r.jobPositionCode
               ? r.jobPositionCode
-              : rawFamilyCode)
+              : rawFamilyCode) ||
+            meta?.jobPositionCode ||
+            storeRole?.jobPositionCode
 
           const occ = resolveJobPositionForRole(
             {
@@ -749,18 +749,18 @@ export function TargetRolesPage() {
               )
 
           const effectiveDept =
-            meta?.department ||
-            storeRole?.department ||
             (typeof r.department === 'string' && r.department
               ? r.department
-              : matchedDept?.name || undefined)
+              : matchedDept?.name || undefined) ||
+            meta?.department ||
+            storeRole?.department
 
           const effectiveDeptId =
-            meta?.departmentId ||
-            storeRole?.departmentId ||
             (typeof r.departmentId === 'string' && r.departmentId
               ? r.departmentId
-              : matchedDept?.id)
+              : matchedDept?.id || undefined) ||
+            meta?.departmentId ||
+            storeRole?.departmentId
 
           const effectiveJobPositionCode = explicitJobPositionCode || meta?.jobPositionCode || occ.code
           const effectiveJobPositionTitle =
@@ -842,7 +842,7 @@ export function TargetRolesPage() {
                 ? 'unpublished'
                 : String(r.status || '').toLowerCase() === 'submitted'
                 ? 'submitted'
-                : String(r.status || '').toLowerCase() === 'staged' || meta?.status === 'staged'
+                : String(r.status || '').toLowerCase() === 'staged' || (!r.status && meta?.status === 'staged')
                 ? 'staged'
                 : String(r.status || '').toLowerCase() === 'sent'
                 ? 'sent'
@@ -851,11 +851,9 @@ export function TargetRolesPage() {
                 : 'draft'
             ) as TargetRoleModel['status'],
             isStaffingEnabled: Boolean(
-              (r as any).isStaffingEnabled ||
-              meta?.isStaffingEnabled ||
-              storeRole?.isStaffingEnabled ||
               String(r.status || '').toLowerCase() === 'staged' ||
-              meta?.status === 'staged'
+              ((r as any).isStaffingEnabled && String(r.status || '').toLowerCase() !== 'draft' && String(r.status || '').toLowerCase() !== 'published' && String(r.status || '').toLowerCase() !== 'active') ||
+              (!r.status && (meta?.isStaffingEnabled || meta?.status === 'staged'))
             ),
             rejectionReason: String(r.rejectionReason || ''),
             levelCompetencies:
@@ -913,6 +911,7 @@ export function TargetRolesPage() {
             (s) =>
               !backendIds.has(s.id) &&
               !backendKeys.has(`${s.code.toUpperCase()}::${formatRoleVersion(s.version)}`) &&
+              (s as TargetRoleModel & { createdByRole?: string }).createdByRole !== 'DOMAIN_EXPERT' &&
               (s.status === 'draft' || s.status === 'staged' || s.status === 'sent' || s.status === 'submitted' || s.status === 'rejected'),
           ).map((s) => ({ ...s, version: formatRoleVersion(s.version) }))
           const rawCombined = [...localOnlyDrafts, ...mapped]
@@ -2263,6 +2262,136 @@ export function TargetRolesPage() {
 
   // L&D Manager: Approve and Publish submitted configuration (REQ-052)
 
+  const handleDraftNewVersion = async (role: TargetRoleModel) => {
+    const hasActiveSuccessor = roles.some(
+      (r) =>
+        (r.stableId === role.stableId || r.code === role.code) &&
+        r.status !== 'published' &&
+        r.status !== 'unpublished' &&
+        r.id !== role.id,
+    )
+    if (hasActiveSuccessor) {
+      toast({
+        title: 'Active Draft Exists',
+        description: `An active draft revision already exists for ${role.title}. Only one draft revision is allowed per role at a time.`,
+        variant: 'warning',
+      })
+      return
+    }
+
+    const versionParts = (role.version || '1.0').split('.')
+    const major = parseInt(versionParts[0] || '1', 10)
+    const minor = parseInt(versionParts[1] || '0', 10)
+    const nextVersion = `${major}.${minor + 1}`
+    const inheritedLevels =
+      role.levels && role.levels.length > 0
+        ? [...role.levels]
+        : ['Senior', 'Middle', 'Junior']
+    const inheritedLevelCompetencies = role.levelCompetencies
+      ? JSON.parse(JSON.stringify(role.levelCompetencies))
+      : {}
+    const inheritedCompetencyIds = role.competencyIds
+      ? [...role.competencyIds]
+      : []
+    const inheritedSkillTargets: TargetRoleModel['skillTargets'] = role.skillTargets
+      ? JSON.parse(JSON.stringify(role.skillTargets))
+      : []
+    const derivedInheritedCompIds =
+      inheritedCompetencyIds.length > 0
+        ? inheritedCompetencyIds
+        : Array.from(new Set(Object.values(inheritedLevelCompetencies).flat() as string[]))
+
+    let sanitizedSkills: ReturnType<typeof roleRequirements> = []
+    try {
+      sanitizedSkills = inheritedSkillTargets.length > 0 ? roleRequirements(inheritedSkillTargets) : []
+    } catch {
+      sanitizedSkills = []
+    }
+
+    const successorPayload = {
+      code: role.code,
+      name: role.title,
+      familyCode: role.familyCode,
+      track: role.track,
+      responsibilities: role.responsibilities || [],
+      assignedExpertId: role.assignedExpertId || undefined,
+      description: role.description,
+      version: nextVersion,
+      status: 'DRAFT',
+      levels: inheritedLevels,
+      levelDurations: role.levelDurations || {},
+      levelCompetencies: inheritedLevelCompetencies,
+      competencyIds: derivedInheritedCompIds,
+      skillTargets: sanitizedSkills,
+    }
+
+    const lineageKey = (role.stableId && role.stableId.trim()) || role.code.trim() || role.id
+    setExpandedLineages((prev) => ({ ...prev, [lineageKey]: true }))
+
+    try {
+      const res = await fetch(`/api/v1/organizations/${orgId}/roles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'LD_MANAGER',
+        },
+        body: JSON.stringify(successorPayload),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null)
+        throw new Error(errData?.message || 'Unable to create next version draft')
+      }
+
+      const createdRoleData = await res.json().catch(() => null)
+      const newRoleId = createdRoleData?.id
+        ? String(createdRoleData.id)
+        : `${role.code}-v${nextVersion}`
+
+      const newDraftRole: TargetRoleModel = {
+        ...role,
+        id: newRoleId,
+        version: nextVersion,
+        status: 'draft',
+        isStaffingEnabled: false,
+        levels: inheritedLevels,
+        levelCompetencies: inheritedLevelCompetencies,
+        competencyIds: derivedInheritedCompIds,
+        skillTargets: inheritedSkillTargets,
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      }
+
+      saveTargetRoleMeta(orgId, {
+        id: newRoleId,
+        code: role.code,
+        jobPositionCode: role.jobPositionCode,
+        jobPositionTitle: role.jobPositionTitle,
+        department: role.department,
+        departmentId: role.departmentId,
+        assignedExpertId: role.assignedExpertId,
+        assignedExpertName: role.assignedExpertName,
+        levelDurations: role.levelDurations,
+        status: 'draft',
+        isStaffingEnabled: false,
+      })
+
+      saveAndSetRoles((prev) => [newDraftRole, ...prev])
+
+      toast({
+        title: 'Next Version Draft Created',
+        description: `${role.title} v${nextVersion} created as a draft. You can now edit it and send it to the Domain Expert.`,
+        variant: 'default',
+      })
+    } catch (err) {
+      toast({
+        title: 'Draft Creation Failed',
+        description: err instanceof Error ? err.message : 'Unable to create successor draft.',
+        variant: 'destructive',
+      })
+    }
+  }
+
   const handleApproveAndPublishRole = async (role: TargetRoleModel) => {
     if (publicationLock.current) return false
     const validation = getPublishValidation(role)
@@ -3288,6 +3417,29 @@ export function TargetRolesPage() {
                                       ) : (
                                         <Edit3 className="h-4 w-4" />
                                       )}
+                                    </Button>
+                                  )}
+
+                                  {/* Create Next Version Draft (for Published/Unpublished roles when no active successor exists) */}
+                                  {(isPublished || isUnpublished) && !roles.some(
+                                    (r) =>
+                                      (r.stableId === role.stableId || r.code === role.code) &&
+                                      r.status !== 'published' &&
+                                      r.status !== 'unpublished' &&
+                                      r.id !== role.id,
+                                  ) && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-primary hover:bg-primary/10 border-primary/30"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDraftNewVersion(role)
+                                      }}
+                                      title="Create Next Version Draft"
+                                      aria-label="Create Next Version Draft"
+                                    >
+                                      <Plus className="h-4 w-4" />
                                     </Button>
                                   )}
 

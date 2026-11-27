@@ -2,11 +2,8 @@ import type { SkillTargetConfig } from '../data/ldManagerMockData'
 
 export function validRequiredKnowledge(levels: string[] | undefined): boolean {
   return (
-    !!levels?.length &&
-    new Set(levels.map((l) => l.toUpperCase())).size === levels.length &&
-    levels.every((level) =>
-      ['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(level.toUpperCase())
-    )
+    levels?.length === 1 &&
+    ['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(levels[0].toUpperCase())
   )
 }
 export function missingRoleLevelRequirements(

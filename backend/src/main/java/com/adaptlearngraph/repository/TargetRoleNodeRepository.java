@@ -131,6 +131,34 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
 
     @Transactional(TransactionManagers.NEO4J)
     @Query("""
+            MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
+            SET r.createdByRole = $createdByRole
+            """)
+    void markCreatedByRole(@Param("organizationId") String organizationId,
+                           @Param("roleId") String roleId,
+                           @Param("createdByRole") String createdByRole);
+
+    @Query("""
+            MATCH (r:TargetRole {organizationId: $organizationId})
+            WHERE (r.baseCode = $code OR r.code = $code)
+              AND coalesce(r.status, 'DRAFT') IN ['DRAFT', 'SENT', 'SUBMITTED', 'REJECTED', 'STAGED']
+            RETURN count(r) > 0
+            """)
+    boolean hasActiveNonReleasedVersion(@Param("organizationId") String organizationId,
+                                        @Param("code") String code);
+
+    @Query("""
+            MATCH (r:TargetRole {organizationId: $organizationId})
+            WHERE r.createdByRole = $createdByRole
+              AND r.status = $status
+            RETURN r.id
+            """)
+    List<String> findRoleIdsByCreatedByRoleAndStatus(@Param("organizationId") String organizationId,
+                                                     @Param("createdByRole") String createdByRole,
+                                                     @Param("status") String status);
+
+    @Transactional(TransactionManagers.NEO4J)
+    @Query("""
             MATCH (r:TargetRole {id: $roleId})-[oldRel:REQUIRES_SKILL]->()
             WHERE r.organizationId = $organizationId
             DELETE oldRel

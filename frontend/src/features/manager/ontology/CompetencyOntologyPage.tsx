@@ -287,8 +287,8 @@ function OwnedCompetencyOntologyPage() {
   const [prereqPageSize] = React.useState(10)
 
   // State for entities
-  const [competencies, setCompetencies] = React.useState<CompetencyModel[]>(() => getActiveCompany()?.competencies ?? [])
-  const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>(() => getActiveCompany()?.microSkills ?? [])
+  const [competencies, setCompetencies] = React.useState<CompetencyModel[]>([])
+  const [microSkills, setMicroSkills] = React.useState<MicroSkillModel[]>([])
   const [liveSkillDefinitions, setLiveSkillDefinitions] = React.useState<Record<string, MicroSkillDto>>({})
   const [knowledgeForm, setKnowledgeForm] = React.useState(() => provisionForm())
   const [prerequisites, setPrerequisites] = React.useState<PrerequisiteEdge[]>([])
@@ -316,6 +316,56 @@ function OwnedCompetencyOntologyPage() {
   const effectiveExpertJobPosCode = currentMember?.jobPositionReferenceId || localAssignment?.jobPositionReferenceId || extractJobPositionCode(rawExpertJpTitle) || ''
 
   
+
+  const isCompetencyCrossDept = React.useCallback(
+    (comp?: CompetencyModel | null): boolean => {
+      if (!comp || !isExpert) return false
+      if (!effectiveExpertDeptId && !effectiveExpertDeptName) return false
+      if (!comp.departmentId && !comp.departmentName) return false
+      if (effectiveExpertDeptId && comp.departmentId && comp.departmentId === effectiveExpertDeptId) {
+        return false
+      }
+      if (
+        effectiveExpertDeptName &&
+        comp.departmentName &&
+        comp.departmentName.trim().toLowerCase() === effectiveExpertDeptName.trim().toLowerCase()
+      ) {
+        return false
+      }
+      return true
+    },
+    [isExpert, effectiveExpertDeptId, effectiveExpertDeptName],
+  )
+
+  const isSkillCrossDept = React.useCallback(
+    (skill?: (MicroSkillModel & { departmentId?: string; departmentName?: string }) | null): boolean => {
+      if (!skill || !isExpert) return false
+      if (!effectiveExpertDeptId && !effectiveExpertDeptName) return false
+      if (skill.departmentId || skill.departmentName) {
+        if (effectiveExpertDeptId && skill.departmentId && skill.departmentId === effectiveExpertDeptId) {
+          return false
+        }
+        if (
+          effectiveExpertDeptName &&
+          skill.departmentName &&
+          skill.departmentName.trim().toLowerCase() === effectiveExpertDeptName.trim().toLowerCase()
+        ) {
+          return false
+        }
+        return true
+      }
+      const parentCompsWithDept = competencies.filter(
+        (c) =>
+          (c.departmentId || c.departmentName) &&
+          ((c.skillIds || []).includes(skill.id) || (skill.code ? (c.skillIds || []).includes(skill.code) : false)),
+      )
+      if (parentCompsWithDept.length > 0) {
+        return parentCompsWithDept.every((c) => isCompetencyCrossDept(c))
+      }
+      return false
+    },
+    [isExpert, effectiveExpertDeptId, effectiveExpertDeptName, competencies, isCompetencyCrossDept],
+  )
 
   const memberSkillComboboxOptions: ComboboxOption[] = React.useMemo(() => {
     const configuredIds = new Set(competencyForm.skillIds)
@@ -353,7 +403,6 @@ function OwnedCompetencyOntologyPage() {
 
   // Synchronize state when active company scope changes & fetch live from Neo4j
   const handleSync = React.useCallback(async () => {
-      const active = getActiveCompany()
       const orgId = effectiveOrgId
       setIsLoading(true)
 
@@ -384,23 +433,21 @@ function OwnedCompetencyOntologyPage() {
           if (me) setCurrentMember(me)
         }
 
-        let resolvedSkills: MicroSkillModel[] = active?.microSkills ?? []
-        if (liveSkills && liveSkills.length > 0) {
+        let resolvedSkills: MicroSkillModel[] = []
+        if (Array.isArray(liveSkills) && liveSkills.length > 0) {
           resolvedSkills = liveSkills.map((s) => ({
             id: s.id,
             code: s.code,
             name: s.name,
             description: s.description || '',
             status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            createdAt: s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.createdAt || '',
-            updatedAt: s.updatedAt || s.createdAt || (active?.microSkills || []).find((item) => item.id === s.id || item.code === s.code)?.updatedAt || '',
+            createdAt: s.createdAt || '',
+            updatedAt: s.updatedAt || s.createdAt || '',
           }))
-          setMicroSkills(resolvedSkills)
-        } else {
-          setMicroSkills(resolvedSkills)
         }
+        setMicroSkills(resolvedSkills)
 
-        if (liveComps && liveComps.length > 0) {
+        if (Array.isArray(liveComps) && liveComps.length > 0) {
           const mappedComps: CompetencyModel[] = liveComps.map((c) => {
             const canonicalSkillIds: string[] = Array.from(
               new Set(
@@ -410,23 +457,6 @@ function OwnedCompetencyOntologyPage() {
                 })
               )
             )
-            const effectiveDeptId = c.departmentId || (isExpert ? effectiveExpertDeptId : undefined)
-            const effectiveDeptName = c.departmentName || (isExpert ? effectiveExpertDeptName : undefined)
-            const effectiveJpCode = c.jobPositionCode || (isExpert ? effectiveExpertJobPosCode : undefined)
-            const effectiveJpTitle = c.jobPositionTitle || (isExpert ? effectiveExpertJobPosTitle : undefined)
-
-            if (isExpert && (!c.departmentName || !c.jobPositionTitle) && (effectiveExpertDeptName || effectiveExpertJobPosTitle)) {
-              updateCompetency(orgId, c.id, {
-                code: c.code,
-                name: c.name,
-                description: c.description,
-                skillIds: canonicalSkillIds,
-                departmentId: effectiveDeptId,
-                departmentName: effectiveDeptName,
-                jobPositionCode: effectiveJpCode,
-                jobPositionTitle: effectiveJpTitle,
-              }).catch(() => {})
-            }
 
             return {
               id: c.id,
@@ -436,28 +466,17 @@ function OwnedCompetencyOntologyPage() {
               status: (c.status as CompetencyModel['status']) || 'ACTIVE',
               skillIds: canonicalSkillIds,
               levelCodes: c.levelCodes || [],
-              departmentId: effectiveDeptId,
-              departmentName: effectiveDeptName,
-              jobPositionCode: effectiveJpCode,
-              jobPositionTitle: effectiveJpTitle,
-              createdAt: c.createdAt ? String(c.createdAt) : (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.createdAt || '',
-              updatedAt: c.updatedAt ? String(c.updatedAt) : (c.createdAt || (active?.competencies || []).find((item) => item.id === c.id || item.code === c.code)?.updatedAt || ''),
+              departmentId: c.departmentId || undefined,
+              departmentName: c.departmentName || undefined,
+              jobPositionCode: c.jobPositionCode || undefined,
+              jobPositionTitle: c.jobPositionTitle || undefined,
+              createdAt: c.createdAt ? String(c.createdAt) : '',
+              updatedAt: c.updatedAt ? String(c.updatedAt) : (c.createdAt ? String(c.createdAt) : ''),
             }
           })
           setCompetencies(mappedComps)
         } else {
-          const fallbackComps: CompetencyModel[] = (active?.competencies ?? []).map((c) => ({
-            ...c,
-            skillIds: Array.from(
-              new Set(
-                (c.skillIds || []).map((sid: string) => {
-                  const match = resolvedSkills.find((s) => s.id === sid || s.code === sid)
-                  return (match ? match.id : sid) as string
-                })
-              )
-            ),
-          }))
-          setCompetencies(fallbackComps)
+          setCompetencies([])
         }
 
         if (livePrereqs && livePrereqs.length > 0) {
@@ -550,13 +569,10 @@ function OwnedCompetencyOntologyPage() {
           }
         }
       } catch {
-        setMicroSkills(active?.microSkills ?? [])
-        setCompetencies(active?.competencies ?? [])
+        setMicroSkills([])
+        setCompetencies([])
         setPrerequisites([])
-        setTargetRoles((active?.targetRoles ?? []).filter((r) => {
-          if (r.title?.toLowerCase() === 'testing1' || r.code?.toUpperCase() === 'ROLE-07TM') return false
-          return true
-        }))
+        setTargetRoles([])
       } finally {
         setIsLoading(false)
       }
@@ -1734,9 +1750,10 @@ function OwnedCompetencyOntologyPage() {
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleOpenEditSkill(skill)}
-                                      title="Edit Micro-skill"
+                                      className={cn("h-8 w-8 p-0", isSkillCrossDept(skill) && "opacity-40 cursor-not-allowed")}
+                                      disabled={isSkillCrossDept(skill)}
+                                      onClick={() => !isSkillCrossDept(skill) && handleOpenEditSkill(skill)}
+                                      title={isSkillCrossDept(skill) ? "Only editable by experts in its assigned department" : "Edit Micro-skill"}
                                       aria-label="Edit Micro-skill"
                                     >
                                       <Edit3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -1744,9 +1761,13 @@ function OwnedCompetencyOntologyPage() {
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors"
-                                      onClick={() => setDeletingSkill(skill)}
-                                      title="Delete Micro-skill"
+                                      className={cn(
+                                        "h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors",
+                                        isSkillCrossDept(skill) && "opacity-40 cursor-not-allowed",
+                                      )}
+                                      disabled={isSkillCrossDept(skill)}
+                                      onClick={() => !isSkillCrossDept(skill) && setDeletingSkill(skill)}
+                                      title={isSkillCrossDept(skill) ? "Only deletable by experts in its assigned department" : "Delete Micro-skill"}
                                       aria-label="Delete Micro-skill"
                                     >
                                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -2082,7 +2103,7 @@ function OwnedCompetencyOntologyPage() {
                         <tbody className="divide-y divide-border">
                           {paginatedCompetencies.map((comp) => {
                             const isDraft = comp.status?.toUpperCase() === 'DRAFT'
-                            const isCrossDept = isExpert && Boolean(effectiveExpertDeptId) && Boolean(comp.departmentId) && comp.departmentId !== effectiveExpertDeptId
+                            const isCrossDept = isCompetencyCrossDept(comp)
                             return (
                               <tr key={comp.id} className="hover:bg-muted/20">
                                 <td className="py-3 px-3 font-mono font-bold text-primary">
@@ -2149,9 +2170,10 @@ function OwnedCompetencyOntologyPage() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => setDeletingCompetency(comp)}
-                                      title="Delete Competency"
+                                      className={cn("h-8 w-8 p-0", isCrossDept && "opacity-40 cursor-not-allowed")}
+                                      disabled={isCrossDept}
+                                      onClick={() => !isCrossDept && setDeletingCompetency(comp)}
+                                      title={isCrossDept ? `Only deletable by experts in ${comp.departmentName || 'its assigned department'}` : "Delete Competency"}
                                       aria-label="Delete Competency"
                                     >
                                       <Trash2 className="h-4 w-4" />
@@ -2894,34 +2916,40 @@ function OwnedCompetencyOntologyPage() {
               </div>
 
               <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    const s = viewingSkillDetails
-                    setViewingSkillDetails(null)
-                    setDeletingSkill(s)
-                  }}
-                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                >
-                  Delete Micro-skill
-                </Button>
+                {!isSkillCrossDept(viewingSkillDetails) ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      const s = viewingSkillDetails
+                      setViewingSkillDetails(null)
+                      setDeletingSkill(s)
+                    }}
+                    leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                  >
+                    Delete Micro-skill
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Read-only (other department)</span>
+                )}
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setViewingSkillDetails(null)}>
                     Close
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    leftIcon={<Edit3 className="h-3.5 w-3.5" />}
-                    onClick={() => {
-                      const skill = viewingSkillDetails
-                      setViewingSkillDetails(null)
-                      handleOpenEditSkill(skill)
-                    }}
-                  >
-                    Edit Micro-skill
-                  </Button>
+                  {!isSkillCrossDept(viewingSkillDetails) && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                      onClick={() => {
+                        const skill = viewingSkillDetails
+                        setViewingSkillDetails(null)
+                        handleOpenEditSkill(skill)
+                      }}
+                    >
+                      Edit Micro-skill
+                    </Button>
+                  )}
                 </div>
               </DialogFooter>
             </div>
@@ -3613,34 +3641,42 @@ function OwnedCompetencyOntologyPage() {
               </div>
 
               <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    const comp = viewingCompetencyDetails
-                    setViewingCompetencyDetails(null)
-                    setDeletingCompetency(comp)
-                  }}
-                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                >
-                  Delete Competency
-                </Button>
+                {!isCompetencyCrossDept(viewingCompetencyDetails) ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      const comp = viewingCompetencyDetails
+                      setViewingCompetencyDetails(null)
+                      setDeletingCompetency(comp)
+                    }}
+                    leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+                  >
+                    Delete Competency
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">
+                    Read-only ({viewingCompetencyDetails?.departmentName || 'other department'})
+                  </span>
+                )}
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setViewingCompetencyDetails(null)}>
                     Close
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    leftIcon={<Edit3 className="h-3.5 w-3.5" />}
-                    onClick={() => {
-                      const comp = viewingCompetencyDetails
-                      setViewingCompetencyDetails(null)
-                      handleOpenEditCompetency(comp)
-                    }}
-                  >
-                    Edit Competency
-                  </Button>
+                  {!isCompetencyCrossDept(viewingCompetencyDetails) && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<Edit3 className="h-3.5 w-3.5" />}
+                      onClick={() => {
+                        const comp = viewingCompetencyDetails
+                        setViewingCompetencyDetails(null)
+                        handleOpenEditCompetency(comp)
+                      }}
+                    >
+                      Edit Competency
+                    </Button>
+                  )}
                 </div>
               </DialogFooter>
             </div>

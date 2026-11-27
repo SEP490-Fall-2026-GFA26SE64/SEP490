@@ -91,9 +91,10 @@ public class CatalogConfiguration {
     @Bean
     public OrganizationTargetRoleApplicationService organizationTargetRoleApplicationService(
             CreateTargetRoleUseCase createTargetRoleUseCase, ViewTargetRolesUseCase viewTargetRolesUseCase,
-            ManageTargetRoleUseCase manageTargetRoleUseCase, ModelMapper modelMapper) {
+            ManageTargetRoleUseCase manageTargetRoleUseCase, ModelMapper modelMapper,
+            ObjectProvider<com.adaptlearngraph.repository.TargetRoleNodeRepository> targetRoleNodeRepositoryProvider) {
         return new OrganizationTargetRoleApplicationService(createTargetRoleUseCase, viewTargetRolesUseCase,
-                manageTargetRoleUseCase, modelMapper);
+                manageTargetRoleUseCase, modelMapper, targetRoleNodeRepositoryProvider);
     }
 
     @Bean
