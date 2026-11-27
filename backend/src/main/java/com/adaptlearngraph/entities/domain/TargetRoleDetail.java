@@ -8,8 +8,6 @@ public record TargetRoleDetail(
         String id,
         String code,
         String name,
-        String familyCode,
-        CareerTrack track,
         String description,
         List<String> responsibilities,
         List<TargetRoleRequirement> requirements) {
@@ -18,8 +16,6 @@ public record TargetRoleDetail(
         id = requireText(id, "id");
         code = requireText(code, "code");
         name = requireText(name, "name");
-        familyCode = requireText(familyCode, "familyCode");
-        track = Objects.requireNonNull(track, "track must not be null");
         description = optionalText(description);
         responsibilities = copyResponsibilities(responsibilities);
         requirements = List.copyOf(Objects.requireNonNull(requirements, "requirements must not be null"));
@@ -46,6 +42,6 @@ public record TargetRoleDetail(
     }
 
     private static String optionalText(String value) {
-        return value == null || value.isBlank() ? null : value.strip();
+        return value == null ? "" : value.strip();
     }
 }

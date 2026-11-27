@@ -240,8 +240,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     ON CREATE SET d1.id = 'd0000000-0000-0000-0000-000000000001',
                                   d1.name = 'Engineering & Cognitive Systems',
                                   d1.description = 'Core software engineering, cognitive knowledge graphs, and distributed systems.',
-                                  d1.headOfDepartment = 'Sarah Connor',
-                                  d1.headEmail = 'manager@technova.com',
                                   d1.status = 'ACTIVE',
                                   d1.createdAt = '2026-11-04T00:00:00Z',
                                   d1.updatedAt = '2026-11-04T00:00:00Z'
@@ -250,8 +248,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     ON CREATE SET d2.id = '27fd451e-a429-3de1-9a6e-52c5876904a3',
                                   d2.name = 'Data & Artificial Intelligence',
                                   d2.description = 'Data pipelines, analytics warehouses, and cognitive knowledge models.',
-                                  d2.headOfDepartment = 'Dr. Sarah Chen',
-                                  d2.headEmail = 'expert@technova.com',
                                   d2.status = 'ACTIVE',
                                   d2.createdAt = '2026-11-04T00:00:00Z',
                                   d2.updatedAt = '2026-11-04T00:00:00Z'
@@ -260,8 +256,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     ON CREATE SET d3.id = '4bb9ce13-f65a-349e-803d-017fd495a62f',
                                   d3.name = 'Quality Engineering & Assurance',
                                   d3.description = 'Automated test suites, Playwright verification, and quality gates.',
-                                  d3.headOfDepartment = 'Marcus Vance',
-                                  d3.headEmail = 'marcus.vance@technova.com',
                                   d3.status = 'ACTIVE',
                                   d3.createdAt = '2026-11-04T00:00:00Z',
                                   d3.updatedAt = '2026-11-04T00:00:00Z'
@@ -270,8 +264,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     ON CREATE SET d4.id = '6fe84095-c4f5-39a2-a100-88a15c672d33',
                                   d4.name = 'Cloud Infrastructure & DevOps',
                                   d4.description = 'Cloud systems architecture, container orchestration, and CI/CD pipelines.',
-                                  d4.headOfDepartment = 'Linh Nguyen',
-                                  d4.headEmail = 'linh.nguyen@technova.com',
                                   d4.status = 'ACTIVE',
                                   d4.createdAt = '2026-11-04T00:00:00Z',
                                   d4.updatedAt = '2026-11-04T00:00:00Z'
@@ -280,8 +272,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
                     ON CREATE SET d5.id = 'c05d5732-9897-38c7-9d8f-dfdbe71cfd53',
                                   d5.name = 'Cybersecurity & Compliance',
                                   d5.description = 'Zero-trust architecture, security auditing, and compliance governance.',
-                                  d5.headOfDepartment = 'Alex Rivera',
-                                  d5.headEmail = 'alex.rivera@technova.com',
                                   d5.status = 'ACTIVE',
                                   d5.createdAt = '2026-11-04T00:00:00Z',
                                   d5.updatedAt = '2026-11-04T00:00:00Z'
@@ -343,9 +333,6 @@ public final class DevelopmentWorkspaceAccountBootstrap implements ApplicationRu
 
                 // 4.5. Seed complete metadata for all JobPosition nodes in Neo4j
                 tx.execute("""
-                    MATCH (jp:JobPosition)
-                    SET jp.jobZone = coalesce(jp.jobZone, 4)
-                    WITH jp
                     MATCH (jp1:JobPosition {code: '15-1252.00'})
                     SET jp1.description = 'Research, design, and develop computer and network software, clean hexagonal microservices, and distributed systems.'
                     WITH jp1

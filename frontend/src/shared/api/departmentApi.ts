@@ -6,8 +6,6 @@ export interface DepartmentDto {
   code: string
   name: string
   description: string
-  headOfDepartment: string
-  headEmail: string
   status: string
   organizationId: string
   createdAt?: string
@@ -21,8 +19,6 @@ export interface SaveDepartmentPayload {
   code: string
   name: string
   description?: string
-  headOfDepartment?: string
-  headEmail?: string
   status?: string
   linkedJobPositions?: string[]
 }

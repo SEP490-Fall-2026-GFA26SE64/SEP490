@@ -651,8 +651,8 @@ class BaselineAssessmentPostgresIntegrationTest {
 
     private TargetRoleCatalogPort catalog() {
         var detail = new TargetRoleDetail(
-                ROLE_ID, "JAVA_BACKEND_P3", "Java Backend Engineer", "ENGINEERING",
-                CareerTrack.PROFESSIONAL, null, List.of(),
+                ROLE_ID, "JAVA_BACKEND_P3", "Java Backend Engineer",
+                null, List.of(),
                 List.of(new TargetRoleRequirement(SKILL_ID, "JAVA_CORE", "Java Core", 0.8)));
         return new TargetRoleCatalogPort() {
             @Override

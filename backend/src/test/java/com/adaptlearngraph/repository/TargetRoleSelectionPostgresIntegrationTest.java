@@ -477,8 +477,8 @@ class TargetRoleSelectionPostgresIntegrationTest {
 
     private static TargetRoleDetail detail(UUID roleId) {
         return new TargetRoleDetail(
-                roleId.toString(), "ROLE_A", "Role A", "ENGINEERING",
-                CareerTrack.PROFESSIONAL, null, List.of(),
+                roleId.toString(), "ROLE_A", "Role A",
+                null, List.of(),
                 List.of(new TargetRoleRequirement("skill-a", "SKILL_A", "Skill A", 0.8)));
     }
 

@@ -12,6 +12,7 @@ public record LevelNode(
         @Property("code") String code,
         @Property("name") String name,
         @Property("rank") Long rank,
+        @Property("duration") String duration,
         @Property("attainmentRule") String attainmentRule,
         @Property("status") String status,
         @Property("version") String version) {

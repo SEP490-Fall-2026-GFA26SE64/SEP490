@@ -23,7 +23,6 @@ public class Neo4jJobPositionRepository implements JobPositionRepository {
             RETURN o.id AS id,
                    o.code AS code,
                    o.name AS name,
-                   coalesce(o.jobZone, 4) AS jobZone,
                    coalesce(o.status, 'ACTIVE') AS status,
                    coalesce(o.version, '0.9.0') AS version,
                    count(DISTINCT r) AS roleCount,
@@ -104,13 +103,12 @@ public class Neo4jJobPositionRepository implements JobPositionRepository {
                     Map.of("org",org,"code",c.code(),"id",id)).isEmpty()) throw new CatalogFailure(409,"JOB_POSITION_CODE_CONFLICT");
             // Unique graph id is the established constraint; creation never merges by an unscoped code.
             params.put("id", id);
-            if (!existed) client.query("CREATE (o:JobPosition {id:$id,organizationId:$org,code:$code,name:$name,jobZone:4,status:'ACTIVE',version:'0.9.0'})")
+            if (!existed) client.query("CREATE (o:JobPosition {id:$id,organizationId:$org,code:$code,name:$name,status:'ACTIVE',version:'0.9.0'})")
                     .bindAll(Map.of("id",id,"org",org,"code",c.code(),"name",c.name())).run();
             if (existed && c.create()) throw new CatalogFailure(409,"JOB_POSITION_ALREADY_EXISTS");
             var patch = new LinkedHashMap<String,Object>();
             if(c.code()!=null) patch.put("code",c.code());
             if(c.name()!=null) patch.put("name",c.name());
-            if(c.jobZone()!=null) patch.put("jobZone",c.jobZone());
             if(c.status()!=null) patch.put("status",c.status());
             if(c.version()!=null) patch.put("version",c.version());
             if(c.description()!=null) patch.put("description",c.description());
@@ -146,7 +144,6 @@ public class Neo4jJobPositionRepository implements JobPositionRepository {
                 row.get("id").asString(),
                 row.get("code").asString(),
                 row.get("name").asString(),
-                row.get("jobZone").asInt(),
                 row.get("status").asString(),
                 row.get("version").asString(),
                 row.get("roleCount").asInt(),

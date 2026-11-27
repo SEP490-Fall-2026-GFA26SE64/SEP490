@@ -107,18 +107,7 @@ export async function getFixturePreview(
   fixtureSet: number = 1,
   limit: number = 1000
 ): Promise<FixturePreviewItem[]> {
-  // 1. Prefer direct static fixture asset (instant, pure, contains all 1,000 verified pairs)
-  try {
-    const staticRes = await fetch(`/fixtures/test_pairs_${scale}_set${fixtureSet}.json`)
-    if (staticRes.ok) {
-      const all: FixturePreviewItem[] = await staticRes.json()
-      return limit > 0 ? all.slice(0, limit) : all
-    }
-  } catch {
-    // proceed to backend API
-  }
-
-  // 2. Fallback to backend platform benchmark fixtures endpoint
+  // 1. Fetch live synchronized pairs from backend benchmark service (exact pairs executed on Neo4j)
   try {
     const res = await fetch(
       `/api/v1/platform/benchmark/fixtures?scale=${encodeURIComponent(scale)}&setIndex=${fixtureSet}&limit=${limit}`,
@@ -128,6 +117,17 @@ export async function getFixturePreview(
     )
     if (res.ok) {
       return res.json()
+    }
+  } catch {
+    // proceed to static fallback
+  }
+
+  // 2. Fallback to static fixture asset if backend is unavailable
+  try {
+    const staticRes = await fetch(`/fixtures/test_pairs_${scale}_set${fixtureSet}.json`)
+    if (staticRes.ok) {
+      const all: FixturePreviewItem[] = await staticRes.json()
+      return limit > 0 ? all.slice(0, limit) : all
     }
   } catch {
     // ignore

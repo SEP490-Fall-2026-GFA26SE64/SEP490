@@ -1,6 +1,4 @@
 import { encodeJobPositionWithTargetRole, request } from '../../../subscription/subscriptionApi'
-import { createDepartmentApi, updateDepartmentApi } from '../../../../shared/api/departmentApi'
-import { updateDepartment } from '../../../../shared/stores/departmentStore'
 import type { ResolvedImportRow } from './userImportValidation'
 
 export interface InvitationPayload {
@@ -32,7 +30,7 @@ export function buildInvitationPayload(row: ResolvedImportRow): InvitationPayloa
   }
 }
 
-function applyLocalAssignment(row: ResolvedImportRow, organization: string) {
+function applyLocalAssignment(row: ResolvedImportRow, _organization: string) {
   if (row.role !== 'EMPLOYEE' && row.role !== 'LD_MANAGER') return
   const department = row.department?.department
   const jobPosition = row.role === 'EMPLOYEE' ? row.jobPosition?.item : null
@@ -49,26 +47,6 @@ function applyLocalAssignment(row: ResolvedImportRow, organization: string) {
       jobPositionName: jobPosition?.jobPositionName || jobPosition?.name || '',
     }))
   } catch { /* storage unavailable: assignment cache is best-effort, as in the Create User form */ }
-
-  if (row.role === 'LD_MANAGER' && department?.id) {
-    updateDepartment(department.id, { headOfDepartment: row.fullName, headEmail: row.email }, organization)
-    updateDepartmentApi(organization, department.id, {
-      code: department.code,
-      name: department.name,
-      headOfDepartment: row.fullName,
-      headEmail: row.email,
-    }).catch(() => {
-      createDepartmentApi(organization, {
-        id: department.id,
-        code: department.code,
-        name: department.name,
-        headOfDepartment: row.fullName,
-        headEmail: row.email,
-        status: 'ACTIVE',
-        linkedJobPositions: department.linkedJobPositions,
-      }).catch(() => {})
-    })
-  }
 }
 
 export async function sendImportInvitation(row: ResolvedImportRow, organization: string): Promise<void> {

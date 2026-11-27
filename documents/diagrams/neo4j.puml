@@ -14,8 +14,6 @@ class Department {
   name: String
   organizationId: String
   description: String
-  headOfDepartment: String [optional]
-  headEmail: String [optional]
   status: String
   version: String [optional]
   source: String [optional]
@@ -31,7 +29,6 @@ class JobPosition {
   version: String
   status: String
   reviewStatus: String [optional]
-  jobZone: Long
   description: String [optional]
   source: String [optional]
   createdAt: String [optional]
@@ -50,9 +47,7 @@ class TargetRole {
   code: String
   baseCode: String
   name: String
-  title: String [legacy alias]
-  familyCode: String
-  track: String
+  familyCode: String [links to JobPosition code]
   description: String
   scope: String
   responsibilities: String[]

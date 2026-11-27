@@ -1,13 +1,13 @@
 package com.adaptlearngraph.services;
 
-import com.adaptlearngraph.exception.DuplicateTargetRoleException;
 import com.adaptlearngraph.dtos.CreateTargetRoleCommand;
 import com.adaptlearngraph.dtos.TargetRoleFilter;
-import com.adaptlearngraph.repository.TargetRoleRepository;
+import com.adaptlearngraph.dtos.UpdateTargetRoleCommand;
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
+import com.adaptlearngraph.exception.DuplicateTargetRoleException;
+import com.adaptlearngraph.repository.TargetRoleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,6 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_AI_ENGINEER",
                 "AI Engineer",
-                "DATA_AI",
-                RoleTrack.PROFESSIONAL,
                 "Builds generative AI systems");
 
         TargetRole created = service.createTargetRole(command);
@@ -59,8 +57,6 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_AI_ENGINEER",
                 "AI Engineer",
-                "DATA_AI",
-                RoleTrack.PROFESSIONAL,
                 "First role");
         service.createTargetRole(command1);
 
@@ -68,8 +64,6 @@ class TargetRoleServiceTest {
                 "org-1",
                 "role_ai_engineer",
                 "AI Engineer Duplicate",
-                "DATA_AI",
-                RoleTrack.PROFESSIONAL,
                 "Second role");
 
         assertThrows(DuplicateTargetRoleException.class, () -> service.createTargetRole(command2));
@@ -78,9 +72,9 @@ class TargetRoleServiceTest {
     @Test
     @DisplayName("REQ-023-F02: Lists only target roles belonging to requesting organization")
     void listsRolesWithOrgIsolation() {
-        service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_1", "Role 1", "FAM", RoleTrack.PROFESSIONAL, ""));
-        service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_2", "Role 2", "FAM", RoleTrack.MANAGEMENT, ""));
-        service.createTargetRole(new CreateTargetRoleCommand("org-2", "ROLE_3", "Role 3", "FAM", RoleTrack.PROFESSIONAL, ""));
+        service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_1", "Role 1", ""));
+        service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_2", "Role 2", ""));
+        service.createTargetRole(new CreateTargetRoleCommand("org-2", "ROLE_3", "Role 3", ""));
 
         List<TargetRole> org1Roles = service.listTargetRoles("org-1", TargetRoleFilter.empty());
         List<TargetRole> org2Roles = service.listTargetRoles("org-2", TargetRoleFilter.empty());
@@ -92,7 +86,7 @@ class TargetRoleServiceTest {
     @Test
     @DisplayName("REQ-023: Allows L&D Manager to delete draft and published target roles")
     void deletesDraftAndPublishedRolesSuccessfully() {
-        TargetRole draftRole = service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_DRAFT", "Draft Role", "FAM", RoleTrack.PROFESSIONAL, ""));
+        TargetRole draftRole = service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_DRAFT", "Draft Role", ""));
         boolean draftDeleted = service.deleteTargetRole("org-1", draftRole.getId());
         org.junit.jupiter.api.Assertions.assertTrue(draftDeleted);
         assertEquals(0, service.listTargetRoles("org-1", TargetRoleFilter.empty()).size());
@@ -102,8 +96,7 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_ACTIVE",
                 "Active Role",
-                "FAM",
-                RoleTrack.PROFESSIONAL,
+                null,
                 "Description",
                 RoleStatus.ACTIVE,
                 java.time.Instant.now(),
@@ -122,8 +115,7 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_STAGED",
                 "Staged Role",
-                "FAM",
-                RoleTrack.PROFESSIONAL,
+                null,
                 "Description",
                 RoleStatus.STAGED,
                 java.time.Instant.now(),
@@ -140,8 +132,6 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_SENT_STAGED",
                 "Sent Staged Role",
-                "FAM",
-                RoleTrack.PROFESSIONAL,
                 "expert-1",
                 "Description",
                 List.of(),
@@ -168,15 +158,13 @@ class TargetRoleServiceTest {
     @DisplayName("REQ-023-F03: Updates TargetRole attributes successfully")
     void updatesTargetRoleSuccessfully() {
         TargetRole created = service.createTargetRole(new CreateTargetRoleCommand(
-                "org-1", "ROLE_CLOUD", "Cloud Architect", "ICT", RoleTrack.PROFESSIONAL, "Initial"));
+                "org-1", "ROLE_CLOUD", "Cloud Architect", "Initial"));
 
-        com.adaptlearngraph.dtos.UpdateTargetRoleCommand updateCmd =
-                new com.adaptlearngraph.dtos.UpdateTargetRoleCommand(
+        UpdateTargetRoleCommand updateCmd =
+                new UpdateTargetRoleCommand(
                         "org-1",
                         created.getId(),
                         "Senior Cloud Architect",
-                        "CLOUD_DEVOPS",
-                        RoleTrack.MANAGEMENT,
                         "expert-42",
                         "Updated scope");
 
@@ -184,8 +172,6 @@ class TargetRoleServiceTest {
         org.junit.jupiter.api.Assertions.assertTrue(updatedOpt.isPresent());
         TargetRole updated = updatedOpt.get();
         assertEquals("Senior Cloud Architect", updated.getName());
-        assertEquals("CLOUD_DEVOPS", updated.getFamilyCode());
-        assertEquals(RoleTrack.MANAGEMENT, updated.getTrack());
         assertEquals("expert-42", updated.getAssignedExpertId());
     }
 
@@ -196,8 +182,6 @@ class TargetRoleServiceTest {
                 "org-1",
                 "ROLE_AI_P4",
                 "AI Knowledge Architect",
-                "AI_ML",
-                RoleTrack.PROFESSIONAL,
                 "expert-chen",
                 "Enterprise knowledge graph role",
                 List.of("Model enterprise graphs", "Integrate DL pipelines"),
@@ -209,13 +193,11 @@ class TargetRoleServiceTest {
         assertEquals(2, created.getResponsibilities().size());
         assertEquals("Model enterprise graphs", created.getResponsibilities().get(0));
 
-        com.adaptlearngraph.dtos.UpdateTargetRoleCommand updateCmd =
-                new com.adaptlearngraph.dtos.UpdateTargetRoleCommand(
+        UpdateTargetRoleCommand updateCmd =
+                new UpdateTargetRoleCommand(
                         "org-1",
                         created.getId(),
                         "AI Principal Architect",
-                        "AI_ML",
-                        RoleTrack.PROFESSIONAL,
                         "expert-chen",
                         "Principal knowledge graph role",
                         List.of("Model enterprise graphs", "Integrate DL pipelines", "Strategic AI governance"),
@@ -234,12 +216,12 @@ class TargetRoleServiceTest {
     @Test
     @DisplayName("REQ-023-F02 & REQ-011-F01: Lists target roles filtered by assigned domain expert")
     void listsRolesFilteredByAssignedExpert() {
-        TargetRole role1 = TargetRole.createNew("org-1", "ROLE_AI", "AI Spec", "AI_ML", RoleTrack.PROFESSIONAL, "expert-1", "");
-        TargetRole role2 = TargetRole.createNew("org-1", "ROLE_DATA", "Data Spec", "PYTHON_DATA", RoleTrack.PROFESSIONAL, "expert-2", "");
+        TargetRole role1 = TargetRole.createNew("org-1", "ROLE_AI", "AI Spec", "expert-1", "");
+        TargetRole role2 = TargetRole.createNew("org-1", "ROLE_DATA", "Data Spec", "expert-2", "");
         repository.save(role1);
         repository.save(role2);
 
-        TargetRoleFilter expert1Filter = new TargetRoleFilter(null, null, null, "expert-1");
+        TargetRoleFilter expert1Filter = new TargetRoleFilter(null, null, "expert-1");
         List<TargetRole> expert1Roles = service.listTargetRoles("org-1", expert1Filter);
 
         assertEquals(1, expert1Roles.size());
@@ -249,7 +231,7 @@ class TargetRoleServiceTest {
     @Test
     @DisplayName("REQ-023-F02: getTargetRole returns empty when role does not exist or organization mismatches")
     void getTargetRoleEnforcesOrgIsolation() {
-        TargetRole role = service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_SEC", "Security", "ICT", RoleTrack.PROFESSIONAL, ""));
+        TargetRole role = service.createTargetRole(new CreateTargetRoleCommand("org-1", "ROLE_SEC", "Security", ""));
 
         org.junit.jupiter.api.Assertions.assertTrue(service.getTargetRole("org-1", role.getId()).isPresent());
         org.junit.jupiter.api.Assertions.assertTrue(service.getTargetRole("org-other", role.getId()).isEmpty());
@@ -275,7 +257,6 @@ class TargetRoleServiceTest {
         public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
             return roles.stream()
                     .filter(r -> r.getOrganizationId().equals(organizationId))
-                    .filter(r -> filter.track() == null || r.getTrack() == filter.track())
                     .filter(r -> filter.status() == null || r.getStatus() == filter.status())
                     .filter(r -> filter.assignedExpertId() == null || r.getAssignedExpertId().equalsIgnoreCase(filter.assignedExpertId()))
                     .filter(r -> filter.search() == null || r.getName().toLowerCase().contains(filter.search().toLowerCase()))

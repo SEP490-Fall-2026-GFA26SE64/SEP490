@@ -68,7 +68,6 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                 r.baseCode = $rawCode,
                 r.name = $name,
                 r.familyCode = $familyCode,
-                r.track = $track,
                 r.assignedExpertId = $assignedExpertId,
                 r.description = $description,
                 r.scope = coalesce($description, r.scope, ''),
@@ -87,8 +86,7 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
                 r.code = $graphCode,
                 r.baseCode = $rawCode,
                 r.name = $name,
-                r.familyCode = $familyCode,
-                r.track = $track,
+                r.familyCode = coalesce(nullif($familyCode, ''), r.familyCode),
                 r.assignedExpertId = $assignedExpertId,
                 r.description = $description,
                 r.scope = coalesce($description, r.scope, ''),
@@ -105,7 +103,7 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
             """)
     void merge(@Param("id") String id, @Param("organizationId") String organizationId,
             @Param("graphCode") String graphCode, @Param("rawCode") String rawCode, @Param("name") String name,
-            @Param("familyCode") String familyCode, @Param("track") String track,
+            @Param("familyCode") String familyCode,
             @Param("assignedExpertId") String assignedExpertId, @Param("description") String description,
             @Param("responsibilities") List<String> responsibilities, @Param("status") String status,
             @Param("isStaffingEnabled") Boolean isStaffingEnabled,
@@ -130,6 +128,34 @@ public interface TargetRoleNodeRepository extends Repository<TargetRoleNode, Str
     void supersedeOtherVersions(@Param("organizationId") String organizationId, @Param("id") String id,
             @Param("name") String name, @Param("rawCode") String rawCode, @Param("graphCode") String graphCode,
             @Param("updatedAt") String updatedAt);
+
+    @Transactional(TransactionManagers.NEO4J)
+    @Query("""
+            MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
+            SET r.createdByRole = $createdByRole
+            """)
+    void markCreatedByRole(@Param("organizationId") String organizationId,
+                           @Param("roleId") String roleId,
+                           @Param("createdByRole") String createdByRole);
+
+    @Query("""
+            MATCH (r:TargetRole {organizationId: $organizationId})
+            WHERE (r.baseCode = $code OR r.code = $code)
+              AND coalesce(r.status, 'DRAFT') IN ['DRAFT', 'SENT', 'SUBMITTED', 'REJECTED', 'STAGED']
+            RETURN count(r) > 0
+            """)
+    boolean hasActiveNonReleasedVersion(@Param("organizationId") String organizationId,
+                                        @Param("code") String code);
+
+    @Query("""
+            MATCH (r:TargetRole {organizationId: $organizationId})
+            WHERE r.createdByRole = $createdByRole
+              AND r.status = $status
+            RETURN r.id
+            """)
+    List<String> findRoleIdsByCreatedByRoleAndStatus(@Param("organizationId") String organizationId,
+                                                     @Param("createdByRole") String createdByRole,
+                                                     @Param("status") String status);
 
     @Transactional(TransactionManagers.NEO4J)
     @Query("""

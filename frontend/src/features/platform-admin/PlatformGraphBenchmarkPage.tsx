@@ -145,8 +145,8 @@ export function PlatformGraphBenchmarkPage() {
   const [activeTab, setActiveTab] = React.useState<string>('live-monitor')
   const [selectedScale, setSelectedScale] = React.useState<'1k' | '5k' | '10k'>('1k')
   const [selectedFixtureSet, setSelectedFixtureSet] = React.useState<1 | 2 | 3>(1)
-  const [testRuns, setTestRuns] = React.useState<number>(100)
-  const [warmupRuns, setWarmupRuns] = React.useState<number>(50)
+  const testRuns = 1000
+  const warmupRuns = 50
   const [isRunning, setIsRunning] = React.useState<boolean>(false)
   const [breakdownProgress, setBreakdownProgress] = React.useState<number>(0)
   const [activeExecutionStep, setActiveExecutionStep] = React.useState<0 | 1 | 2 | 3 | 4>(0)
@@ -165,7 +165,7 @@ export function PlatformGraphBenchmarkPage() {
   const [liveStreamState, setLiveStreamState] = React.useState<LiveStreamState>({
     phase: 'idle',
     currentRun: 0,
-    totalRuns: 100,
+    totalRuns: 1000,
     warmupCount: 0,
     totalWarmup: 50,
     currentLatencyMs: 0,
@@ -404,11 +404,18 @@ export function PlatformGraphBenchmarkPage() {
 
   // Active step breakdown computed in real-time and reactive to every benchmark query
   const activeBreakdown = React.useMemo<StepBreakdown>(() => {
-    if (benchmarkResult && !isRunning) {
+    if (
+      benchmarkResult &&
+      !isRunning &&
+      (benchmarkResult.stepBreakdown.indexLookupMs > 0 ||
+        benchmarkResult.stepBreakdown.traversalMs > 0)
+    ) {
       return benchmarkResult.stepBreakdown
     }
     const currentMs =
-      liveStreamState.currentLatencyMs > 0
+      !isRunning && benchmarkResult
+        ? benchmarkResult.stepBreakdown.totalMeanMs || benchmarkResult.meanLatencyMs
+        : liveStreamState.currentLatencyMs > 0
         ? liveStreamState.currentLatencyMs
         : liveStreamState.runningMeanMs > 0
         ? liveStreamState.runningMeanMs
@@ -512,27 +519,27 @@ export function PlatformGraphBenchmarkPage() {
   const fixtureSets = [
     {
       id: 1 as const,
-      name: isVi ? 'Tập 1: Đa Cấp độ Cốt lõi' : 'Set 1: Multi-Level Hierarchy',
-      filename: `test_pairs_${selectedScale}_set1.json`,
+      name: isVi ? 'Tập 1: Chuỗi Kỹ năng Nền tảng' : 'Set 1: Core Prerequisite Chains',
+      filename: `rq2_${selectedScale}_set1 (1,000 pairs)`,
       description: isVi
-        ? 'Tập mẫu hỗn hợp đa tầng: Vị trí việc làm, phòng ban, vai trò và module học tập'
-        : 'Mixed cross-hierarchy sample: Job positions, departments, target roles, and modules',
+        ? '1.000 cặp truy vấn 3–5 hops phân bổ đều trên đồ thị kỹ năng'
+        : '1,000 balanced 3–5 hop prerequisite pairs across the skill graph',
     },
     {
       id: 2 as const,
-      name: isVi ? 'Tập 2: Phòng ban & Hạ tầng' : 'Set 2: Department & Cloud Mesh',
-      filename: `test_pairs_${selectedScale}_set2.json`,
+      name: isVi ? 'Tập 2: Chuỗi Kỹ năng Mở rộng' : 'Set 2: Extended Skill Mesh',
+      filename: `rq2_${selectedScale}_set2 (1,000 pairs)`,
       description: isVi
-        ? 'Tập mẫu hỗn hợp kiểm thử độc lập: Chuyển tầng phòng ban, vai trò và chuỗi kỹ năng'
-        : 'Independent mixed test sample: Department transitions, roles, and skill chains',
+        ? 'Tập mẫu kiểm thử độc lập với độ lệch chuỗi khác biệt (Set 2)'
+        : 'Independent validation sample with shifted chain offsets (Set 2)',
     },
     {
       id: 3 as const,
-      name: isVi ? 'Tập 3: Bảo mật & Chuỗi Tiền quyết' : 'Set 3: Security & Prerequisite Mesh',
-      filename: `test_pairs_${selectedScale}_set3.json`,
+      name: isVi ? 'Tập 3: Chuỗi Tiền quyết Sâu' : 'Set 3: Deep Prerequisite Mesh',
+      filename: `rq2_${selectedScale}_set3 (1,000 pairs)`,
       description: isVi
-        ? 'Tập mẫu hỗn hợp kiểm thử đối chuẩn: Vị trí an toàn thông tin, module và kỹ năng vi mô'
-        : 'Benchmark mixed sample: Security analyst positions, modules, and micro-skills',
+        ? 'Tập mẫu kiểm thử đối chuẩn thứ ba đảm bảo tính lặp lại (Set 3)'
+        : 'Third independent benchmark sample ensuring reproducibility (Set 3)',
     },
   ]
 
@@ -1227,66 +1234,44 @@ export function PlatformGraphBenchmarkPage() {
                 </div>
                 <Text variant="caption" tone="muted" className="mt-1 block">
                   {isVi
-                    ? 'Neo4j riêng cho mỗi quy mô. Số cạnh được kiểm đếm khi chạy.'
-                    : 'Dedicated Neo4j graph per scale. Relationships are counted at run time.'}
+                    ? 'Đồ thị chuẩn 1k / 5k / 10k nodes được tự động nạp sẵn.'
+                    : 'Pre-seeded 1k / 5k / 10k node subgraphs ready to run.'}
                 </Text>
               </div>
 
-              {/* 2. Number of Runs */}
+              {/* 2. Number of Runs (Fixed Research Protocol) */}
               <div>
                 <label className="text-xs font-semibold text-foreground block mb-1.5">
-                  {isVi ? '2. Số lượt query đo đạc' : '2. Iteration Sample Size'}
+                  {isVi ? '2. Số lượt query đo đạc (Cố định)' : '2. Measured Sample Size (Fixed)'}
                 </label>
-                <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-md border border-border">
-                  {[50, 100, 250, 1000].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setTestRuns(num)}
-                      disabled={isRunning}
-                      className={`py-1.5 px-1 rounded text-xs font-medium transition-all ${
-                        testRuns === num
-                          ? 'bg-card text-primary shadow-xs font-bold'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between px-3 py-2 bg-muted rounded-md border border-border">
+                  <span className="text-xs font-bold text-primary font-mono">1,000 {isVi ? 'lượt đo' : 'samples'}</span>
+                  <Badge variant="primary" className="text-[10px] py-0 px-2">
+                    {isVi ? 'Chuẩn RQ2' : 'RQ2 Standard'}
+                  </Badge>
                 </div>
                 <Text variant="caption" tone="muted" className="mt-1 block">
                   {isVi
-                    ? '1.000 lượt cho báo cáo khoa học; 100 lượt cho demo'
-                    : '1,000 runs for scientific report; 100 runs for demo'}
+                    ? 'Cố định 334 (3-hop) · 333 (4-hop) · 333 (5-hop).'
+                    : 'Fixed 334 (3-hop) · 333 (4-hop) · 333 (5-hop).'}
                 </Text>
               </div>
 
-              {/* 3. Warm-up Configuration */}
+              {/* 3. Warm-up Configuration (Fixed Research Protocol) */}
               <div>
                 <label className="text-xs font-semibold text-foreground block mb-1.5">
-                  {isVi ? '3. Khởi động Cache (Warm-up Runs)' : '3. Cache Warm-up Runs'}
+                  {isVi ? '3. Khởi động Cache (Cố định)' : '3. Cache Warm-up Runs (Fixed)'}
                 </label>
-                <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-md border border-border">
-                  {[10, 25, 50].map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      onClick={() => setWarmupRuns(w)}
-                      disabled={isRunning}
-                      className={`py-1.5 px-2 rounded text-xs font-medium transition-all ${
-                        warmupRuns === w
-                          ? 'bg-card text-primary shadow-xs font-bold'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {w} {isVi ? 'lượt' : 'runs'}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between px-3 py-2 bg-muted rounded-md border border-border">
+                  <span className="text-xs font-bold text-foreground font-mono">50 {isVi ? 'lượt khởi động' : 'warm-up runs'}</span>
+                  <Badge variant="outline" className="text-[10px] py-0 px-2">
+                    {isVi ? 'Cố định' : 'Fixed'}
+                  </Badge>
                 </div>
                 <Text variant="caption" tone="muted" className="mt-1 block">
                   {isVi
-                    ? 'Nạp RAM page cache & JIT compiler'
-                    : 'Priming JVM JIT & RAM page cache'}
+                    ? 'Nạp RAM page cache & JVM JIT trước khi đo.'
+                    : 'Priming JVM JIT & RAM page cache before timing.'}
                 </Text>
               </div>
             </div>

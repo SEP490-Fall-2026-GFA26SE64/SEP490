@@ -1,5 +1,6 @@
 package com.adaptlearngraph.services;
 
+import com.adaptlearngraph.config.Rq2BenchmarkSeedBootstrap;
 import com.adaptlearngraph.dtos.GraphBenchmarkDto.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,9 @@ import java.util.*;
 public class PlatformGraphBenchmarkService {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformGraphBenchmarkService.class);
+
+    private static final int FIXED_TEST_RUNS = 1000;
+    private static final int FIXED_WARMUP_RUNS = 50;
 
     private static final String RESEARCH_QUESTION =
             "What is the query latency of deep pathfinding operations in Neo4j (e.g., 3-hop to 5-hop depth) as the number of nodes/edges in the competency ontology scales from 1,000 to 10,000?";
@@ -119,57 +123,82 @@ public class PlatformGraphBenchmarkService {
                 nodes,
                 rels,
                 List.of("1k", "5k", "10k"),
-                100,
-                50,
+                FIXED_TEST_RUNS,
+                FIXED_WARMUP_RUNS,
                 true
         );
     }
 
-    private List<Map<String, Object>> loadTestFixture(String scale, int setIndex) {
-        String baseScale = scale != null ? scale.toLowerCase() : "1k";
-        if (!baseScale.equals("5k") && !baseScale.equals("10k")) {
-            baseScale = "1k";
-        }
-        int set = (setIndex == 2 || setIndex == 3) ? setIndex : 1;
-        String filename = "test_pairs_" + baseScale + "_set" + set + ".json";
-
-        try (InputStream is = getClass().getResourceAsStream("/fixtures/" + filename)) {
-            if (is != null) {
-                return objectMapper.readValue(is, new TypeReference<List<Map<String, Object>>>() {});
+    private List<Map<String, Object>> generateBalancedPairs(String scale, int fixtureSet, String idPrefix, int expectedNodes) {
+        var generatedPairs = new ArrayList<Map<String, Object>>();
+        int chains = expectedNodes / 10;
+        for (int offset = 0; offset < chains; offset++) {
+            int chain = Math.floorMod(offset + 31 * (fixtureSet - 1), chains);
+            for (int depth = 3; depth <= 5; depth++) {
+                for (int level = depth; level < 10; level++) {
+                    String sId = idPrefix + (chain * 10 + level);
+                    String tId = idPrefix + (chain * 10 + level - depth);
+                    generatedPairs.add(Map.of(
+                            "startId", sId,
+                            "startName", "Skill " + sId,
+                            "startType", "MicroSkill",
+                            "targetId", tId,
+                            "targetName", "Skill " + tId,
+                            "targetType", "MicroSkill",
+                            "hops", depth
+                    ));
+                }
             }
-        } catch (Exception e) {
-            log.warn("Failed to read fixture {}: {}", filename, e.getMessage());
         }
+        Collections.shuffle(generatedPairs, new Random(17L + fixtureSet));
 
-        // Try without _set1 suffix if needed
-        String altFilename = "test_pairs_" + baseScale + ".json";
-        try (InputStream is = getClass().getResourceAsStream("/fixtures/" + altFilename)) {
-            if (is != null) {
-                return objectMapper.readValue(is, new TypeReference<List<Map<String, Object>>>() {});
+        // Exactly 334 (3-hop), 333 (4-hop), 333 (5-hop) = 1,000 total
+        var byDepth = new TreeMap<Integer, List<Map<String, Object>>>();
+        for (int depth = 3; depth <= 5; depth++) byDepth.put(depth, new ArrayList<>());
+        Map<Integer, Integer> targets = Map.of(3, 334, 4, 333, 5, 333);
+
+        var seen = new HashSet<List<String>>();
+        for (var pair : generatedPairs) {
+            if (byDepth.entrySet().stream().allMatch(e -> e.getValue().size() >= targets.get(e.getKey()))) {
+                break;
             }
-        } catch (Exception e) {
-            log.warn("Failed to read alternate fixture {}: {}", altFilename, e.getMessage());
+            int d = ((Number) pair.get("hops")).intValue();
+            if (byDepth.get(d).size() >= targets.get(d)) continue;
+            String startId = String.valueOf(pair.get("startId"));
+            String targetId = String.valueOf(pair.get("targetId"));
+            if (!seen.add(List.of(startId, targetId))) continue;
+            byDepth.get(d).add(pair);
         }
 
-        // Fallback synthetic fixture
-        List<Map<String, Object>> fallback = new ArrayList<>();
-        fallback.add(Map.of("startId", "MS-FS16", "targetId", "MS-CORE01", "hops", 3,
-                "startName", "Configure continuous integration", "targetName", "Implement programs and scripts"));
-        fallback.add(Map.of("startId", "3b2debdb-42a5-3ff1-95ad-5e631784e578", "targetId", "707fc861-8fdf-35bd-acb4-c4745e1775a1", "hops", 3,
-                "startName", "Configure continuous integration", "targetName", "Implement programs and scripts"));
-        return fallback;
+        var balanced = new ArrayList<Map<String, Object>>(FIXED_TEST_RUNS);
+        for (int i = 0; i < 334; i++) {
+            for (int d = 3; d <= 5; d++) {
+                if (i < byDepth.get(d).size()) {
+                    balanced.add(byDepth.get(d).get(i));
+                }
+            }
+        }
+        return balanced;
     }
 
     public List<FixturePreviewItem> getFixturePairs(String scale, int setIndex, int limit) {
-        List<Map<String, Object>> list = loadTestFixture(scale, setIndex);
+        String normalizedScale = scale != null ? scale.toLowerCase(Locale.ROOT) : "1k";
+        int expectedNodes = switch (normalizedScale) {
+            case "5k" -> 5000;
+            case "10k" -> 10000;
+            default -> {
+                normalizedScale = "1k";
+                yield 1000;
+            }
+        };
+        int set = (setIndex == 2 || setIndex == 3) ? setIndex : 1;
+        String idPrefix = "RQ2-" + normalizedScale.toUpperCase(Locale.ROOT) + "-";
+        List<Map<String, Object>> list = generateBalancedPairs(normalizedScale, set, idPrefix, expectedNodes);
         int cap = limit > 0 ? Math.min(list.size(), limit) : Math.min(list.size(), 100);
         List<FixturePreviewItem> result = new ArrayList<>(cap);
         for (int i = 0; i < cap; i++) {
             Map<String, Object> map = list.get(i);
-            int hops = 3;
-            if (map.get("hops") instanceof Number n) {
-                hops = n.intValue();
-            }
+            int hops = ((Number) map.getOrDefault("hops", 3)).intValue();
             result.add(new FixturePreviewItem(
                     String.valueOf(map.getOrDefault("startId", "")),
                     String.valueOf(map.getOrDefault("startName", "")),
@@ -184,12 +213,14 @@ public class PlatformGraphBenchmarkService {
     }
 
     public BenchmarkResponse runBenchmark(BenchmarkRequest request) {
-        String scale = request != null && request.scale() != null ? request.scale().toLowerCase() : "1k";
+        String scale = request != null && request.scale() != null ? request.scale().toLowerCase(Locale.ROOT) : "1k";
         int fixtureSet = request != null && request.fixtureSet() != null ? request.fixtureSet() : 1;
-        int testRuns = request != null && request.testRuns() != null ? Math.max(10, Math.min(1000, request.testRuns())) : 100;
-        int warmupRuns = request != null && request.warmupRuns() != null ? Math.max(5, Math.min(100, request.warmupRuns())) : 50;
-
-        List<Map<String, Object>> fixture = new ArrayList<>(loadTestFixture(scale, fixtureSet));
+        if (fixtureSet < 1 || fixtureSet > 3) {
+            fixtureSet = 1;
+        }
+        // Strictly enforce the research protocol: 50 warm-up runs and 1,000 measured samples
+        final int testRuns = FIXED_TEST_RUNS;
+        final int warmupRuns = FIXED_WARMUP_RUNS;
 
         int expectedNodes = switch (scale) {
             case "1k" -> 1000;
@@ -200,83 +231,73 @@ public class PlatformGraphBenchmarkService {
         String scaleLabel = expectedNodes + " nodes";
         long catalogNodes;
         long catalogRelationships;
+
         String environmentKey = "RQ2_NEO4J_URI_" + scale.toUpperCase(Locale.ROOT);
-        String uri = System.getenv(environmentKey);
-        if (uri == null || uri.isBlank()) {
-            throw new IllegalStateException("Missing isolated graph configuration: " + environmentKey);
-        }
-        if (Set.of("1K", "5K", "10K").stream()
-                .filter(other -> uri.equals(System.getenv("RQ2_NEO4J_URI_" + other))).count() != 1) {
+        String isolatedUri = System.getenv(environmentKey);
+        boolean isIsolatedMode = isolatedUri != null && !isolatedUri.isBlank();
+
+        if (isIsolatedMode && Set.of("1K", "5K", "10K").stream()
+                .filter(other -> isolatedUri.equals(System.getenv("RQ2_NEO4J_URI_" + other))).count() != 1) {
             throw new IllegalStateException("RQ2 graph endpoints must be distinct");
         }
 
         String version = "5.26.31 Community";
-        List<Double> timings = new ArrayList<>();
+        List<Double> timings = new ArrayList<>(testRuns);
         List<PathSample> samples = new ArrayList<>();
 
-        // 1. Execute against Neo4j with Pure Latency timing
-        try (Driver driver = GraphDatabase.driver(uri, AuthTokens.basic(
-                    System.getenv().getOrDefault("RQ2_NEO4J_USER", "neo4j"),
-                    Objects.requireNonNull(System.getenv("RQ2_NEO4J_PASSWORD"), "Missing RQ2_NEO4J_PASSWORD")));
-             Session session = driver.session()) {
-                catalogNodes = session.run("MATCH (n) RETURN count(n) AS total").single().get("total").asLong();
-                catalogRelationships = session.run("MATCH ()-[r]->() RETURN count(r) AS total").single().get("total").asLong();
-                if (catalogNodes != expectedNodes) {
-                    throw new IllegalStateException("RQ2 expected " + expectedNodes + " nodes but found " + catalogNodes);
+        Driver isolatedDriver = null;
+        try {
+            Driver driver;
+            String idPrefix;
+            if (isIsolatedMode) {
+                isolatedDriver = GraphDatabase.driver(isolatedUri, AuthTokens.basic(
+                        System.getenv().getOrDefault("RQ2_NEO4J_USER", "neo4j"),
+                        Objects.requireNonNull(System.getenv("RQ2_NEO4J_PASSWORD"), "Missing RQ2_NEO4J_PASSWORD")));
+                driver = isolatedDriver;
+                idPrefix = "RQ2-";
+            } else {
+                driver = acquireDriver();
+                if (driver == null) {
+                    throw new IllegalStateException("Neo4j driver is unavailable.");
                 }
+                // Self-healing: ensure the partition for this scale is seeded on main DB
+                Rq2BenchmarkSeedBootstrap.ensureScaleSeeded(driver, scale, expectedNodes);
+                idPrefix = "RQ2-" + scale.toUpperCase(Locale.ROOT) + "-";
+            }
+
+            try (Session session = driver.session()) {
+                if (isIsolatedMode) {
+                    catalogNodes = session.run("MATCH (n) RETURN count(n) AS total").single().get("total").asLong();
+                    catalogRelationships = session.run("MATCH ()-[r]->() RETURN count(r) AS total").single().get("total").asLong();
+                    if (catalogNodes != expectedNodes) {
+                        throw new IllegalStateException("RQ2 expected " + expectedNodes + " nodes but found " + catalogNodes);
+                    }
+                } else {
+                    catalogNodes = session.run(
+                            "MATCH (n:MicroSkill) WHERE n.id STARTS WITH $prefix RETURN count(n) AS total",
+                            Map.of("prefix", idPrefix)).single().get("total").asLong();
+                    catalogRelationships = session.run(
+                            "MATCH (s:MicroSkill)-[r:HAS_SKILL_PREREQUISITE]->(t:MicroSkill) WHERE s.id STARTS WITH $prefix RETURN count(r) AS total",
+                            Map.of("prefix", idPrefix)).single().get("total").asLong();
+                }
+
                 Result verRes = session.run("CALL dbms.components() YIELD versions RETURN versions[0] AS v;");
                 if (verRes.hasNext()) {
                     version = verRes.next().get("v").asString();
                 }
 
-                // Stage 3: Warm-up Cache (runs executed and discarded)
                 String shortestPathCypher = """
-                        MATCH (start:MicroSkill), (target:MicroSkill)
-                        WHERE (start.id = $startId OR start.code = $startId)
-                          AND (target.id = $targetId OR target.code = $targetId)
-                        MATCH p = shortestPath((start)-[:HAS_SKILL_PREREQUISITE*1..5]->(target))
+                        MATCH (start:MicroSkill {id: $startId}), (target:MicroSkill {id: $targetId})
+                        MATCH p = allShortestPaths((start)-[:HAS_SKILL_PREREQUISITE*1..5]->(target))
                         RETURN p, length(p) AS hops
-                        LIMIT 1
                         """;
 
-                var byDepth = new TreeMap<Integer, List<Map<String, Object>>>();
-                for (int depth = 3; depth <= 5; depth++) byDepth.put(depth, new ArrayList<>());
-                // Sample across the pinned synthetic graph with a reproducible order.
-                var generatedPairs = new ArrayList<Map<String, Object>>();
-                int chains = expectedNodes / 10;
-                for (int offset = 0; offset < chains; offset++) {
-                    int chain = Math.floorMod(offset + 31 * (fixtureSet - 1), chains);
-                    for (int depth = 3; depth <= 5; depth++) {
-                        for (int level = depth; level < 10; level++) {
-                            generatedPairs.add(Map.of("startId", "RQ2-" + (chain * 10 + level),
-                                    "targetId", "RQ2-" + (chain * 10 + level - depth)));
-                        }
-                    }
+                List<Map<String, Object>> fixture = generateBalancedPairs(scale, fixtureSet, idPrefix, expectedNodes);
+                if (fixture.size() < testRuns) {
+                    throw new IllegalStateException("RQ2 requires " + testRuns + " pairs, but generated " + fixture.size());
                 }
-                Collections.shuffle(generatedPairs, new Random(17L + fixtureSet));
-                fixture.addAll(generatedPairs);
-                var seen = new HashSet<List<String>>();
-                int requiredPerDepth = (testRuns + 2) / 3;
-                for (var pair : fixture) {
-                    if (byDepth.values().stream().allMatch(pairs -> pairs.size() >= requiredPerDepth)) break;
-                    String startId = String.valueOf(pair.get("startId"));
-                    String targetId = String.valueOf(pair.get("targetId"));
-                    if (!seen.add(List.of(startId, targetId))) continue;
-                    var records = session.run(shortestPathCypher, Map.of("startId", startId, "targetId", targetId)).list();
-                    if (records.size() != 1) continue;
-                    int depth = records.getFirst().get("hops").asInt();
-                    if (byDepth.containsKey(depth)) byDepth.get(depth).add(pair);
-                }
-                if (byDepth.values().stream().anyMatch(pairs -> pairs.size() < requiredPerDepth)) {
-                    throw new IllegalStateException("RQ2 needs " + requiredPerDepth
-                            + " distinct directed pairs at each depth 3, 4 and 5");
-                }
-                var balanced = new ArrayList<Map<String, Object>>(3 * requiredPerDepth);
-                for (int i = 0; i < requiredPerDepth; i++) {
-                    for (var pairs : byDepth.values()) balanced.add(pairs.get(i));
-                }
-                fixture = balanced;
 
+                // Stage 3: Warm-up Cache (50 runs executed and discarded)
                 for (int w = 0; w < warmupRuns; w++) {
                     Map<String, Object> pair = fixture.get(w % fixture.size());
                     Result r = session.run(shortestPathCypher, Map.of(
@@ -286,9 +307,9 @@ public class PlatformGraphBenchmarkService {
                     r.list(); // discard
                 }
 
-                // Stage 4: Benchmark Execution
+                // Stage 4: Benchmark Execution (1,000 measured runs)
                 for (int i = 0; i < testRuns; i++) {
-                    Map<String, Object> pair = fixture.get(i % fixture.size());
+                    Map<String, Object> pair = fixture.get(i);
                     String sId = String.valueOf(pair.get("startId"));
                     String tId = String.valueOf(pair.get("targetId"));
 
@@ -298,19 +319,14 @@ public class PlatformGraphBenchmarkService {
                     long elapsedNanos = System.nanoTime() - startNanos;
 
                     double ms = elapsedNanos / 1_000_000.0;
-                    
-                    if (records.size() != 1 || records.getFirst().get("hops").asInt() != 3 + i % 3) {
-                        throw new IllegalStateException("RQ2 graph changed after fixture validation");
+
+                    if (records.size() != 1 || records.getFirst().get("hops").asInt() != 3 + (i % 3)) {
+                        throw new IllegalStateException("RQ2 graph topology mismatch for pair " + sId + " -> " + tId);
                     }
                     timings.add(ms);
 
                     if (samples.size() < 10) {
-                        int hops = 3;
-                        if (!records.isEmpty() && records.get(0).containsKey("hops")) {
-                            hops = records.get(0).get("hops").asInt(3);
-                        } else if (pair.get("hops") instanceof Number n) {
-                            hops = n.intValue();
-                        }
+                        int hops = records.get(0).get("hops").asInt(3);
                         samples.add(new PathSample(
                                 sId,
                                 String.valueOf(pair.getOrDefault("startName", sId)),
@@ -323,11 +339,18 @@ public class PlatformGraphBenchmarkService {
                         ));
                     }
                 }
-                log.info("Live Neo4j benchmark completed successfully: scale={}, runs={}, warmups={}, meanLatency={}",
-                        scale, testRuns, warmupRuns, timings.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+                log.info("Live Neo4j benchmark completed successfully: scale={}, set={}, runs={}, warmups={}, meanLatency={}",
+                        scale, fixtureSet, testRuns, warmupRuns, timings.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+            }
         } catch (Exception e) {
             log.error("Live Neo4j benchmark execution failed: {}", e.getMessage(), e);
             throw new IllegalStateException("Failed to execute live Neo4j benchmark query: " + e.getMessage(), e);
+        } finally {
+            if (isolatedDriver != null) {
+                try {
+                    isolatedDriver.close();
+                } catch (Exception ignored) {}
+            }
         }
 
         // Statistical calculations

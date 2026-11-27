@@ -56,7 +56,6 @@ public final class Neo4jWorkspaceCatalogWriter implements WorkspaceCatalogGraphW
                     // Imported roles have no skill requirements yet: staged for staffing until L&D/Expert complete them.
                     roleProps.put("status", "STAGED");
                     roleProps.put("isStaffingEnabled", true);
-                    roleProps.put("title", role.name());
                     roleProps.put("scope", role.scope());
                     roleProps.put("description", role.scope());
                     roleProps.put("skillTargets", "[]");

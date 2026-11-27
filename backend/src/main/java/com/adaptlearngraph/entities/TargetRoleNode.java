@@ -8,8 +8,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 
 /**
- * Organization-owned {@code :TargetRole} catalog node. {@code title}/{@code scope} are the template's legacy names for
- * {@code name}/{@code description}; JSON-like authoring fields are stored as strings exactly as the adapter writes them.
+ * Organization-owned {@code :TargetRole} catalog node.
  * Role levels are stored strictly as connected {@code :Level} nodes via {@code :HAS_LEVEL}, not as a node property.
  */
 @Node("TargetRole")
@@ -19,9 +18,7 @@ public record TargetRoleNode(
         @Property("code") String code,
         @Property("baseCode") String baseCode,
         @Property("name") String name,
-        @Property("title") String title,
         @Property("familyCode") String familyCode,
-        @Property("track") String track,
         @Property("assignedExpertId") String assignedExpertId,
         @Property("description") String description,
         @Property("scope") String scope,
@@ -37,12 +34,23 @@ public record TargetRoleNode(
         @Property("isStaffingEnabled") Boolean isStaffingEnabled) {
 
     public TargetRoleNode(
-            String id, String organizationId, String code, String baseCode, String name, String title,
-            String familyCode, String track, String assignedExpertId, String description, String scope,
+            String id, String organizationId, String code, String baseCode, String name, String familyCode,
+            String assignedExpertId, String description, String scope,
             List<String> responsibilities, String status, String version, String skillTargets,
             String levelCompetencies, List<String> competencyIds, String rejectionReason,
             Instant createdAt, Instant updatedAt) {
-        this(id, organizationId, code, baseCode, name, title, familyCode, track, assignedExpertId, description, scope,
+        this(id, organizationId, code, baseCode, name, familyCode, assignedExpertId, description, scope,
+                responsibilities, status, version, skillTargets, levelCompetencies, competencyIds, rejectionReason,
+                createdAt, updatedAt, "STAGED".equalsIgnoreCase(status));
+    }
+
+    public TargetRoleNode(
+            String id, String organizationId, String code, String baseCode, String name,
+            String assignedExpertId, String description, String scope,
+            List<String> responsibilities, String status, String version, String skillTargets,
+            String levelCompetencies, List<String> competencyIds, String rejectionReason,
+            Instant createdAt, Instant updatedAt) {
+        this(id, organizationId, code, baseCode, name, "", assignedExpertId, description, scope,
                 responsibilities, status, version, skillTargets, levelCompetencies, competencyIds, rejectionReason,
                 createdAt, updatedAt, "STAGED".equalsIgnoreCase(status));
     }

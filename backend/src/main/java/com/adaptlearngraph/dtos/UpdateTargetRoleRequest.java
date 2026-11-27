@@ -1,6 +1,5 @@
 package com.adaptlearngraph.dtos;
 
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -12,9 +11,6 @@ public record UpdateTargetRoleRequest(
         String name,
 
         String familyCode,
-
-        @Pattern(regexp = "^(PROFESSIONAL|MANAGEMENT)?$", message = "Track must be either PROFESSIONAL or MANAGEMENT")
-        String track,
 
         String assignedExpertId,
 
@@ -43,8 +39,22 @@ public record UpdateTargetRoleRequest(
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets,
+            String rejectionReason,
+            List<String> levels,
+            Map<String, List<String>> levelCompetencies,
+            List<String> competencyIds,
+            Map<String, String> levelDurations) {
+        this(name, "", assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, levelDurations);
+    }
+
+    public UpdateTargetRoleRequest(
+            String name,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -55,13 +65,11 @@ public record UpdateTargetRoleRequest(
             List<String> levels,
             Map<String, List<String>> levelCompetencies,
             List<String> competencyIds) {
-        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, null);
+        this(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, levelCompetencies, competencyIds, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -70,13 +78,11 @@ public record UpdateTargetRoleRequest(
             List<Map<String, Object>> skillTargets,
             String rejectionReason,
             List<String> levels) {
-        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null, null);
+        this(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, levels, null, null, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             List<String> responsibilities,
@@ -84,59 +90,53 @@ public record UpdateTargetRoleRequest(
             String version,
             List<Map<String, Object>> skillTargets,
             String rejectionReason) {
-        this(name, familyCode, track, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, null);
+        this(name, assignedExpertId, description, responsibilities, status, version, skillTargets, rejectionReason, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
+            String assignedExpertId,
+            String description,
+            List<String> responsibilities,
+            String status,
+            String version,
+            List<Map<String, Object>> skillTargets) {
+        this(name, assignedExpertId, description, responsibilities, status, version, skillTargets, null, null);
+    }
+
+    public UpdateTargetRoleRequest(
+            String name,
             String assignedExpertId,
             String description,
             String status,
             String version,
             List<Map<String, Object>> skillTargets,
             String rejectionReason) {
-        this(name, familyCode, track, assignedExpertId, description, List.of(), status, version, skillTargets, rejectionReason, null);
+        this(name, assignedExpertId, description, List.of(), status, version, skillTargets, rejectionReason, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             String status,
             String version,
             List<Map<String, Object>> skillTargets) {
-        this(name, familyCode, track, assignedExpertId, description, List.of(), status, version, skillTargets, null);
+        this(name, assignedExpertId, description, List.of(), status, version, skillTargets, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            String track,
             String assignedExpertId,
             String description,
             String status) {
-        this(name, familyCode, track, assignedExpertId, description, List.of(), status, null, null, null);
+        this(name, assignedExpertId, description, List.of(), status, null, null, null);
     }
 
     public UpdateTargetRoleRequest(
             String name,
-            String familyCode,
-            RoleTrack track,
             String assignedExpertId,
             String description) {
-        this(name, familyCode, track != null ? track.name() : null, assignedExpertId, description, List.of(), null, null, null, null);
-    }
-
-    public UpdateTargetRoleRequest(
-            String name,
-            String familyCode,
-            String track,
-            String assignedExpertId,
-            String description) {
-        this(name, familyCode, track, assignedExpertId, description, List.of(), null, null, null, null);
+        this(name, assignedExpertId, description, List.of(), null, null, null, null);
     }
 }

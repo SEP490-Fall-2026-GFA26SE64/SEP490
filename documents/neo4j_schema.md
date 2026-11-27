@@ -156,8 +156,6 @@ Department là đơn vị tổ chức/phòng ban trong doanh nghiệp (node labe
 | `code` | String | Mã viết tắt của phòng ban, ví dụ `ENG-SWE`, `ENG-DATA`. Unique theo `(organizationId, code)` (`department_code` — V6). |
 | `name` | String | Tên đầy đủ của phòng ban, ví dụ `Software Engineering`. |
 | `description` | String | Tóm tắt mục tiêu, phạm vi hoạt động chuyên môn của phòng ban. |
-| `headOfDepartment` | String (optional) | Tên trưởng phòng / lãnh đạo phụ trách phòng ban. |
-| `headEmail` | String (optional) | Email của lãnh đạo phòng ban. |
 | `status` | String | Trạng thái hoạt động (`ACTIVE` hoặc `INACTIVE`). |
 | `version` | String (optional) | Phiên bản cấu trúc (ví dụ `'1.0'` khi import từ cấu trúc tổ chức). |
 | `source` | String (optional) | Nguồn khởi tạo (ví dụ `'REGISTRATION_IMPORT'` khi import lúc đăng ký). |
@@ -175,7 +173,6 @@ JobPosition là vị trí công việc theo O*NET hoặc chuẩn tổ chức (no
 | `code` | String | Mã O*NET-SOC hoặc mã vị trí công việc của tổ chức; ví dụ `15-1252.00` (`job_position_code` constraint — V5). |
 | `name` | String | Tên vị trí công việc; ví dụ `Software Developers`. |
 | `description` | String (optional) | Mô tả chi tiết vị trí công việc (hỗ trợ CRUD và đầu vào ngữ cảnh cho AI RIASEC). |
-| `jobZone` | Long / Integer | Nhóm mức chuẩn bị nghề nghiệp theo O*NET (mặc định `4`). Không dùng để suy ra Junior/Middle/Senior. |
 | `status` | String | Trạng thái vòng đời (`ACTIVE`, `INACTIVE`, `ARCHIVED`). |
 | `version` | String | Phiên bản catalog (ví dụ `0.9.0`, `0.11.0`, `1.0`). |
 | `reviewStatus` | String (optional) | Trạng thái rà soát (`APPROVED`, `NEEDS_EXPERT_REVIEW`). |
@@ -201,9 +198,6 @@ TargetRole biểu diễn chức danh mục tiêu thuộc một `JobPosition` (á
 | `code` | String | Mã role duy nhất trên graph (khi có nhiều phiên bản hoặc trùng mã giữa các tenant sẽ mang hậu tố `#<orgId>#v<version>`). |
 | `baseCode` | String | Mã role gốc ổn định dùng chung cho toàn bộ các phiên bản (`lineage`) của cùng một chức danh (ví dụ `JAVA-BE`). |
 | `name` | String | Tên hiển thị chính thức của chức danh mục tiêu (ví dụ `Java Backend Developer`). |
-| `title` | String (legacy alias) | Tên chức danh tương thích với template/import cấu trúc tổ chức (đồng bộ với `name`). |
-| `familyCode` | String | Mã nhóm nghề / mã JobPosition liên kết (ví dụ `15-1252.00`, `DEV`). |
-| `track` | Enum/String | Ngạch phát triển của chức danh: `PROFESSIONAL` hoặc `MANAGEMENT`. |
 | `description` | String | Mô tả tổng quan chức năng, mục tiêu của chức danh. |
 | `scope` | String | Phạm vi công việc chuyên môn của role (đồng bộ với `description` khi khởi tạo/cập nhật). |
 | `responsibilities` | List\<String\> | Danh sách các trách nhiệm chính của chức danh mục tiêu. |
@@ -454,9 +448,9 @@ Mọi node và relationship đều mang bộ metadata chung: `id`, `organization
 
 | Node | Tập hợp Property (bao gồm metadata & nghiệp vụ hiện hành) |
 |---|---|
-| `Department` | `id`, `organizationId`, `code`, `name`, `description`, `headOfDepartment`, `headEmail`, `status`, `version`, `source`, `createdAt`, `updatedAt` |
-| `JobPosition` | `id`, `organizationId`, `code`, `name`, `description`, `jobZone`, `status`, `version`, `reviewStatus`, `source`, `createdAt`, `updatedAt`, `interestRealistic`, `interestInvestigative`, `interestArtistic`, `interestSocial`, `interestEnterprising`, `interestConventional` (Integer 0–40) |
-| `TargetRole` (`:Role`) | `id`, `organizationId`, `code`, `baseCode`, `name`, `title`, `familyCode`, `track`, `description`, `scope`, `responsibilities`, `status` (`DRAFT`, `STAGED`, `SENT`, `SUBMITTED`, `REJECTED`, `PUBLISHED`, `ACTIVE`, `UNPUBLISHED`, `SUPERSEDED`), `isStaffingEnabled`, `version`, `reviewStatus`, `assignedExpertId`, `assignedExpertName`, `skillTargets` (JSON), `levelCompetencies` (JSON), `competencyIds`, `rejectionReason`, `source`, `createdAt`, `updatedAt` |
+| `Department` | `id`, `organizationId`, `code`, `name`, `description`, `status`, `version`, `source`, `createdAt`, `updatedAt` |
+| `JobPosition` | `id`, `organizationId`, `code`, `name`, `description`, `status`, `version`, `reviewStatus`, `source`, `createdAt`, `updatedAt`, `interestRealistic`, `interestInvestigative`, `interestArtistic`, `interestSocial`, `interestEnterprising`, `interestConventional` (Integer 0–40) |
+| `TargetRole` (`:Role`) | `id`, `organizationId`, `code`, `baseCode`, `name`, `description`, `scope`, `responsibilities`, `status` (`DRAFT`, `STAGED`, `SENT`, `SUBMITTED`, `REJECTED`, `PUBLISHED`, `ACTIVE`, `UNPUBLISHED`, `SUPERSEDED`), `isStaffingEnabled`, `version`, `reviewStatus`, `assignedExpertId`, `assignedExpertName`, `skillTargets` (JSON), `levelCompetencies` (JSON), `competencyIds`, `rejectionReason`, `source`, `createdAt`, `updatedAt` |
 | `Level` | `id`, `organizationId`, `code`, `name`, `rank`, `duration`, `attainmentRule`, `status`, `version`, `reviewStatus`, `memberToken`, `sourceFormat`, `source`, `createdAt`, `updatedAt` |
 | `Competency` | `id`, `organizationId`, `code`, `name`, `description`, `attainmentRule`, `status`, `version`, `reviewStatus`, `departmentId`, `departmentName`, `jobPositionCode`, `jobPositionTitle`, `createdAt`, `updatedAt` |
 | `MicroSkill` | `id`, `organizationId`, `code`, `sourceId`, `name`, `description`, `definition`, `status`, `version`, `reviewStatus`, `reviewSource`, `reviewedBy`, `reviewedAt`, `moduleOnlyKnowledgeLevels`, `certificateOnlyKnowledgeLevels`, `provisionMode` (legacy reader compatibility), `foundationOutcomeLabels`, `intermediateOutcomeLabels`, `advancedOutcomeLabels`, `createdAt`, `updatedAt` |

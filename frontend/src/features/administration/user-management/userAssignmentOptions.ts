@@ -105,8 +105,6 @@ export interface DepartmentItem {
   code: string
   name: string
   description?: string
-  headOfDepartment?: string
-  headEmail?: string
   linkedJobPositions: string[]
   uuid: string
   uuidCode: string

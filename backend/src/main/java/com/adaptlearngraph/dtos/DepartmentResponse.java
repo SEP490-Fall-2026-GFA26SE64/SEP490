@@ -7,8 +7,6 @@ public record DepartmentResponse(
         String code,
         String name,
         String description,
-        String headOfDepartment,
-        String headEmail,
         String status,
         String organizationId,
         String createdAt,

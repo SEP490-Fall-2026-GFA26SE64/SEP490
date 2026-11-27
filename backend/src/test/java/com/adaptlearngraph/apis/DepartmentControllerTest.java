@@ -43,10 +43,10 @@ class DepartmentControllerTest {
     void listDepartments_returnsList() throws Exception {
         List<Department> departments = List.of(
                 new Department("dept-1", "ENG-SWE", "Software Engineering", "Core engineering",
-                        "Marcus Vance", "marcus@technova.com", "ACTIVE", "org-technova",
+                        "ACTIVE", "org-technova",
                         "2026-11-04T00:00:00Z", "2026-11-04T00:00:00Z", List.of("15-1252.00"), 1),
                 new Department("dept-2", "ENG-DATA", "Data & AI", "Data platform",
-                        "Dr. Sarah Chen", "sarah@technova.com", "ACTIVE", "org-technova",
+                        "ACTIVE", "org-technova",
                         "2026-11-04T00:00:00Z", "2026-11-04T00:00:00Z", List.of("15-1243.00"), 1)
         );
 
@@ -67,7 +67,7 @@ class DepartmentControllerTest {
     @DisplayName("POST /api/v1/organizations/{orgId}/departments creates department")
     void createDepartment_returnsCreated() throws Exception {
         Department created = new Department("dept-new", "ENG-SEC", "Cybersecurity", "Security operations",
-                "Alex Rivera", "alex@technova.com", "ACTIVE", "org-technova",
+                "ACTIVE", "org-technova",
                 "2026-11-04T00:00:00Z", "2026-11-04T00:00:00Z", List.of("15-1212.00"), 1);
 
         given(getDepartmentsUseCase.saveDepartment(eq("org-technova"), any(Department.class))).willReturn(created);
@@ -80,8 +80,6 @@ class DepartmentControllerTest {
                                   "code": "ENG-SEC",
                                   "name": "Cybersecurity",
                                   "description": "Security operations",
-                                  "headOfDepartment": "Alex Rivera",
-                                  "headEmail": "alex@technova.com",
                                   "status": "ACTIVE",
                                   "linkedJobPositions": ["15-1212.00"]
                                 }

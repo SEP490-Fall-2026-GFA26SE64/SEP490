@@ -13,10 +13,10 @@ class TargetRoleDomainTest {
     void acceptsTrackCompatibleGradesAndNormalizesText() {
         var professional = new TargetRoleSummary(
                 " role-p3 ", " JAVA_P3 ", " Java Developer ",
-                CareerTrack.PROFESSIONAL, " Backend role ", 2);
+                " Backend role ", 2);
         var management = new TargetRoleSummary(
                 "role-m3", "ENG_MANAGER", "Engineering Manager",
-                CareerTrack.MANAGEMENT, null, 1);
+                null, 1);
 
         assertThat(professional.id()).isEqualTo("role-p3");
         assertThat(professional.code()).isEqualTo("JAVA_P3");
@@ -27,8 +27,8 @@ class TargetRoleDomainTest {
         var responsibilities = new java.util.ArrayList<>(List.of(" Build APIs "));
         var requirement = new TargetRoleRequirement("skill-1", "JAVA", "Java", 0.7);
         var detail = new TargetRoleDetail(
-                "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, " ", responsibilities, List.of(requirement));
+                "role-1", "JAVA_P3", "Java Developer",
+                " ", responsibilities, List.of(requirement));
 
         responsibilities.add("Mutated later");
 
@@ -36,8 +36,8 @@ class TargetRoleDomainTest {
         assertThat(detail.responsibilities()).containsExactly("Build APIs");
         assertThat(detail.requirements()).containsExactly(requirement);
         assertThatThrownBy(() -> new TargetRoleDetail(
-                "role-1", "JAVA_P3", "Java Developer", "JAVA",
-                CareerTrack.PROFESSIONAL, null, List.of(), List.of()))
+                "role-1", "JAVA_P3", "Java Developer",
+                null, List.of(), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("requirements must not be empty");
     }
@@ -65,8 +65,8 @@ class TargetRoleDomainTest {
                 .hasMessage("skillId must not be blank");
         assertThatThrownBy(() -> new TargetRoleSummary(
                 "role-1", "ROLE_1", "Role 1",
-                CareerTrack.PROFESSIONAL, null, 0))
+                null, -1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("requirementCount must be at least 1");
+                .hasMessage("requirementCount must not be negative");
     }
 }

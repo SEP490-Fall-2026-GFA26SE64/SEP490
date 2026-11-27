@@ -54,9 +54,8 @@ public class JobPositionApplicationService {
     private static JobPositionChange change(String id, String code, SaveJobPositionRequest r, String author, boolean create) {
         if (id == null || id.isBlank() || id.length() > 200 || (create && (code == null || code.isBlank() || r.name() == null || r.name().isBlank()))
                 || (code != null && code.length() > 200) || (r.name() != null && (r.name().isBlank() || r.name().length() > 500))
-                || (r.description()!=null && r.description().length()>4000)
-                || (r.jobZone() != null && r.jobZone() < 1)) throw new CatalogFailure(400, "INVALID_REQUEST");
-        return new JobPositionChange(id, code, r.name() == null ? null : r.name().trim(), r.jobZone(), r.status(), r.version(),
+                || (r.description()!=null && r.description().length()>4000)) throw new CatalogFailure(400, "INVALID_REQUEST");
+        return new JobPositionChange(id, code, r.name() == null ? null : r.name().trim(), r.status(), r.version(),
                 author, create, r.description(), profile(r));
     }
 

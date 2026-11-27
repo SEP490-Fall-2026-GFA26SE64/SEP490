@@ -21,7 +21,7 @@ export const getExpertEffectiveStatus = (
   if (s === 'unpublished') return 'unpublished'
   if (s === 'submitted' || s === 'approved') return 'submitted'
   if (s === 'rejected' || s === 'feedback') return 'rejected'
-  if (s === 'staged' || Boolean(role.isStaffingEnabled)) return 'staged'
+  if (s === 'staged' || (s !== 'draft' && s !== 'sent' && Boolean(role.isStaffingEnabled))) return 'staged'
   if (s === 'sent') return 'draft'
 
   return 'draft'

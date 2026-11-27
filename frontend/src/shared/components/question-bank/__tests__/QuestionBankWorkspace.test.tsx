@@ -476,7 +476,7 @@ it('renders permitted incomplete content and null author metadata without fabric
  expect(within(content).queryByText('Correct answer', { exact: true })).toBeNull()
  fireEvent.click(screen.getByRole('tab', { name: 'History & versions' }))
  const metadata = screen.getByRole('region', { name: 'Version information' })
- for (const entry of metadata.querySelectorAll('dd')) expect(entry.textContent).toBe('—')
+ for (const entry of Array.from(metadata.querySelectorAll('dd'))) expect(entry.textContent).toBe('—')
  expect(screen.getByText('No activity was recorded for this question. Earlier changes may not be available for legacy items.')).toBeTruthy()
  expect(screen.queryByText('Not recorded')).toBeNull()
 })

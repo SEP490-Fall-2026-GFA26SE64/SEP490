@@ -2,7 +2,6 @@ package com.adaptlearngraph.repository;
 
 import com.adaptlearngraph.dtos.TargetRoleFilter;
 import com.adaptlearngraph.entities.domain.RoleStatus;
-import com.adaptlearngraph.entities.domain.RoleTrack;
 import com.adaptlearngraph.entities.domain.TargetRole;
 import com.adaptlearngraph.entities.domain.TargetRoleId;
 import com.adaptlearngraph.entities.TargetRoleNode;
@@ -52,23 +51,27 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 skillId: s.id,
                 skillCode: s.code,
                 skillName: s.name,
-                requiredKnowledgeLevels: coalesce(req.requiredKnowledgeLevels,
-                    CASE WHEN coalesce(req.level, '') = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
-                         WHEN coalesce(req.level, '') = 'Middle' THEN ['INTERMEDIATE']
-                         ELSE ['FOUNDATION'] END),
+                requiredKnowledgeLevels: CASE WHEN size(coalesce(req.requiredKnowledgeLevels, [])) > 1
+                    THEN [coalesce(req.requiredKnowledgeLevels, [])[-1]]
+                    ELSE coalesce(req.requiredKnowledgeLevels,
+                        CASE WHEN coalesce(req.level, '') = 'Senior' THEN ['ADVANCED']
+                             WHEN coalesce(req.level, '') = 'Middle' THEN ['INTERMEDIATE']
+                             ELSE ['FOUNDATION'] END) END,
                 level: coalesce(req.level, '')
             } END) WHERE x IS NOT NULL] AS directSkills
-            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[:HAS_COMPETENCY]->(c:Competency)-[:HAS_SKILL]->(cs:MicroSkill)
-            OPTIONAL MATCH (lvl)-[lreq:REQUIRES_SKILL]->(cs)
+            OPTIONAL MATCH (r)-[:HAS_LEVEL]->(lvl:Level)-[lreq:REQUIRES_SKILL]->(cs:MicroSkill)
+            WHERE coalesce(lreq.status, 'ACTIVE') = 'ACTIVE' AND (cs.organizationId IS NULL OR cs.organizationId = r.organizationId) AND cs.status = 'ACTIVE'
             WITH r, jps, graphLevels, graphLevelDetails, graphCompetencies, directSkills, [x IN collect(DISTINCT CASE WHEN cs IS NOT NULL THEN {
                 skillId: cs.id,
                 skillCode: cs.code,
                 skillName: cs.name,
                 threshold: toInteger(round(coalesce(lreq.targetMastery, lreq.requiredScore, 0.7) * 100)),
-                requiredKnowledgeLevels: coalesce(lreq.requiredKnowledgeLevels,
-                    CASE WHEN coalesce(lreq.level, lvl.name, '') = 'Senior' THEN ['INTERMEDIATE', 'ADVANCED']
-                         WHEN coalesce(lreq.level, lvl.name, '') = 'Middle' THEN ['INTERMEDIATE']
-                         ELSE ['FOUNDATION'] END),
+                requiredKnowledgeLevels: CASE WHEN size(coalesce(lreq.requiredKnowledgeLevels, [])) > 1
+                    THEN [coalesce(lreq.requiredKnowledgeLevels, [])[-1]]
+                    ELSE coalesce(lreq.requiredKnowledgeLevels,
+                        CASE WHEN coalesce(lreq.level, lvl.name, '') = 'Senior' THEN ['ADVANCED']
+                             WHEN coalesce(lreq.level, lvl.name, '') = 'Middle' THEN ['INTERMEDIATE']
+                             ELSE ['FOUNDATION'] END) END,
                 level: coalesce(lreq.level, lvl.name, '')
             } END) WHERE x IS NOT NULL] AS levelSkills
             WITH r, coalesce(head([p IN jps WHERE p IS NOT NULL | coalesce(p.code, p.id, '')]), '') AS graphJobPositionCode,
@@ -150,8 +153,9 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             String updatedAt = targetRole.getUpdatedAt().toString();
 
             Neo4jTenantGuard.requireOwnedOrAbsent(client, "TargetRole", matchedId, organizationId);
-            roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(), targetRole.getFamilyCode(),
-                    targetRole.getTrack().name(), targetRole.getAssignedExpertId(), targetRole.getDescription(),
+            roles.merge(matchedId, organizationId, graphCode, rawCode, targetRole.getName(),
+                    targetRole.getFamilyCode() != null ? targetRole.getFamilyCode() : "",
+                    targetRole.getAssignedExpertId(), targetRole.getDescription(),
                     targetRole.getResponsibilities() != null ? targetRole.getResponsibilities() : List.of(),
                     targetRole.getStatus().name(), targetRole.isStaffingEnabled(), version, targetRole.getSkillTargets(),
                     targetRole.getLevelCompetencies(),
@@ -175,7 +179,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             syncMemberLevelIdentities(organizationId, matchedId, targetRole.getLevels(), version, updatedAt);
 
             // 4. Synchronize HAS_ROLE edge from JobPosition to TargetRole
-            syncJobPositionRelationship(organizationId, matchedId, targetRole.getFamilyCode(), targetRole.getStatus().name(), targetRole.getUpdatedAt());
+            syncJobPositionRelationship(organizationId, matchedId, targetRole.getStatus().name(), targetRole.getUpdatedAt());
         });
         return targetRole;
     }
@@ -440,17 +444,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                         }
                     }
                 }
-                if (knowledge.isEmpty()) {
-                    // Fallback for imported / template roles with legacy threshold or unconfigured knowledge levels
-                    if ("Senior".equalsIgnoreCase(level)) {
-                        knowledge.addAll(List.of("INTERMEDIATE", "ADVANCED"));
-                    } else if ("Middle".equalsIgnoreCase(level)) {
-                        knowledge.add("INTERMEDIATE");
-                    } else {
-                        knowledge.add("FOUNDATION");
-                    }
-                }
-                skillData.put("requiredKnowledgeLevels", List.copyOf(knowledge));
+                List<String> singleKnowledge = normalizeSingleKnowledgeLevel(knowledge, level);
+                skillData.put("requiredKnowledgeLevels", singleKnowledge);
                 processedSkills.add(skillData);
             }
         }
@@ -512,33 +507,21 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         }
     }
 
-    private void syncJobPositionRelationship(String organizationId, String roleId, String familyCode, String status, Instant updatedAt) {
-        String famCode = familyCode != null ? familyCode.trim().toUpperCase() : "DEV";
+    private void syncJobPositionRelationship(String organizationId, String roleId, String status, Instant updatedAt) {
         client.query("""
                 MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
+                OPTIONAL MATCH (existingJp:JobPosition)-[:HAS_ROLE]->(r)
+                WITH r, existingJp
                 MATCH (jp:JobPosition {organizationId: $organizationId})
-                WHERE jp.status = 'ACTIVE'
-                  AND (
-                    jp.code = $famCode
-                    OR jp.id = $famCode
-                    OR jp.id = 'OCC-' + $famCode
-                    OR ($famCode IN ['DEV', 'JAVA_BACKEND', 'SOFTWARE_ENGINEERING', 'SOFTWARE_DEVELOPMENT', '15-1252.00', '15-1252'] AND jp.code = '15-1252.00')
-                    OR ($famCode IN ['DATA', 'DATABASE', '15-1243.00', '15-1243'] AND jp.code = '15-1243.00')
-                    OR ($famCode IN ['QA', 'QUALITY', 'TEST', '15-1253.00', '15-1253'] AND jp.code = '15-1253.00')
-                    OR ($famCode IN ['CLOUD', 'DEVOPS', 'SYSTEMS', 'INFRASTRUCTURE', '15-1299.08'] AND jp.code = '15-1299.08')
-                    OR ($famCode IN ['SECURITY', 'SEC', 'COMPLIANCE', '15-1212.00'] AND jp.code = '15-1212.00')
-                  )
-                WITH r, jp
-                OPTIONAL MATCH (other:JobPosition)-[oldRel:HAS_ROLE]->(r)
-                WHERE other.organizationId=$organizationId AND elementId(other) <> elementId(jp)
-                DELETE oldRel
+                WHERE (existingJp IS NOT NULL AND elementId(jp) = elementId(existingJp))
+                   OR (existingJp IS NULL AND (jp.code = '15-1252.00' OR jp.code STARTS WITH '15-'))
+                WITH r, jp LIMIT 1
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
                 SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
                     rel.updatedAt = datetime($updatedAt)
                 """)
                 .bind(roleId).to("roleId")
                 .bind(organizationId).to("organizationId")
-                .bind(famCode).to("famCode")
                 .bind(status).to("status")
                 .bind(updatedAt.toString()).to("updatedAt")
                 .run();
@@ -573,10 +556,6 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("organizationId", organizationId);
 
-        if (filter.track() != null) {
-            cypher.append(" AND r.track = $track");
-            params.put("track", filter.track().name());
-        }
         if (filter.status() != null) {
             cypher.append(" AND r.status = $status");
             params.put("status", filter.status().name());
@@ -698,11 +677,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
             code = code.substring(0, code.indexOf("#"));
         }
 
-        String name = node.name() != null ? node.name() : (node.title() != null ? node.title() : code);
-        String familyCode = node.familyCode() != null && !node.familyCode().isBlank()
-                ? node.familyCode()
-                : (graphJobPositionCode != null && !graphJobPositionCode.isBlank() ? graphJobPositionCode : "SOFTWARE_ENGINEERING");
-        String trackStr = node.track() != null ? node.track() : "PROFESSIONAL";
+        String name = node.name() != null ? node.name() : code;
         String assignedExpertId = node.assignedExpertId() != null ? node.assignedExpertId() : "";
         String desc = node.description() != null ? node.description() : (node.scope() != null ? node.scope() : "");
         List<String> responsibilities = node.responsibilities() != null ? node.responsibilities() : List.of();
@@ -733,17 +708,16 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 boolean modified = false;
                 for (var target : targets) {
                     Object reqK = target.get("requiredKnowledgeLevels");
-                    if (reqK == null || (reqK instanceof List<?> l && l.isEmpty())) {
-                        String lvl = Objects.toString(target.get("level"), "");
-                        List<String> def;
-                        if ("Senior".equalsIgnoreCase(lvl)) {
-                            def = List.of("INTERMEDIATE", "ADVANCED");
-                        } else if ("Middle".equalsIgnoreCase(lvl)) {
-                            def = List.of("INTERMEDIATE");
-                        } else {
-                            def = List.of("FOUNDATION");
+                    String lvl = Objects.toString(target.get("level"), "");
+                    List<String> rawList = new ArrayList<>();
+                    if (reqK instanceof List<?> l) {
+                        for (Object o : l) {
+                            if (o != null) rawList.add(o.toString());
                         }
-                        target.put("requiredKnowledgeLevels", def);
+                    }
+                    List<String> single = normalizeSingleKnowledgeLevel(rawList, lvl);
+                    if (!single.equals(rawList)) {
+                        target.put("requiredKnowledgeLevels", single);
                         modified = true;
                     }
                 }
@@ -781,13 +755,16 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
         RoleStatus parsedStatus = RoleStatus.fromString(statusStr);
         boolean isStaffingEnabled = RoleStatus.STAGED.equals(parsedStatus) || (Boolean.TRUE.equals(node.isStaffingEnabled()) && !RoleStatus.ACTIVE.equals(parsedStatus) && !RoleStatus.PUBLISHED.equals(parsedStatus));
 
+        String familyCode = node.familyCode() != null && !node.familyCode().isBlank()
+                ? node.familyCode().trim()
+                : (graphJobPositionCode != null && !graphJobPositionCode.isBlank() ? graphJobPositionCode.trim() : "");
+
         return new TargetRole(
                 TargetRoleId.fromString(idStr),
                 orgId,
                 code,
                 name,
                 familyCode,
-                RoleTrack.fromString(trackStr),
                 assignedExpertId,
                 desc,
                 responsibilities,
@@ -802,6 +779,35 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                 competencyIds,
                 levelDurations,
                 isStaffingEnabled);
+    }
+
+    private static List<String> normalizeSingleKnowledgeLevel(List<String> raw, String memberLevel) {
+        if (raw != null && !raw.isEmpty()) {
+            List<String> upper = new ArrayList<>();
+            for (String s : raw) {
+                if (s != null) {
+                    String norm = s.trim().toUpperCase(java.util.Locale.ROOT);
+                    if (Set.of("FOUNDATION", "INTERMEDIATE", "ADVANCED").contains(norm)) {
+                        upper.add(norm);
+                    }
+                }
+            }
+            if (upper.size() == 1) {
+                return List.of(upper.getFirst());
+            }
+            if (upper.size() > 1) {
+                if (upper.contains("ADVANCED")) return List.of("ADVANCED");
+                if (upper.contains("INTERMEDIATE")) return List.of("INTERMEDIATE");
+                return List.of(upper.getLast());
+            }
+        }
+        if ("Senior".equalsIgnoreCase(memberLevel)) {
+            return List.of("ADVANCED");
+        }
+        if ("Middle".equalsIgnoreCase(memberLevel)) {
+            return List.of("INTERMEDIATE");
+        }
+        return List.of("FOUNDATION");
     }
 
     private Map<String, List<String>> parseLevelCompetenciesJson(String json) {

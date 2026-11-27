@@ -1,6 +1,5 @@
 package com.adaptlearngraph.repository;
 
-import com.adaptlearngraph.entities.domain.CareerTrack;
 import com.adaptlearngraph.entities.domain.TargetRoleDetail;
 import com.adaptlearngraph.entities.domain.TargetRoleRequirement;
 import com.adaptlearngraph.entities.domain.TargetRoleSummary;
@@ -15,7 +14,6 @@ public final class Neo4jTargetRoleMapper {
                 detail.id(),
                 detail.code(),
                 detail.name(),
-                detail.track(),
                 detail.description(),
                 detail.requirements().size()));
     }
@@ -32,8 +30,6 @@ public final class Neo4jTargetRoleMapper {
                     requiredString(record.get("id")),
                     requiredString(record.get("code")),
                     requiredString(record.get("name")),
-                    requiredString(record.get("familyCode")),
-                    CareerTrack.valueOf(requiredString(record.get("track"))),
                     optionalString(record.get("description")),
                     stringList(record.get("responsibilities")),
                     requirements));
@@ -48,25 +44,34 @@ public final class Neo4jTargetRoleMapper {
                     requiredString(value.get("skillId")),
                     requiredString(value.get("skillCode")),
                     requiredString(value.get("skillName")),
-                    value.get("targetMastery").asDouble()));
+                    value.get("targetMastery").isNull() ? null : value.get("targetMastery").asDouble()));
         } catch (RuntimeException invalidRequirement) {
             return Optional.empty();
         }
     }
 
     private static String requiredString(Value value) {
-        String result = value.asString();
-        if (result.isBlank()) {
-            throw new IllegalArgumentException("Required catalog string is blank");
+        if (value == null || value.isNull()) {
+            throw new IllegalArgumentException("Expected a non-null string value");
         }
-        return result;
+        String text = value.asString();
+        if (text.isBlank()) {
+            throw new IllegalArgumentException("Expected non-blank string value");
+        }
+        return text;
     }
 
     private static String optionalString(Value value) {
-        return value.isNull() ? null : value.asString();
+        if (value == null || value.isNull()) {
+            return "";
+        }
+        return value.asString();
     }
 
     private static List<String> stringList(Value value) {
-        return value.isNull() ? List.of() : value.asList(Neo4jTargetRoleMapper::requiredString);
+        if (value == null || value.isNull()) {
+            return List.of();
+        }
+        return value.asList(Value::asString);
     }
 }

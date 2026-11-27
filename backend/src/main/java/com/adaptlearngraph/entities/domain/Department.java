@@ -10,8 +10,6 @@ public record Department(
         String code,
         String name,
         String description,
-        String headOfDepartment,
-        String headEmail,
         String status,
         String organizationId,
         String createdAt,

@@ -85,7 +85,6 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
             assertThat(department.get("name").asString()).isEqualTo("ENG name");
             assertThat(department.get("description").asString()).isEqualTo("ENG description");
             assertThat(department.get("status").asString()).isEqualTo("ACTIVE");
-            assertThat(department.containsKey("headOfDepartment")).as("optional fields are not invented").isFalse();
             var role = session.run("MATCH (r:TargetRole {id:$id}) RETURN r", Map.of("id", roleA)).single().get("r").asNode();
             assertThat(role.get("scope").asString()).isEqualTo("TR-BE scope");
             assertThat(role.get("status").asString()).as("imported roles are staged for staffing").isEqualTo("STAGED");
@@ -102,7 +101,7 @@ class WorkspaceCatalogImportNeo4jIntegrationTest {
         assertThat(jobPositions.findAllJobPositions(a)).extracting(JobPosition::code).containsExactlyInAnyOrder("JP-DEV", "JP-QA");
         assertThat(jobPositions.findAllJobPositions("")).isEmpty();
         var foreign = jobPositions.findAllJobPositions(a).getFirst();
-        assertThatThrownBy(() -> jobPositions.saveChange(b, new com.adaptlearngraph.entities.domain.JobPositionChange(foreign.id(), foreign.code(), foreign.name(), foreign.jobZone(), foreign.status(), foreign.version(), "manager-b", false, null, null))).isInstanceOf(CrossTenantWriteException.class);
+        assertThatThrownBy(() -> jobPositions.saveChange(b, new com.adaptlearngraph.entities.domain.JobPositionChange(foreign.id(), foreign.code(), foreign.name(), foreign.status(), foreign.version(), "manager-b", false, null, null))).isInstanceOf(CrossTenantWriteException.class);
         assertThat(jobPositions.findByIdOrCode(b, foreign.id())).isEmpty();
     }
 

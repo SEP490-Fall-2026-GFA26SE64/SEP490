@@ -44,7 +44,6 @@ public final class TargetRoleMappings implements ModelMapperRegistrar {
                 role.getCode(),
                 role.getName(),
                 role.getFamilyCode(),
-                role.getTrack().name(),
                 role.getAssignedExpertId(),
                 role.getDescription(),
                 role.getResponsibilities() != null ? role.getResponsibilities() : List.of(),

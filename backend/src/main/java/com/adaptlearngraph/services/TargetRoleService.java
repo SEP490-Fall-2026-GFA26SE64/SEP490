@@ -34,7 +34,6 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
                 command.code(),
                 command.name(),
                 command.familyCode(),
-                command.track(),
                 command.assignedExpertId(),
                 command.description(),
                 command.responsibilities(),
@@ -74,8 +73,7 @@ public class TargetRoleService implements CreateTargetRoleUseCase, ViewTargetRol
         TargetRole existing = existingOpt.get();
         TargetRole updated = existing.updateDetails(
                 command.name(),
-                command.familyCode(),
-                command.track(),
+                command.familyCode() != null && !command.familyCode().isBlank() ? command.familyCode() : existing.getFamilyCode(),
                 command.assignedExpertId(),
                 command.description(),
                 command.responsibilities(),

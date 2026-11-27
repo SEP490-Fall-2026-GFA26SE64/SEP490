@@ -7,8 +7,6 @@ public record SaveDepartmentRequest(
         String code,
         String name,
         String description,
-        String headOfDepartment,
-        String headEmail,
         String status,
         List<String> linkedJobPositions
 ) {

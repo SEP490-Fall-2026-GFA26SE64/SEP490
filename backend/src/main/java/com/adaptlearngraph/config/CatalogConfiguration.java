@@ -91,9 +91,10 @@ public class CatalogConfiguration {
     @Bean
     public OrganizationTargetRoleApplicationService organizationTargetRoleApplicationService(
             CreateTargetRoleUseCase createTargetRoleUseCase, ViewTargetRolesUseCase viewTargetRolesUseCase,
-            ManageTargetRoleUseCase manageTargetRoleUseCase, ModelMapper modelMapper) {
+            ManageTargetRoleUseCase manageTargetRoleUseCase, ModelMapper modelMapper,
+            ObjectProvider<com.adaptlearngraph.repository.TargetRoleNodeRepository> targetRoleNodeRepositoryProvider) {
         return new OrganizationTargetRoleApplicationService(createTargetRoleUseCase, viewTargetRolesUseCase,
-                manageTargetRoleUseCase, modelMapper);
+                manageTargetRoleUseCase, modelMapper, targetRoleNodeRepositoryProvider);
     }
 
     @Bean
@@ -302,7 +303,6 @@ public class CatalogConfiguration {
         public List<TargetRole> findByOrganizationId(String organizationId, TargetRoleFilter filter) {
             return store.values().stream()
                     .filter(r -> r.getOrganizationId().equals(organizationId))
-                    .filter(r -> filter.track() == null || r.getTrack() == filter.track())
                     .filter(r -> filter.status() == null || r.getStatus() == filter.status())
                     .filter(r -> filter.assignedExpertId() == null || (r.getAssignedExpertId() != null && r.getAssignedExpertId().equals(filter.assignedExpertId())))
                     .filter(r -> filter.search() == null || r.getName().toLowerCase().contains(filter.search().toLowerCase()))

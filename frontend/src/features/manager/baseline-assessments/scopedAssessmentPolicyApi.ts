@@ -47,7 +47,7 @@ export function workspace(value: unknown, purpose: AssessmentPurpose, key: strin
     if (!['FOUNDATION', 'INTERMEDIATE', 'ADVANCED'].includes(str(level))) throw new Error('Invalid knowledge level')
     const mode = g.provisionMode
     if (mode !== undefined && mode !== null && mode !== 'MODULE_ONLY' && mode !== 'CERTIFICATE_ONLY') throw new Error('Invalid provision mode')
-    return { requirement: { skillId: str(r.skillId), knowledgeLevel: level as KnowledgeLevel, outcomeCodes: [] }, skillName: str(g.skillName), skillVersion: g.skillVersion === null ? null : str(g.skillVersion), provisionMode: mode, readinessIssues: g.readinessIssues === undefined ? [] : list(g.readinessIssues, str) }
+    return { requirement: { skillId: str(r.skillId), knowledgeLevel: level as KnowledgeLevel, outcomeCodes: [] }, skillName: str(g.skillName), skillVersion: g.skillVersion === null ? null : str(g.skillVersion), provisionMode: mode as "MODULE_ONLY" | "CERTIFICATE_ONLY" | undefined, readinessIssues: g.readinessIssues === undefined ? [] : list(g.readinessIssues, str) }
   })
   const d = v.draft === null ? null : obj(v.draft)
   const memberLevels = s.memberLevels == null ? [] : list(s.memberLevels, raw => { const m = obj(raw); return { id: str(m.id), name: str(m.name), rank: num(m.rank), readinessIssues: list(m.readinessIssues, str), groups: list<ScopeGroup>(m.groups, rawGroup => { const group = obj(rawGroup), r = obj(group.requirement); return { requirement: { skillId: str(r.skillId), knowledgeLevel: knowledge(r.knowledgeLevel), outcomeCodes: [] }, skillName: str(group.skillName), skillVersion: group.skillVersion == null ? null : str(group.skillVersion), readinessIssues: list(group.readinessIssues, str) } }) } })

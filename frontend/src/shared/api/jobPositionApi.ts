@@ -23,7 +23,6 @@ export interface JobPositionDto {
   id: string
   code: string
   name: string
-  jobZone: number
   status: string
   version: string
   roleCount: number
@@ -41,7 +40,6 @@ export interface SaveJobPositionPayload {
   id?: string
   code: string
   name: string
-  jobZone?: number
   status?: string
   version?: string
 }

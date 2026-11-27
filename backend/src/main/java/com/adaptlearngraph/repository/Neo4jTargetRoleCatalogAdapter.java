@@ -24,9 +24,7 @@ public final class Neo4jTargetRoleCatalogAdapter implements TargetRoleCatalogPor
             role.id AS id,
             role.code AS code,
             role.name AS name,
-            role.familyCode AS familyCode,
-            role.track AS track,
-                        role.description AS description,
+            role.description AS description,
             role.responsibilities AS responsibilities,
             collect(DISTINCT CASE WHEN requirement IS NULL THEN null ELSE {
                 skillId: skill.id,

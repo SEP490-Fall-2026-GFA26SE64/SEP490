@@ -27,8 +27,8 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await page.goto('/platform-admin/graph-benchmark')
     await expect(page.locator('main')).toBeVisible()
 
-    // Assert Monitor Tab displays Step-by-Step Runtime Breakdown
-    await expect(page.getByText(/Step-by-Step Runtime Breakdown/i)).toBeVisible()
+    // Assert Monitor Tab displays Query Steps Illustration
+    await expect(page.getByText(/Query Steps Illustration|Step-by-Step Runtime Breakdown|Minh họa các bước truy vấn/i)).toBeVisible()
     await expect(page.getByText(/Step 1: Index Lookup|Bước 1/i)).toBeVisible()
     await expect(page.getByText(/Step 3: Traversal|Bước 3/i)).toBeVisible()
 
@@ -53,6 +53,8 @@ test.describe('Platform Admin - Experiment 2 (RQ2) Graph Latency Benchmark Page'
     await expect(page.getByRole('button', { name: '1k Nodes' })).toBeVisible()
     await expect(page.getByRole('button', { name: '5k Nodes' })).toBeVisible()
     await expect(page.getByRole('button', { name: '10k Nodes' })).toBeVisible()
+    await expect(page.getByText(/1,000 samples/i)).toBeVisible()
+    await expect(page.getByText(/50 warm-up runs/i)).toBeVisible()
 
     // Assert Run Benchmark and Export CTA buttons
     const runBtn = page.getByRole('button', { name: /Run Benchmark/i }).first()

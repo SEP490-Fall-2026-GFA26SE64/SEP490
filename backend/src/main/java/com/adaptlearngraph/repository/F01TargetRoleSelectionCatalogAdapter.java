@@ -76,7 +76,7 @@ public final class F01TargetRoleSelectionCatalogAdapter implements TargetRoleSel
                     actualRoleId,
                     role.code(),
                     role.name(),
-                    TargetRoleSnapshot.CareerTrack.valueOf(role.track().name()));
+                    TargetRoleSnapshot.CareerTrack.PROFESSIONAL);
         } catch (IllegalArgumentException incompatibleCatalogValue) {
             throw unavailable("F01 target-role values are incompatible with F02", incompatibleCatalogValue);
         }

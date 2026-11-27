@@ -51,6 +51,10 @@ public class OrganizationTargetRoleController {
         }
 
         TargetRoleResponse response = targetRoles.createTargetRole(organizationId, request);
+        String createdByRole = isDomainExpert(userRole) && !isAuthorizedManager(userRole)
+                ? "DOMAIN_EXPERT"
+                : "LD_MANAGER";
+        targetRoles.markCreatedByRole(organizationId, response.id(), createdByRole);
 
         return ResponseEntity.created(URI.create("/api/v1/organizations/" + organizationId + "/roles/" + response.id()))
                 .body(response);
@@ -62,7 +66,6 @@ public class OrganizationTargetRoleController {
             @RequestHeader(value = "X-User-Role", required = false, defaultValue = "LD_MANAGER") String userRole,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestParam(value = "search", required = false) String search,
-            @RequestParam(value = "track", required = false) String track,
             @RequestParam(value = "status", required = false) String status,
 
             @RequestParam(value = "assignedExpertId", required = false) String assignedExpertId) {
@@ -83,8 +86,9 @@ public class OrganizationTargetRoleController {
             }
         }
 
-        List<TargetRoleResponse> responses = targetRoles.listTargetRoles(organizationId, search, track, status,
+        List<TargetRoleResponse> responses = targetRoles.listTargetRoles(organizationId, search, status,
                 effectiveExpertFilter);
+        responses = targetRoles.filterVisibleRoles(organizationId, responses, isManager, isExpert);
 
         return ResponseEntity.ok(responses);
     }
