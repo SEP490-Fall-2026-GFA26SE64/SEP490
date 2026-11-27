@@ -404,11 +404,18 @@ export function PlatformGraphBenchmarkPage() {
 
   // Active step breakdown computed in real-time and reactive to every benchmark query
   const activeBreakdown = React.useMemo<StepBreakdown>(() => {
-    if (benchmarkResult && !isRunning) {
+    if (
+      benchmarkResult &&
+      !isRunning &&
+      (benchmarkResult.stepBreakdown.indexLookupMs > 0 ||
+        benchmarkResult.stepBreakdown.traversalMs > 0)
+    ) {
       return benchmarkResult.stepBreakdown
     }
     const currentMs =
-      liveStreamState.currentLatencyMs > 0
+      !isRunning && benchmarkResult
+        ? benchmarkResult.stepBreakdown.totalMeanMs || benchmarkResult.meanLatencyMs
+        : liveStreamState.currentLatencyMs > 0
         ? liveStreamState.currentLatencyMs
         : liveStreamState.runningMeanMs > 0
         ? liveStreamState.runningMeanMs

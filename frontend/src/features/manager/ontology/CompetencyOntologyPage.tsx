@@ -368,6 +368,29 @@ function OwnedCompetencyOntologyPage() {
     [isExpert, effectiveExpertDeptId, effectiveExpertDeptName, competencies, isCompetencyCrossDept],
   )
 
+  const getSkillScopeInfo = React.useCallback(
+    (skill?: (MicroSkillModel & { departmentId?: string; departmentName?: string; jobPositionCode?: string; jobPositionTitle?: string }) | null) => {
+      if (!skill) return { deptNames: [] as string[], jpTitles: [] as string[] }
+      const deptSet = new Set<string>()
+      const jpSet = new Set<string>()
+      if (skill.departmentName) deptSet.add(skill.departmentName.trim())
+      if (skill.jobPositionTitle) jpSet.add(cleanJobPositionTitle(skill.jobPositionTitle))
+
+      competencies.forEach((c) => {
+        const hasSkill = (c.skillIds || []).includes(skill.id) || (skill.code ? (c.skillIds || []).includes(skill.code) : false)
+        if (!hasSkill) return
+        if (c.departmentName) deptSet.add(c.departmentName.trim())
+        if (c.jobPositionTitle) jpSet.add(cleanJobPositionTitle(c.jobPositionTitle))
+      })
+
+      return {
+        deptNames: Array.from(deptSet).filter(Boolean),
+        jpTitles: Array.from(jpSet).filter(Boolean),
+      }
+    },
+    [competencies],
+  )
+
   const memberSkillComboboxOptions: ComboboxOption[] = React.useMemo(() => {
     const configuredIds = new Set(competencyForm.skillIds)
     return microSkills
@@ -435,17 +458,34 @@ function OwnedCompetencyOntologyPage() {
           if (me) setCurrentMember(me)
         }
 
-        let resolvedSkills: MicroSkillModel[] = []
+        let resolvedSkills: (MicroSkillModel & {
+          departmentId?: string
+          departmentName?: string
+          jobPositionCode?: string
+          jobPositionTitle?: string
+        })[] = []
         if (Array.isArray(liveSkills) && liveSkills.length > 0) {
-          resolvedSkills = liveSkills.map((s) => ({
-            id: s.id,
-            code: s.code,
-            name: s.name,
-            description: s.description || '',
-            status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
-            createdAt: s.createdAt || '',
-            updatedAt: s.updatedAt || s.createdAt || '',
-          }))
+          resolvedSkills = liveSkills.map((s) => {
+            const skillMeta = s as typeof s & {
+              departmentId?: string
+              departmentName?: string
+              jobPositionCode?: string
+              jobPositionTitle?: string
+            }
+            return {
+              id: s.id,
+              code: s.code,
+              name: s.name,
+              description: s.description || '',
+              status: (s.status as MicroSkillModel['status']) || 'ACTIVE',
+              departmentId: skillMeta.departmentId || undefined,
+              departmentName: skillMeta.departmentName || undefined,
+              jobPositionCode: skillMeta.jobPositionCode || undefined,
+              jobPositionTitle: skillMeta.jobPositionTitle || undefined,
+              createdAt: s.createdAt || '',
+              updatedAt: s.updatedAt || s.createdAt || '',
+            }
+          })
         }
         setMicroSkills(resolvedSkills)
 
@@ -1710,6 +1750,26 @@ function OwnedCompetencyOntologyPage() {
                                     </span>
                                     <span className="text-muted-foreground/60">• Updated {formatDate(skill.updatedAt || skill.createdAt)}</span>
                                   </div>
+                                  {(() => {
+                                    const { deptNames, jpTitles } = getSkillScopeInfo(skill)
+                                    if (deptNames.length === 0 && jpTitles.length === 0) return null
+                                    return (
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                        {deptNames.map((dept) => (
+                                          <Badge key={dept} variant="outline" className="text-[10px] font-medium text-muted-foreground border-border py-0 px-1.5 bg-muted/30">
+                                            <Building2 className="w-2.5 h-2.5 mr-1 text-primary/70 inline" />
+                                            {dept}
+                                          </Badge>
+                                        ))}
+                                        {jpTitles.map((jp) => (
+                                          <Badge key={jp} variant="secondary" className="text-[10px] font-medium py-0 px-1.5">
+                                            <Briefcase className="w-2.5 h-2.5 mr-1 text-primary inline" />
+                                            {jp}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )
+                                  })()}
                                 </td>
                                 <td className="py-3 px-3 text-center whitespace-nowrap">
                                   {(() => {
@@ -1765,31 +1825,30 @@ function OwnedCompetencyOntologyPage() {
                                         <Eye className="h-4 w-4 text-primary" />
                                       </Button>
                                     )}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className={cn("h-8 w-8 p-0", isSkillCrossDept(skill) && "opacity-40 cursor-not-allowed")}
-                                      disabled={isSkillCrossDept(skill)}
-                                      onClick={() => !isSkillCrossDept(skill) && handleOpenEditSkill(skill)}
-                                      title={isSkillCrossDept(skill) ? "Only editable by experts in its assigned department" : "Edit Micro-skill"}
-                                      aria-label="Edit Micro-skill"
-                                    >
-                                      <Edit3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className={cn(
-                                        "h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors",
-                                        isSkillCrossDept(skill) && "opacity-40 cursor-not-allowed",
-                                      )}
-                                      disabled={isSkillCrossDept(skill)}
-                                      onClick={() => !isSkillCrossDept(skill) && setDeletingSkill(skill)}
-                                      title={isSkillCrossDept(skill) ? "Only deletable by experts in its assigned department" : "Delete Micro-skill"}
-                                      aria-label="Delete Micro-skill"
-                                    >
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
+                                    {!isSkillCrossDept(skill) && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => handleOpenEditSkill(skill)}
+                                          title="Edit Micro-skill"
+                                          aria-label="Edit Micro-skill"
+                                        >
+                                          <Edit3 className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:border-destructive/40 transition-colors"
+                                          onClick={() => setDeletingSkill(skill)}
+                                          title="Delete Micro-skill"
+                                          aria-label="Delete Micro-skill"
+                                        >
+                                          <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
@@ -2174,28 +2233,30 @@ function OwnedCompetencyOntologyPage() {
                                     >
                                       <Eye className="h-4 w-4 text-primary" />
                                     </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className={cn("h-8 w-8 p-0", isCrossDept && "opacity-40 cursor-not-allowed")}
-                                      disabled={isCrossDept}
-                                      onClick={() => !isCrossDept && handleOpenEditCompetency(comp)}
-                                      title={isCrossDept ? `Only editable by experts in ${comp.departmentName || 'its assigned department'}` : "Edit Competency"}
-                                      aria-label="Edit Competency"
-                                    >
-                                      <Edit3 className="h-4 w-4 text-foreground" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      className={cn("h-8 w-8 p-0", isCrossDept && "opacity-40 cursor-not-allowed")}
-                                      disabled={isCrossDept}
-                                      onClick={() => !isCrossDept && setDeletingCompetency(comp)}
-                                      title={isCrossDept ? `Only deletable by experts in ${comp.departmentName || 'its assigned department'}` : "Delete Competency"}
-                                      aria-label="Delete Competency"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {!isCrossDept && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => handleOpenEditCompetency(comp)}
+                                          title="Edit Competency"
+                                          aria-label="Edit Competency"
+                                        >
+                                          <Edit3 className="h-4 w-4 text-foreground" />
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => setDeletingCompetency(comp)}
+                                          title="Delete Competency"
+                                          aria-label="Delete Competency"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 </td>
                               </tr>
@@ -2681,6 +2742,26 @@ function OwnedCompetencyOntologyPage() {
                     <p className="text-foreground leading-relaxed text-xs">
                       {viewingSkillDetails.description || 'No description provided.'}
                     </p>
+                    {(() => {
+                      const { deptNames, jpTitles } = getSkillScopeInfo(viewingSkillDetails)
+                      if (deptNames.length === 0 && jpTitles.length === 0) return null
+                      return (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                          {deptNames.map((dept) => (
+                            <Badge key={dept} variant="outline" className="text-[10px] font-medium text-muted-foreground border-border py-0 px-1.5 bg-muted/30">
+                              <Building2 className="w-2.5 h-2.5 mr-1 text-primary/70 inline" />
+                              {dept}
+                            </Badge>
+                          ))}
+                          {jpTitles.map((jp) => (
+                            <Badge key={jp} variant="secondary" className="text-[10px] font-medium py-0 px-1.5">
+                              <Briefcase className="w-2.5 h-2.5 mr-1 text-primary inline" />
+                              {jp}
+                            </Badge>
+                          ))}
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* Summary Metric Strip */}

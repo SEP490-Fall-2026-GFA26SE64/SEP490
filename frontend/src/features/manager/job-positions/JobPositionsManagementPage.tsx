@@ -49,6 +49,14 @@ import { workspaceFetch } from '../../../shared/api/workspaceFetch'
 import { PageLoader } from '../../../shared/components/ui/PageLoader'
 
 
+interface MappedJobPositionRole {
+  id: string
+  code: string
+  title: string
+  version: string
+  status: string
+}
+
 export interface AssignedExpert {
   id: string
   name: string
@@ -311,13 +319,56 @@ export function JobPositionsManagementPage() {
     [orgId]
   )
 
+  const [rolesByPosition, setRolesByPosition] = React.useState<Record<string, MappedJobPositionRole[]>>({})
+
   // Live database fetching from Neo4j merged with local state
   const fetchLiveJobPositions = React.useCallback(async () => {
     try {
-      const [data, members] = await Promise.all([
+      const [data, members, rolesRes] = await Promise.all([
         fetchJobPositions(orgId).catch(() => []),
         getMembers(orgId).catch(() => []),
+        workspaceFetch(`/api/v1/organizations/${orgId}/roles`, {
+          headers: { 'X-User-Role': 'LD_MANAGER' },
+        }).catch(() => null),
       ])
+
+      if (rolesRes && rolesRes.ok) {
+        const rawRoles = await rolesRes.json().catch(() => [])
+        if (Array.isArray(rawRoles) && Array.isArray(data)) {
+          const map: Record<string, MappedJobPositionRole[]> = {}
+          for (const pos of data) {
+            const pCode = String(pos.code || '').trim().toLowerCase()
+            const pBase = pCode.replace(/\.00$/, '')
+            const pId = String(pos.id || '').trim().toLowerCase()
+            const pName = String(pos.name || '').trim().toLowerCase()
+            const matched: MappedJobPositionRole[] = []
+            for (const r of rawRoles) {
+              const rStatus = String(r.status || 'DRAFT').toUpperCase()
+              if (rStatus === 'SUPERSEDED') continue
+              const rFam = String(r.familyCode || '').trim().toLowerCase()
+              const rJpCode = String(r.jobPositionCode || '').trim().toLowerCase()
+              const rFamBase = rFam.replace(/\.00$/, '')
+              const rJpBase = rJpCode.replace(/\.00$/, '')
+              const isMatch =
+                (pCode && (rFam === pCode || rJpCode === pCode || rFamBase === pBase || rJpBase === pBase)) ||
+                (pId && (rFam === pId || rJpCode === pId)) ||
+                (pName && (rFam === pName || rJpCode === pName))
+              if (isMatch) {
+                matched.push({
+                  id: String(r.id || r.code || ''),
+                  code: String(r.code || '').split('#')[0],
+                  title: String(r.name || r.code || ''),
+                  version: String(r.version || '1.0'),
+                  status: rStatus,
+                })
+              }
+            }
+            if (pos.code) map[String(pos.code).toUpperCase().trim()] = matched
+            if (pos.id) map[String(pos.id).toUpperCase().trim()] = matched
+          }
+          setRolesByPosition(map)
+        }
+      }
 
       if (Array.isArray(data)) {
         if (data.length === 0) {
@@ -998,6 +1049,7 @@ export function JobPositionsManagementPage() {
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold">
                       <th className="py-2.5 px-3">CODE</th>
                       <th className="py-2.5 px-3">JOB POSITION &amp; SCOPE</th>
+                      <th className="py-2.5 px-3 text-center">ROLES</th>
                       <th className="py-2.5 px-3 text-center">MICRO-SKILLS</th>
                       <th className="py-2.5 px-3 text-center">MODULES</th>
                       <th className="py-2.5 px-3">STATUS</th>
@@ -1005,7 +1057,12 @@ export function JobPositionsManagementPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {paginatedJobPositions.map((occ) => (
+                    {paginatedJobPositions.map((occ) => {
+                      const mappedRoles =
+                        rolesByPosition[(occ.code || '').toUpperCase().trim()] ||
+                        rolesByPosition[(occ.id || '').toUpperCase().trim()] ||
+                        []
+                      return (
                       <tr key={occ.id} className="hover:bg-muted/20 transition-colors">
                         <td className="py-3 px-3 font-mono font-bold text-foreground whitespace-nowrap">
                           {occ.code}
@@ -1015,6 +1072,9 @@ export function JobPositionsManagementPage() {
                           <div className="text-muted-foreground text-xs line-clamp-1 max-w-md mt-0.5" title={occ.description}>
                             {occ.description}
                           </div>
+                        </td>
+                        <td className="py-3 px-3 text-center font-medium">
+                          <span className="font-semibold text-foreground">{mappedRoles.length}</span> {mappedRoles.length === 1 ? 'role' : 'roles'}
                         </td>
                         <td className="py-3 px-3 text-center font-medium">
                           <span className="font-semibold text-foreground">{occ.microSkillCount}</span> skills
@@ -1083,7 +1143,8 @@ export function JobPositionsManagementPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1233,7 +1294,75 @@ export function JobPositionsManagementPage() {
                 </div>
               </div>
 
-
+              {/* Mapped Target Roles Card */}
+              {(() => {
+                const mappedRoles =
+                  rolesByPosition[(viewingDetailsJobPosition.code || '').toUpperCase().trim()] ||
+                  rolesByPosition[(viewingDetailsJobPosition.id || '').toUpperCase().trim()] ||
+                  []
+                return (
+                  <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+                    <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground text-sm">Mapped Target Roles</span>
+                        <Badge variant="secondary" className="font-mono text-[10px]">
+                          {mappedRoles.length}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono">Role Profiles</span>
+                    </div>
+                    <div className="p-4">
+                      {mappedRoles.length === 0 ? (
+                        <div className="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs">
+                          No target roles mapped to this job position yet.
+                        </div>
+                      ) : (
+                        <div className="border border-border rounded-lg overflow-hidden">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-muted/50 border-b border-border text-[10px] uppercase font-bold text-muted-foreground">
+                              <tr>
+                                <th className="py-2 px-3 font-semibold">Code</th>
+                                <th className="py-2 px-3 font-semibold">Role Title</th>
+                                <th className="py-2 px-3 text-center font-semibold w-24">Version</th>
+                                <th className="py-2 px-3 text-center font-semibold w-28">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/60">
+                              {mappedRoles.map((role) => (
+                                <tr key={role.id} className="hover:bg-muted/20 transition-colors">
+                                  <td className="py-2.5 px-3 font-mono font-bold text-primary whitespace-nowrap">
+                                    {role.code}
+                                  </td>
+                                  <td className="py-2.5 px-3 font-medium text-foreground">
+                                    {role.title}
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center font-mono text-muted-foreground">
+                                    v{role.version === '1' ? '1.0' : role.version}
+                                  </td>
+                                  <td className="py-2.5 px-3 text-center">
+                                    <Badge
+                                      variant={
+                                        role.status === 'PUBLISHED' || role.status === 'ACTIVE'
+                                          ? 'success'
+                                          : role.status === 'REJECTED'
+                                            ? 'destructive'
+                                            : 'secondary'
+                                      }
+                                      className="text-[10px] font-semibold"
+                                    >
+                                      {role.status}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             <DialogFooter className="shrink-0 pt-3 border-t border-border mt-3 flex items-center justify-between sm:justify-between w-full">

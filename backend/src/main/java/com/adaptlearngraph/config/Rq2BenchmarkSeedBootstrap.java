@@ -60,48 +60,74 @@ public class Rq2BenchmarkSeedBootstrap implements ApplicationRunner {
         ensureScaleSeeded(driver, "10k", 10000);
     }
 
-    public static void ensureScaleSeeded(Driver driver, String scale, int expectedNodes) {
+    public static synchronized void ensureScaleSeeded(Driver driver, String scale, int expectedNodes) {
         String scaleUpper = scale.toUpperCase();
         String prefix = "RQ2-" + scaleUpper + "-";
+        int branching = switch (scale.toLowerCase()) {
+            case "10k" -> 60;
+            case "5k" -> 30;
+            default -> 6;
+        };
+        long expectedRels = (long) (expectedNodes * 9 / 10) * branching;
         try (Session session = driver.session()) {
             long currentNodes = session.run(
                     "MATCH (n:MicroSkill) WHERE n.id STARTS WITH $prefix RETURN count(n) AS cnt",
                     Map.of("prefix", prefix)
             ).single().get("cnt").asLong();
+            long currentRels = session.run(
+                    "MATCH (s:MicroSkill)-[r:HAS_SKILL_PREREQUISITE]->(:MicroSkill) WHERE s.id STARTS WITH $prefix RETURN count(r) AS cnt",
+                    Map.of("prefix", prefix)
+            ).single().get("cnt").asLong();
 
-            if (currentNodes == expectedNodes) {
+            if (currentNodes == expectedNodes && currentRels == expectedRels) {
                 return; // Already fully seeded
             }
 
-            log.info("Seeding RQ2 benchmark partition for scale {} (target: {} nodes)...", scale, expectedNodes);
+            if (currentRels > expectedRels) {
+                log.info("Resetting RQ2 benchmark relationships for scale {} ({} -> {})...", scale, currentRels, expectedRels);
+                long deleted;
+                do {
+                    deleted = session.run(
+                            "MATCH (s:MicroSkill)-[r:HAS_SKILL_PREREQUISITE]->(:MicroSkill) WHERE s.id STARTS WITH $prefix WITH r LIMIT 50000 DELETE r RETURN count(r) AS cnt",
+                            Map.of("prefix", prefix)
+                    ).single().get("cnt").asLong();
+                } while (deleted > 0);
+            }
+
+            log.info("Seeding RQ2 benchmark partition for scale {} (target: {} nodes, {} rels)...", scale, expectedNodes, expectedRels);
 
             session.run("CREATE CONSTRAINT rq2_microskill_id IF NOT EXISTS FOR (n:MicroSkill) REQUIRE n.id IS UNIQUE;");
 
-            // Batch create nodes
-            String createNodesCypher = String.format("""
-                    UNWIND range(0, %d) AS i
-                    MERGE (n:MicroSkill:RQ2Benchmark {id: '%s' + toString(i)})
-                    SET n.code = '%s' + toString(i),
-                        n.name = 'Benchmark Skill ' + '%s' + toString(i),
-                        n.dataset = '%s',
-                        n.version = 'rq2-benchmark';
-                    """, expectedNodes - 1, prefix, prefix, prefix, scale.toLowerCase());
-            session.run(createNodesCypher);
+            if (currentNodes != expectedNodes) {
+                // Batch create nodes
+                String createNodesCypher = String.format("""
+                        UNWIND range(0, %d) AS i
+                        MERGE (n:MicroSkill:RQ2Benchmark {id: '%s' + toString(i)})
+                        SET n.code = '%s' + toString(i),
+                            n.name = 'Benchmark Skill ' + '%s' + toString(i),
+                            n.dataset = '%s',
+                            n.version = 'rq2-benchmark';
+                        """, expectedNodes - 1, prefix, prefix, prefix, scale.toLowerCase());
+                session.run(createNodesCypher);
+            }
 
-            // Batch create relationships (10-node chain topology from RQ2 specification)
-            String createRelsCypher = String.format("""
-                    UNWIND range(0, %d) AS i
-                    WITH i WHERE i %% 10 > 0
-                    MATCH (source:MicroSkill {id: '%s' + toString(i)})
-                    MATCH (same:MicroSkill {id: '%s' + toString(i - 1)})
-                    MATCH (next:MicroSkill {id: '%s' + toString((i + 10) %% %d - 1)})
-                    MERGE (source)-[:HAS_SKILL_PREREQUISITE {dataset: '%s'}]->(same)
-                    MERGE (source)-[:HAS_SKILL_PREREQUISITE {dataset: '%s'}]->(next);
-                    """, expectedNodes - 1, prefix, prefix, prefix, expectedNodes, scale.toLowerCase(), scale.toLowerCase());
-            session.run(createRelsCypher);
+            // Batch create relationships in 1,000-node chunks (10-node chain topology with scale-proportional branching)
+            int batchSize = 1000;
+            for (int start = 0; start < expectedNodes; start += batchSize) {
+                int end = Math.min(expectedNodes - 1, start + batchSize - 1);
+                String createRelsCypher = String.format("""
+                        UNWIND range(%d, %d) AS i
+                        WITH i WHERE i %% 10 > 0
+                        UNWIND range(0, %d) AS k
+                        MATCH (source:MicroSkill {id: '%s' + toString(i)})
+                        MATCH (target:MicroSkill {id: '%s' + toString((i + k * 10) %% %d - 1)})
+                        MERGE (source)-[:HAS_SKILL_PREREQUISITE {dataset: '%s'}]->(target);
+                        """, start, end, branching - 1, prefix, prefix, expectedNodes, scale.toLowerCase());
+                session.run(createRelsCypher);
+            }
 
             log.info("RQ2 benchmark partition for scale {} seeded successfully ({} nodes, {} relationships).",
-                    scale, expectedNodes, (expectedNodes * 9 / 10) * 2);
+                    scale, expectedNodes, expectedRels);
         } catch (Exception e) {
             log.error("Failed to seed RQ2 benchmark partition for scale {}: {}", scale, e.getMessage(), e);
             throw new IllegalStateException("Failed to seed RQ2 benchmark partition for " + scale + ": " + e.getMessage(), e);

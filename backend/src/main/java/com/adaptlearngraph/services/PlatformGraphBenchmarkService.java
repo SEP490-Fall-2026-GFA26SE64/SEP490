@@ -288,9 +288,8 @@ public class PlatformGraphBenchmarkService {
 
                 String shortestPathCypher = """
                         MATCH (start:MicroSkill {id: $startId}), (target:MicroSkill {id: $targetId})
-                        MATCH p = shortestPath((start)-[:HAS_SKILL_PREREQUISITE*1..5]->(target))
+                        MATCH p = allShortestPaths((start)-[:HAS_SKILL_PREREQUISITE*1..5]->(target))
                         RETURN p, length(p) AS hops
-                        LIMIT 1
                         """;
 
                 List<Map<String, Object>> fixture = generateBalancedPairs(scale, fixtureSet, idPrefix, expectedNodes);
