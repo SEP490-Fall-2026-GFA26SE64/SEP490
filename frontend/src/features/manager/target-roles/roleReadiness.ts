@@ -63,7 +63,7 @@ export function checkRoleReadiness(
   bankQuestions: BankQuestion[],
   bypassContentCheck?: boolean,
 ): RoleReadinessResult {
-  const isBypassed = bypassContentCheck ?? isContentReadinessBypassed()
+  const isBypassed = Boolean(bypassContentCheck)
   if (!role) {
     return {
       levelValidation: [],

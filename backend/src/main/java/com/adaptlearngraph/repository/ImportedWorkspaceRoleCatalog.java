@@ -26,7 +26,7 @@ final class ImportedWorkspaceRoleCatalog {
             var rows=tx.list("""
                     MATCH (o:JobPosition {organizationId:$org,source:'REGISTRATION_IMPORT',status:'ACTIVE'})-[m:HAS_ROLE]->(r:TargetRole)
                     WHERE o.id IN $positions AND m.organizationId=$org AND m.status='ACTIVE'
-                      AND r.organizationId=$org AND r.source='REGISTRATION_IMPORT' AND r.status IN ['PUBLISHED','ACTIVE']
+                      AND r.organizationId=$org AND r.status IN ['PUBLISHED','ACTIVE']
                     OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(r)
                     WHERE owner.status='ACTIVE' AND ownership.status='ACTIVE'
                     WITH o,r,collect(DISTINCT owner.id) AS owners
@@ -54,12 +54,15 @@ final class ImportedWorkspaceRoleCatalog {
                     facts.computeIfAbsent(position,k->new ArrayList<>()).add(List.of(id,text(l,"id"),skill,text(item,"version"),knowledge));
                 }
                 if(skills.isEmpty())throw invalid();skills.sort(Comparator.comparing(Skill::id));
-                var level=new Level(text(l,"id"),text(l,"code"),text(l,"name"),l.get("rank").asInt(),
+                int rawRank=l.get("rank").asInt();
+                int normalizedRank="AUTHORED_ROLE_MEMBER_V1".equals(l.get("sourceFormat").asString(null)) ? rawRank+1 : rawRank;
+                var level=new Level(text(l,"id"),text(l,"code"),text(l,"name"),normalizedRank,
                         l.get("context").asString(""),"ALL_MANDATORY_SKILLS",List.copyOf(skills),l.get("duration").asString(null));
                 var previous=roles.get(id);var levels=new ArrayList<Level>(previous==null?List.of():previous.levels());
                 if(level.rank()<1 || levels.stream().anyMatch(v->v.id().equals(level.id()) || v.rank()==level.rank()))throw invalid();
                 levels.add(level);
-                roles.put(id,new Role(id,text(r,"code"),text(r,"name"),r.get("scope").asString(""),position,text(o,"name"),text(o,"version"),"pending",List.copyOf(levels),text(r,"version")));
+                String roleScope = r.get("scope").isNull() ? r.get("description").asString("") : r.get("scope").asString("");
+                roles.put(id,new Role(id,text(r,"code"),text(r,"name"),roleScope,position,text(o,"name"),text(o,"version"),"pending",List.copyOf(levels),text(r,"version")));
             }
             var fingerprints=new HashMap<String,String>();
             for(String position:facts.keySet())try {
