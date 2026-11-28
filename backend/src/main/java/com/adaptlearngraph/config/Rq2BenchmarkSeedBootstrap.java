@@ -63,11 +63,8 @@ public class Rq2BenchmarkSeedBootstrap implements ApplicationRunner {
     public static synchronized void ensureScaleSeeded(Driver driver, String scale, int expectedNodes) {
         String scaleUpper = scale.toUpperCase();
         String prefix = "RQ2-" + scaleUpper + "-";
-        int branching = switch (scale.toLowerCase()) {
-            case "10k" -> 60;
-            case "5k" -> 30;
-            default -> 6;
-        };
+        // Constant 1% relative graph density across all scales: 1k -> 10, 5k -> 50, 10k -> 100
+        int branching = expectedNodes / 100;
         long expectedRels = (long) (expectedNodes * 9 / 10) * branching;
         try (Session session = driver.session()) {
             long currentNodes = session.run(
