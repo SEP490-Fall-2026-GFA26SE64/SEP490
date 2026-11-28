@@ -25,7 +25,7 @@ final class ImportedWorkspaceRoleCatalog {
         return graph.read(tx->{
             var rows=tx.list("""
                     MATCH (o:JobPosition {organizationId:$org,source:'REGISTRATION_IMPORT',status:'ACTIVE'})-[m:HAS_ROLE]->(r:TargetRole)
-                    WHERE o.id IN $positions AND m.organizationId=$org AND m.status='ACTIVE'
+                    WHERE o.id IN $positions AND (m.organizationId IS NULL OR m.organizationId=$org) AND m.status='ACTIVE'
                       AND r.organizationId=$org AND r.status IN ['PUBLISHED','ACTIVE']
                     OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(r)
                     WHERE owner.status='ACTIVE' AND ownership.status='ACTIVE'

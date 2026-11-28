@@ -517,7 +517,8 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                    OR (existingJp IS NULL AND (jp.code = '15-1252.00' OR jp.code STARTS WITH '15-'))
                 WITH r, jp LIMIT 1
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
-                SET rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
+                SET rel.organizationId = $organizationId,
+                    rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,
                     rel.updatedAt = datetime($updatedAt)
                 """)
                 .bind(roleId).to("roleId")
