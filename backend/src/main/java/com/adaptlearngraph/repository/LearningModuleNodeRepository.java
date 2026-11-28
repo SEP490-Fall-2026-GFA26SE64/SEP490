@@ -49,7 +49,8 @@ public interface LearningModuleNodeRepository extends Repository<LearningModuleN
             UNWIND $teachesSkillIds AS skillId
             MATCH (s:MicroSkill {id: skillId})
             WHERE s.organizationId = $organizationId
-            MERGE (mod)-[:TEACHES]->(s)
+            MERGE (mod)-[t:TEACHES]->(s)
+            SET t.organizationId = $organizationId
             RETURN mod.id AS id
             """)
     List<String> merge(@Param("id") String id, @Param("organizationId") String organizationId, @Param("title") String title,
@@ -84,7 +85,7 @@ public interface LearningModuleNodeRepository extends Repository<LearningModuleN
     // Both endpoints are matched under the same organization before the TEACHES edge is merged.
     @Transactional(TransactionManagers.NEO4J)
     @Query("MATCH (m:LearningModule {id:$id}) WHERE m.organizationId=$organization UNWIND $teachings AS item "
-            + "MATCH (s:MicroSkill {id:item.skillId}) WHERE s.organizationId=$organization MERGE (m)-[t:TEACHES]->(s) SET t=item.props")
+            + "MATCH (s:MicroSkill {id:item.skillId}) WHERE s.organizationId=$organization MERGE (m)-[t:TEACHES]->(s) SET t=item.props, t.organizationId=$organization")
     void mergeTeachings(@Param("id") String id, @Param("teachings") List<Map<String, Object>> teachings,
             @Param("organization") String organizationId);
 }

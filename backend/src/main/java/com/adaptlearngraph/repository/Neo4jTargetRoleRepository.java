@@ -284,6 +284,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                     MERGE (r)-[hl:HAS_LEVEL]->(l)
                     ON CREATE SET hl.id = $roleId + '_HL_' + item.rank, hl.version = $version, hl.status = 'ACTIVE', hl.createdAt = datetime($updatedAt)
                     SET hl.id = coalesce(hl.id, $roleId + '_HL_' + item.rank),
+                        hl.organizationId = $organizationId,
                         hl.version = coalesce(hl.version, $version),
                         hl.status = 'ACTIVE',
                         hl.updatedAt = datetime($updatedAt)
@@ -324,6 +325,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                           AND (c.id = cid OR c.code = cid OR toLower(c.id) = toLower(cid) OR toLower(coalesce(c.code, '')) = toLower(cid))
                         MERGE (l)-[rc:HAS_COMPETENCY]->(c)
                         ON CREATE SET rc.status = 'ACTIVE', rc.version = '0.11.0'
+                        SET rc.organizationId = $organizationId
                         """)
                         .bind(roleId).to("roleId")
                         .bind(organizationId).to("organizationId")
@@ -341,6 +343,7 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
                       AND (c.id = cid OR c.code = cid OR toLower(c.id) = toLower(cid) OR toLower(coalesce(c.code, '')) = toLower(cid))
                     MERGE (l)-[rc:HAS_COMPETENCY]->(c)
                     ON CREATE SET rc.status = 'ACTIVE', rc.version = '0.11.0'
+                    SET rc.organizationId = $organizationId
                     """)
                     .bind(roleId).to("roleId")
                     .bind(organizationId).to("organizationId")
@@ -510,12 +513,17 @@ public class Neo4jTargetRoleRepository implements TargetRoleRepository {
     private void syncJobPositionRelationship(String organizationId, String roleId, String status, Instant updatedAt) {
         client.query("""
                 MATCH (r:TargetRole {id: $roleId, organizationId: $organizationId})
-                OPTIONAL MATCH (existingJp:JobPosition)-[:HAS_ROLE]->(r)
-                WITH r, existingJp
+                OPTIONAL MATCH (existingJp:JobPosition)-[existingRel:HAS_ROLE]->(r)
+                WITH r, collect({jp: existingJp, rel: existingRel}) AS existingLinks
                 MATCH (jp:JobPosition {organizationId: $organizationId})
-                WHERE (existingJp IS NOT NULL AND elementId(jp) = elementId(existingJp))
-                   OR (existingJp IS NULL AND (jp.code = '15-1252.00' OR jp.code STARTS WITH '15-'))
-                WITH r, jp LIMIT 1
+                WHERE (r.familyCode IS NOT NULL AND trim(r.familyCode) <> ''
+                       AND (jp.code = r.familyCode OR jp.id = r.familyCode OR toLower(jp.code) = toLower(r.familyCode)))
+                   OR ((r.familyCode IS NULL OR trim(r.familyCode) = '')
+                       AND (any(link IN existingLinks WHERE link.jp IS NOT NULL AND elementId(jp) = elementId(link.jp))
+                            OR (size([link IN existingLinks WHERE link.jp IS NOT NULL]) = 0
+                                AND (jp.code = '15-1252.00' OR jp.code STARTS WITH '15-'))))
+                WITH r, jp, existingLinks LIMIT 1
+                FOREACH (link IN [l IN existingLinks WHERE l.jp IS NOT NULL AND elementId(l.jp) <> elementId(jp)] | DELETE link.rel)
                 MERGE (jp)-[rel:HAS_ROLE]->(r)
                 SET rel.organizationId = $organizationId,
                     rel.status = CASE WHEN $status IN ['PUBLISHED', 'ACTIVE'] THEN 'ACTIVE' ELSE 'INACTIVE' END,

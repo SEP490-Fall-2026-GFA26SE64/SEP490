@@ -81,6 +81,7 @@ public interface CompetencyNodeRepository extends Repository<CompetencyNode, Str
               AND (c.id = $compId OR c.code = $compId OR toLower(c.id) = toLower($compId) OR toLower(coalesce(c.code, '')) = toLower($compId))
             MERGE (l)-[r:HAS_COMPETENCY]->(c)
             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
+            SET r.organizationId = $organizationId
             """)
     void linkLevel(@Param("levelId") String levelId, @Param("compId") String competencyId,
             @Param("organizationId") String organizationId);
@@ -119,6 +120,7 @@ public interface CompetencyNodeRepository extends Repository<CompetencyNode, Str
             WITH DISTINCT c, s
             MERGE (c)-[r:HAS_SKILL]->(s)
             ON CREATE SET r.status = 'ACTIVE', r.version = '0.11.0'
+            SET r.organizationId = $organizationId
             """)
     void linkSkills(@Param("id") String id, @Param("skillIds") List<String> skillIds,
             @Param("organizationId") String organizationId);

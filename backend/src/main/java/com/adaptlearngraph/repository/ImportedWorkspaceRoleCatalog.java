@@ -24,14 +24,24 @@ final class ImportedWorkspaceRoleCatalog {
         if(positions.isEmpty())return List.of();
         return graph.read(tx->{
             var rows=tx.list("""
-                    MATCH (o:JobPosition {organizationId:$org,source:'REGISTRATION_IMPORT',status:'ACTIVE'})-[m:HAS_ROLE]->(r:TargetRole)
-                    WHERE o.id IN $positions AND (m.organizationId IS NULL OR m.organizationId=$org) AND m.status='ACTIVE'
-                      AND r.organizationId=$org AND r.status IN ['PUBLISHED','ACTIVE']
-                    OPTIONAL MATCH (owner:JobPosition)-[ownership:HAS_ROLE]->(r)
+                    MATCH (o:JobPosition {organizationId:$org,source:'REGISTRATION_IMPORT',status:'ACTIVE'})
+                    WHERE o.id IN $positions
+                    MATCH (r:TargetRole {organizationId:$org})
+                    WHERE r.status IN ['PUBLISHED','ACTIVE']
+                      AND (EXISTS {
+                            MATCH (o)-[m:HAS_ROLE]->(r)
+                            WHERE (m.organizationId IS NULL OR m.organizationId=$org) AND m.status='ACTIVE'
+                          }
+                          OR (NOT EXISTS {
+                                MATCH (anyJp:JobPosition {organizationId:$org})-[anyRel:HAS_ROLE]->(r)
+                                WHERE anyJp.status='ACTIVE' AND anyRel.status='ACTIVE'
+                              }
+                              AND r.familyCode IS NOT NULL AND toLower(r.familyCode)=toLower(o.code)))
+                    OPTIONAL MATCH (owner:JobPosition {organizationId:$org})-[ownership:HAS_ROLE]->(r)
                     WHERE owner.status='ACTIVE' AND ownership.status='ACTIVE'
                     WITH o,r,collect(DISTINCT owner.id) AS owners
                     OPTIONAL MATCH (r)-[h:HAS_LEVEL]->(l:Level)
-                    WHERE h.organizationId=$org AND l.organizationId=$org AND h.status='ACTIVE' AND l.status='ACTIVE'
+                    WHERE (h.organizationId IS NULL OR h.organizationId=$org) AND l.organizationId=$org AND h.status='ACTIVE' AND l.status='ACTIVE'
                     OPTIONAL MATCH (r)-[q:REQUIRES_SKILL]->(s:MicroSkill)
                     WHERE q.status='ACTIVE' AND q.level=l.name
                     RETURN properties(o) AS o,properties(r) AS r,properties(l) AS l,owners,
@@ -42,7 +52,8 @@ final class ImportedWorkspaceRoleCatalog {
             var roles=new LinkedHashMap<String,Role>();var facts=new TreeMap<String,List<Object>>();
             for(var row:rows) {
                 var o=row.get("o");var r=row.get("r");var l=row.get("l");String position=text(o,"id"),id=text(r,"id");
-                if(!row.get("owners").asList(Value::asString).equals(List.of(position)) || l.isNull())throw invalid();
+                var owners=row.get("owners").asList(Value::asString);
+                if((!owners.isEmpty() && !owners.equals(List.of(position))) || l.isNull())throw invalid();
                 var skills=new ArrayList<Skill>();var seen=new HashSet<String>();
                 for(var item:row.get("skills").asList(v->v)) {
                     if(!org.toString().equals(item.get("owner").asString(null)) || !org.toString().equals(item.get("requirementOwner").asString(null))

@@ -64,6 +64,7 @@ public interface DepartmentNodeRepository extends Repository<DepartmentNode, Str
             WHERE (jp.organizationId = $organizationId OR jp.organizationId IS NULL OR jp.organizationId = '')
               AND (jp.id = $jobPositionIdOrCode OR jp.code = $jobPositionIdOrCode)
             MERGE (d)-[r:HAS_JOB_POSITION]->(jp)
+            SET r.organizationId = $organizationId
             RETURN count(r)
             """)
     int linkJobPosition(@Param("organizationId") String organizationId,
