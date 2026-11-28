@@ -4312,6 +4312,13 @@ export function TargetRolesPage() {
           const isStagedRole = modalEffStatus === 'staged'
           const isDraftRole =
             modalEffStatus === 'draft' || isFeedbackRole || isRejectedRole
+          const hasPublishedPredecessor = roles.some(
+            (r) =>
+              (r.stableId === selectedRole.stableId ||
+                r.code === selectedRole.code) &&
+              (r.status === 'published' || r.status === 'unpublished') &&
+              r.id !== selectedRole.id,
+          )
           const cleanModalRejectionReason = (
             selectedRole.rejectionReason || ''
           ).replace(/^\[(EXPERT|LD_MANAGER)\]:\s*/, '')
@@ -4972,17 +4979,19 @@ export function TargetRolesPage() {
                       >
                         Cancel
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-2 border-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold shadow-xs dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-400"
-                        style={{ color: '#312e81', borderColor: '#4f46e5', backgroundColor: '#eef2ff' }}
-                        disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
-                        title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
-                        onClick={handlePromptEditSaveAsStaged}
-                      >
-                        Save as Staged
-                      </Button>
+                      {!hasPublishedPredecessor && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-2 border-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold shadow-xs dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-400"
+                          style={{ color: '#312e81', borderColor: '#4f46e5', backgroundColor: '#eef2ff' }}
+                          disabled={!editRoleForm.title.trim() || !editRoleForm.jobPositionCode.trim()}
+                          title="Stage role immediately so Org Admin can assign employees to this role and levels before publication"
+                          onClick={handlePromptEditSaveAsStaged}
+                        >
+                          Save as Staged
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"

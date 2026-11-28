@@ -1678,7 +1678,11 @@ export function ExpertAssignedRolesPage() {
           ? 'published'
           : authoringRole.status === 'rejected'
             ? 'rejected'
-            : 'draft',
+            : authoringRole.status === 'sent'
+              ? 'sent'
+              : authoringRole.status === 'staged'
+                ? 'staged'
+                : 'draft',
       updatedAt: new Date().toISOString(),
     }
 
@@ -1707,9 +1711,11 @@ export function ExpertAssignedRolesPage() {
                 ? 'ACTIVE'
                 : updatedRole.status === 'rejected'
                   ? 'REJECTED'
-                  : updatedRole.status === 'staged' || updatedRole.isStaffingEnabled
-                    ? 'STAGED'
-                    : 'DRAFT',
+                  : updatedRole.status === 'sent'
+                    ? 'SENT'
+                    : updatedRole.status === 'staged' || updatedRole.isStaffingEnabled
+                      ? 'STAGED'
+                      : 'DRAFT',
             skillTargets: sanitizedTargets,
             levels: updatedRole.levels,
             levelDurations: updatedRole.levelDurations,
